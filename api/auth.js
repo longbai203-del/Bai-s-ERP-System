@@ -13,7 +13,7 @@ import express from 'express';
 import { supabase, getUserById, safeQuery } from '../shared/lib/supabase.js';
 import { isRequired, isValidPassword, isValidPhone } from '../shared/lib/validation.js';
 import { logger } from '../shared/lib/logger.js';
-import { authenticate } from '../shared/lib/auth.js';
+import { authMiddleware } from '../shared/lib/auth.js';  // ✅ 修复：改为 authMiddleware
 
 const router = express.Router();
 
@@ -265,7 +265,7 @@ router.post('/register', async (req, res) => {
 // ============================================================
 // GET /api/auth/me - 获取当前用户信息
 // ============================================================
-router.get('/me', authenticate, async (req, res) => {
+router.get('/me', authMiddleware, async (req, res) => {  // ✅ 修复：改为 authMiddleware
     try {
         const userId = req.user?.id;
 

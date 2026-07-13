@@ -1,6 +1,7 @@
 /**
- * api/_lib/auth.js - JWT 验证中间件
+ * shared/lib/auth.js - JWT 验证中间件
  */
+
 import { getUserFromRequest } from './supabase.js';
 
 /**
@@ -10,7 +11,6 @@ import { getUserFromRequest } from './supabase.js';
 export function authMiddleware(handler) {
     return async function(req, res) {
         try {
-            // 获取用户信息
             const user = await getUserFromRequest(req);
             
             if (!user) {
@@ -21,10 +21,7 @@ export function authMiddleware(handler) {
                 });
             }
             
-            // 将用户信息附加到请求对象
             req.user = user;
-            
-            // 继续执行处理器
             return handler(req, res);
         } catch (error) {
             console.error('[Auth] 验证失败:', error);
@@ -82,17 +79,28 @@ export function roleMiddleware(allowedRoles) {
     };
 }
 
+// ✅ 添加 authenticate 别名（兼容性）
+export const authenticate = authMiddleware;
+
+// ✅ 添加 requireRole 别名（兼容性）
+export const requireRole = roleMiddleware;
+
 /**
- * 生成 JWT（用于测试或特殊场景）
- * 注意：Supabase 会自动生成 JWT，此函数仅用于特殊场景
+ * 获取当前用户（用于权限模块）
  */
-export function generateToken(userId, email) {
-    // 使用 Supabase 的 admin API 生成 token
-    // 或者使用第三方库如 jsonwebtoken
-    // 这里使用 Supabase 的 admin 方法
-    const { supabase } = require('./supabase.js');
-    // 实际实现需要根据 Supabase 版本调整
-    return null;
+export function getCurrentUser(req, res, next) {
+    return authMiddleware((req, res) => {
+        if (req.user) {
+            return res.json({
+                success: true,
+                data: req.user
+            });
+        }
+        return res.status(401).json({
+            success: false,
+            error: '未认证'
+        });
+    })(req, res);
 }
 
 console.log('[Auth] ✅ 认证中间件已加载');
