@@ -19,7 +19,7 @@
  */
 
 import { store } from './store.js';
-import { apiClient } from '../../api/api-client.js';
+import { apiClient } from '../services/api-client.js';
 import { loadModule } from '../services/services.js';
 
 /**

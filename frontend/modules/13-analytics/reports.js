@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file reports.js
  * @module reports
  * @description 数据报表 - 业务数据分析和可视化
@@ -11,8 +11,8 @@
  * @version 1.0.0
  */
 
-import { store } from '../../../js/core/store.js';
-import { showToast } from '../../../js/core/init.js';
+import { store } from '../js/core/store.js';
+import { showToast } from '../js/core/init.js';
 
 /**
  * @typedef {Object} ReportStats

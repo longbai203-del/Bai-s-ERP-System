@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import { showToast } from '../../../js/core/init.js';
+import { showToast } from '../js/core/init.js';
 import { formatNumber } from '../../../js/core/helpers.js';
 
 /** @type {{stats: Object, campaigns: Array, insights: Array, recommendations: Array}} */

@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import { showToast, showLoading } from '../../../js/core/init.js';
+import { showToast, showLoading } from '../js/core/init.js';
 import { formatNumber, formatDate, getRelativeTime } from '../../../js/core/helpers.js';
 
 /**

@@ -15,12 +15,12 @@ export { appApi };
  * @module api/index
  * @description
  * - `AppApi` (全局挂载) : 兼容旧版直接调用 `AppApi.query('table')` 的写法。
- * - `appApi` (导入使用) : 推荐现代模块使用 `import { appApi } from '../api/index.js'` 方式调用。
+ * - `appApi` (导入使用) : 推荐现代模块使用 `import { appApi } from '../services/api-client.js'` 方式调用。
  * @example
  * // 旧方式 (已兼容):
  * AppApi.query('orders').select('*');
  *
  * // 新方式 (推荐):
- * import { appApi } from '../api/index.js';
+ * import { appApi } from '../services/api-client.js';
  * appApi.query('orders').select('*');
  */

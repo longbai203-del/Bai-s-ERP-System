@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import { showToast } from '../../../js/core/init.js';
+import { showToast } from '../js/core/init.js';
 
 /** @type {{restoreHistory: Array, isRestoring: boolean, currentRestore: any, logs: Array}} */
 const state = {

@@ -12,7 +12,7 @@
  */
 
 import { apiClient } from '../../../js/core/api-client.js';
-import { showToast, showLoading } from '../../../js/core/init.js';
+import { showToast, showLoading } from '../js/core/init.js';
 import { formatNumber, formatDate, getRelativeTime } from '../../../js/core/helpers.js';
 
 /**

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file audit-logs.js
  * @module audit-logs
  * @description 审计日志 - 系统操作记录和审计追踪
@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import { showToast } from '../../../js/core/init.js';
+import { showToast } from '../js/core/init.js';
 
 /**
  * @typedef {Object} AuditLog
