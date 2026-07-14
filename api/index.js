@@ -60,6 +60,31 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // ============================================================
+// 根路径
+// ============================================================
+
+app.get('/', (req, res) => {
+    res.json({
+        message: "Bai's ERP System API",
+        version: '2.0.0',
+        status: 'running',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth',
+            orders: '/api/orders',
+            products: '/api/products',
+            customers: '/api/customers',
+            employees: '/api/employees',
+            inventory: '/api/inventory',
+            reports: '/api/reports',
+            attendance: '/api/attendance',
+            permissions: '/api/permissions',
+            'vehicle-monitor': '/api/vehicle-monitor'
+        }
+    });
+});
+
+// ============================================================
 // 健康检查
 // ============================================================
 
