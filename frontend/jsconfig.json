@@ -1,13 +1,23 @@
 {
     "compilerOptions": {
-        "target": "ES2020",
-        "module": "commonjs",
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "node",
         "allowJs": true,
         "checkJs": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"],
+            "@shared/*": ["./shared/*"],
+            "@api/*": ["./api/*"],
+            "@core/*": ["./frontend/js/core/*"]
+        }
     },
     "exclude": [
         "node_modules",
-        "**/node_modules/*"
+        "**/node_modules/*",
+        "dist",
+        "build"
     ]
 }

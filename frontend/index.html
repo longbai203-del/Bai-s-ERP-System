@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carwash Pro - 洗车店管理系统</title>
+    <title>Bai's ERP System - 企业资源计划系统</title>
     
     <!-- 预加载关键资源 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,10 +27,10 @@
          * @description 应用配置
          */
         window.APP_CONFIG = {
-            appName: 'Carwash Pro',
-            version: '1.0.0',
+            appName: "Bai's ERP System",
+            version: '2.0.0',
             apiBaseUrl: window.location.hostname === 'localhost' 
-                ? 'http://localhost:3000/api' 
+                ? 'http://localhost:3001/api' 
                 : '/api'
         };
         
@@ -40,8 +40,8 @@
          * @description Supabase配置
          */
         window.SUPABASE_CONFIG = {
-            url: 'https://ukqhdzveqklinkzfcp.supabase.co',
-            key: '{{SUPABASE_KEY}}' // 将由后端注入或从环境变量读取
+            url: 'https://hnsdhbazthglqhnsdwsz.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhuc2RoYmF6dGhnbHFobnNkd3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MDM1NDksImV4cCI6MjA5OTQ3OTU0OX0.OmvkDcJ9k-NRPr2jSoy5yc0XEe8kyt2dBJo0xuUdEDg'
         };
     </script>
 </head>
@@ -52,8 +52,8 @@
     <div id="app-loading" class="app-loading">
         <div class="loading-container">
             <div class="loading-logo">
-                <img src="/assets/images/logo.svg" alt="Carwash Pro" onerror="this.style.display='none'">
-                <h1>Carwash Pro</h1>
+                <img src="/assets/images/logo.svg" alt="Bai's ERP" onerror="this.style.display='none'">
+                <h1>Bai's ERP</h1>
             </div>
             <div class="loading-spinner">
                 <div class="spinner"></div>
@@ -65,10 +65,10 @@
                 </div>
             </div>
             <div class="loading-tips">
-                <p id="loading-tip">智能洗车管理系统</p>
+                <p id="loading-tip">企业资源计划系统</p>
             </div>
             <div class="loading-version">
-                <span>v1.0.0</span>
+                <span>v2.0.0</span>
             </div>
         </div>
     </div>
@@ -81,8 +81,8 @@
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <i class="fas fa-car-wash"></i>
-                    <span>Carwash Pro</span>
+                    <i class="fas fa-chart-line"></i>
+                    <span>Bai's ERP</span>
                 </div>
                 <button class="sidebar-toggle" id="sidebar-toggle">
                     <i class="fas fa-bars"></i>
@@ -222,7 +222,7 @@
         
         // 加载提示轮换
         const tips = [
-            '🚀 智能洗车管理系统',
+            '🚀 企业资源计划系统',
             '📊 实时数据分析',
             '💼 高效运营管理',
             '👥 客户关系维护',
