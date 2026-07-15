@@ -4,19 +4,6 @@
  * @module utils/validator
  */
 
-/**
- * 验证结果
- * @typedef {Object} ValidationResult
- * @property {boolean} valid - 是否有效
- * @property {string} [message] - 错误信息
- */
-
-/**
- * 验证必填
- * @param {*} value - 要验证的值
- * @param {string} fieldName - 字段名称
- * @returns {ValidationResult}
- */
 export const required = (value, fieldName = '此字段') => {
     if (value === undefined || value === null || String(value).trim() === '') {
         return { valid: false, message: `${fieldName}为必填项` };
@@ -24,11 +11,6 @@ export const required = (value, fieldName = '此字段') => {
     return { valid: true };
 };
 
-/**
- * 验证邮箱
- * @param {string} email - 邮箱地址
- * @returns {ValidationResult}
- */
 export const email = (email) => {
     if (!email) return { valid: true };
     const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -38,11 +20,6 @@ export const email = (email) => {
     return { valid: true };
 };
 
-/**
- * 验证手机号
- * @param {string} phone - 手机号
- * @returns {ValidationResult}
- */
 export const phone = (phone) => {
     if (!phone) return { valid: true };
     const pattern = /^1[3-9]\d{9}$/;
@@ -52,13 +29,6 @@ export const phone = (phone) => {
     return { valid: true };
 };
 
-/**
- * 验证长度
- * @param {string} value - 要验证的值
- * @param {Object} options - 选项 { min, max }
- * @param {string} fieldName - 字段名称
- * @returns {ValidationResult}
- */
 export const length = (value, options = {}, fieldName = '此字段') => {
     const str = String(value || '');
     const { min = 0, max = Infinity } = options;
@@ -71,13 +41,6 @@ export const length = (value, options = {}, fieldName = '此字段') => {
     return { valid: true };
 };
 
-/**
- * 验证数字
- * @param {*} value - 要验证的值
- * @param {Object} options - 选项 { min, max }
- * @param {string} fieldName - 字段名称
- * @returns {ValidationResult}
- */
 export const number = (value, options = {}, fieldName = '此字段') => {
     const num = Number(value);
     if (isNaN(num)) {
@@ -93,13 +56,6 @@ export const number = (value, options = {}, fieldName = '此字段') => {
     return { valid: true };
 };
 
-/**
- * 验证整数
- * @param {*} value - 要验证的值
- * @param {Object} options - 选项 { min, max }
- * @param {string} fieldName - 字段名称
- * @returns {ValidationResult}
- */
 export const integer = (value, options = {}, fieldName = '此字段') => {
     const num = Number(value);
     if (!Number.isInteger(num)) {
@@ -108,11 +64,6 @@ export const integer = (value, options = {}, fieldName = '此字段') => {
     return number(value, options, fieldName);
 };
 
-/**
- * 验证密码强度
- * @param {string} password - 密码
- * @returns {ValidationResult}
- */
 export const password = (password) => {
     if (!password || password.length < 6) {
         return { valid: false, message: '密码至少6个字符' };
@@ -125,11 +76,6 @@ export const password = (password) => {
     return { valid: true };
 };
 
-/**
- * 验证URL
- * @param {string} url - URL地址
- * @returns {ValidationResult}
- */
 export const url = (url) => {
     if (!url) return { valid: true };
     try {
@@ -140,13 +86,6 @@ export const url = (url) => {
     }
 };
 
-/**
- * 验证枚举值
- * @param {*} value - 要验证的值
- * @param {Array} allowedValues - 允许的值列表
- * @param {string} fieldName - 字段名称
- * @returns {ValidationResult}
- */
 export const oneOf = (value, allowedValues, fieldName = '此字段') => {
     if (!allowedValues.includes(value)) {
         return { valid: false, message: `${fieldName}的值无效` };
@@ -155,17 +94,21 @@ export const oneOf = (value, allowedValues, fieldName = '此字段') => {
 };
 
 /**
- * 验证对象
- * @param {Object} data - 要验证的对象
- * @param {Object} schema - 验证规则
- * @returns {ValidationResult}
+ * 验证对象 - 修复版本
  */
 export const validate = (data, schema) => {
     for (const [field, rules] of Object.entries(schema)) {
         const value = data[field];
         for (const rule of rules) {
-            const result = rule(value, field);
-            if (!result.valid) {
+            // 如果 rule 是函数，直接调用
+            let result;
+            if (typeof rule === 'function') {
+                result = rule(value, field);
+            } else {
+                // 如果 rule 不是函数，跳过
+                continue;
+            }
+            if (result && result.valid === false) {
                 return result;
             }
         }
