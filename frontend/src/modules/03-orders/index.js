@@ -10,7 +10,7 @@ import { productService } from '@services/product.service.js';
 import { formatCurrency, formatDate, getStatusLabel } from '@utils/helpers.js';
 import { datatable } from '@components/datatable.js';
 import { modal } from '@components/modal.js';
-import { navbar } from '@components/navbar.js';
+
 
 /**
  * 模块元信息
@@ -41,7 +41,7 @@ let state = {
  * 渲染订单管理
  */
 export async function render(container, params = {}) {
-    navbar.updateBreadcrumb('订单管理');
+    
 
     // 构建页面
     container.innerHTML = `

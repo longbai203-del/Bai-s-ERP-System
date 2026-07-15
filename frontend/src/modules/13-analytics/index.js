@@ -7,7 +7,7 @@
 import { apiClient } from '@services/api-client.js';
 import { formatCurrency } from '@utils/helpers.js';
 import { datatable } from '@components/datatable.js';
-import { navbar } from '@components/navbar.js';
+
 
 export const meta = {
     name: '数据分析',
@@ -33,7 +33,7 @@ export async function render(container, params = {}) {
     const sub = params.sub || 'reports';
     state.activeSub = sub;
 
-    navbar.updateBreadcrumb('数据分析');
+    
 
     container.innerHTML = `
         <div class="analytics-container">

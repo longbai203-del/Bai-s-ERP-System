@@ -8,7 +8,7 @@ import { apiClient } from '@services/api-client.js';
 import { formatCurrency, formatDate } from '@utils/helpers.js';
 import { datatable } from '@components/datatable.js';
 import { modal } from '@components/modal.js';
-import { navbar } from '@components/navbar.js';
+
 
 export const meta = {
     name: '营销管理',
@@ -48,7 +48,7 @@ export async function render(container, params = {}) {
     const sub = params.sub || 'promotions';
     state.activeSub = sub;
 
-    navbar.updateBreadcrumb('营销管理');
+    
 
     container.innerHTML = `
         <div class="marketing-container">

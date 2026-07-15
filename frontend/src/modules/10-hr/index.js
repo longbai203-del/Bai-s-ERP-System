@@ -7,7 +7,7 @@
 import { apiClient } from '@services/api-client.js';
 import { datatable } from '@components/datatable.js';
 import { modal } from '@components/modal.js';
-import { navbar } from '@components/navbar.js';
+
 
 export const meta = {
     name: '系统管理',
@@ -38,7 +38,7 @@ export async function render(container, params = {}) {
     const sub = params.sub || 'settings';
     state.activeSub = sub;
 
-    navbar.updateBreadcrumb('系统管理');
+    
 
     container.innerHTML = `
         <div class="system-container">

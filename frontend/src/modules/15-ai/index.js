@@ -5,7 +5,7 @@
  */
 
 import { apiClient } from '@services/api-client.js';
-import { navbar } from '@components/navbar.js';
+
 import { modal } from '@components/modal.js';
 
 export const meta = {
@@ -31,7 +31,7 @@ export async function render(container, params = {}) {
     const sub = params.sub || 'chat';
     state.activeSub = sub;
 
-    navbar.updateBreadcrumb('AI智能助手');
+    
 
     container.innerHTML = `
         <div class="ai-container">

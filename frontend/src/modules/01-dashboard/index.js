@@ -6,7 +6,7 @@
 
 import { dashboardService } from '@services/dashboard.service.js';
 import { formatCurrency, formatDate } from '@utils/helpers.js';
-import { navbar } from '@components/navbar.js';
+
 
 /**
  * 模块元信息
@@ -39,7 +39,7 @@ export async function render(container, params = {}) {
     state.loading = true;
     
     // 更新导航栏
-    navbar.updateBreadcrumb('仪表盘');
+    
 
     // 显示加载状态
     container.innerHTML = `

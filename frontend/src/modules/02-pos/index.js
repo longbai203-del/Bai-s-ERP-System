@@ -8,7 +8,7 @@ import { productService } from '@services/product.service.js';
 import { customerService } from '@services/customer.service.js';
 import { orderService } from '@services/order.service.js';
 import { formatCurrency } from '@utils/helpers.js';
-import { navbar } from '@components/navbar.js';
+
 import { modal } from '@components/modal.js';
 
 /**
