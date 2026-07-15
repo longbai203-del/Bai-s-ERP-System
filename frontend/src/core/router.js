@@ -4,8 +4,8 @@
  * @module core/router
  */
 
-import { store } from '@core/store.js';
-import { auth } from '@core/auth.js';
+import { store } from './store.js';
+
 
 /**
  * 路由配置项
@@ -131,7 +131,7 @@ export const router = {
         this._currentModule = route.module;
         
         // 检查认证
-        if (route.requiresAuth && !auth.isAuthenticated()) {
+        if (route.requiresAuth && !isAuthenticated()) {
             this.navigate('/login');
             return;
         }
