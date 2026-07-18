@@ -1,38 +1,55 @@
-import axios from 'axios';
+﻿/**
+ * @file api.js
+ * @description API 客户端 - 统一请求封装
+ */
 
+import axios from 'axios'
+
+// 创建 axios 实例
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
-    timeout: 30000,
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
 
-// 请求拦截器
+// 请求拦截器 - 添加 Token
 api.interceptors.request.use(
-    config => {
-        // 尝试获取token（支持多种键名）
-        const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || sessionStorage.getItem('token');
-        console.log('🔑 Token check:', token ? 'Found' : 'Not found');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    error => Promise.reject(error)
-);
-
-// 响应拦截器
-api.interceptors.response.use(
-    response => response.data,
-    error => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        }
-        return Promise.reject(error);
+  config => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
     }
-);
+    return config
+  },
+  error => Promise.reject(error)
+)
 
-export { api };
+// 响应拦截器 - 统一错误处理
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login'
+          }
+          break
+        case 404:
+          console.error('API 端点不存在:', error.config?.url)
+          break
+        case 500:
+          console.error('服务器错误:', error.response?.data)
+          break
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
+// 默认导出
+export default api

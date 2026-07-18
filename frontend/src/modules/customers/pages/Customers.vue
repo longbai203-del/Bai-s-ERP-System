@@ -1,0 +1,1151 @@
+﻿<template>
+  <div class="customers-">
+    
+
+
+
+<style>
+    /* 直接内联样式，确保生效 */
+    .crm-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .crm-page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .crm-page-subtitle {
+        color: #6B7280;
+        margin: 4px 0 0 0;
+    }
+    .crm-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .crm-stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .crm-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        flex-shrink: 0;
+    }
+    .crm-stat-icon.blue { background: #4F46E5; }
+    .crm-stat-icon.purple { background: #8B5CF6; }
+    .crm-stat-icon.gold { background: #F59E0B; }
+    .crm-stat-icon.green { background: #10B981; }
+    .crm-stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1F2937;
+    }
+    .crm-stat-label {
+        font-size: 14px;
+        color: #6B7280;
+        margin-top: 2px;
+    }
+    .crm-search-bar {
+        background: white;
+        border-radius: 8px;
+        padding: 16px 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .crm-search-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .crm-search-row .form-group {
+        flex: 1;
+        min-width: 150px;
+    }
+    .crm-search-row .form-group label {
+        display: block;
+        font-size: 12px;
+        color: #6B7280;
+        margin-bottom: 4px;
+    }
+    .crm-search-row .form-group input,
+    .crm-search-row .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #D1D5DB;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        box-sizing: border-box;
+    }
+    .crm-search-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 4px;
+    }
+    .crm-toolbar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .crm-toolbar .left {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+    .crm-toolbar .right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-primary { background: #4F46E5; color: white; }
+    .btn-primary:hover { background: #4338CA; }
+    .btn-secondary { background: #F3F4F6; color: #374151; }
+    .btn-secondary:hover { background: #E5E7EB; }
+    .btn-danger { background: #EF4444; color: white; }
+    .btn-danger:hover { background: #DC2626; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+    .btn-warning { background: #F59E0B; color: white; }
+    .btn-warning:hover { background: #D97706; }
+    .table-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table th {
+        background: #F9FAFB;
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 12px;
+        color: #6B7280;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    .table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #F3F4F6;
+        font-size: 14px;
+    }
+    .table tr:hover { background: #F9FAFB; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-gray-500 { color: #6B7280; }
+    .py-8 { padding: 32px 0; }
+    .hidden { display: none !important; }
+    .mt-2 { margin-top: 8px; }
+    .mb-4 { margin-bottom: 16px; }
+    .flex { display: flex; }
+    .gap-1 { gap: 4px; }
+    .items-center { align-items: center; }
+    @media (max-width: 768px) {
+        .crm-stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .crm-search-row .form-group { min-width: 100%; }
+        .crm-search-actions { width: 100%; }
+        .crm-search-actions .btn { flex: 1; }
+    }
+</style>
+
+
+<div class="crm-page-header">
+    <div>
+        <h1 class="crm-page-title">👥 客户管理</h1>
+        <p class="crm-page-subtitle">管理所有客户信息</p>
+    </div>
+    <button id="createBtn" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 新建客户
+    </button>
+</div>
+
+
+<div class="crm-stats-grid" id="statsContainer">
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon blue"><i class="fas fa-users"></i></div>
+        <div>
+            <div class="crm-stat-value" id="totalCustomers">0</div>
+            <div class="crm-stat-label">总客户</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon purple"><i class="fas fa-crown"></i></div>
+        <div>
+            <div class="crm-stat-value" id="vipCount">0</div>
+            <div class="crm-stat-label">VIP 客户</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon gold"><i class="fas fa-star"></i></div>
+        <div>
+            <div class="crm-stat-value" id="goldCount">0</div>
+            <div class="crm-stat-label">黄金客户</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon green"><i class="fas fa-coins"></i></div>
+        <div>
+            <div class="crm-stat-value" id="totalSpent">¥0</div>
+            <div class="crm-stat-label">累计消费</div>
+        </div>
+    </div>
+</div>
+
+
+<div class="crm-search-bar">
+    <div class="crm-search-row">
+        <div class="form-group">
+            <label>客户姓名</label>
+            <input id="searchName" type="text" placeholder="输入客户姓名" />
+        </div>
+        <div class="form-group">
+            <label>手机号</label>
+            <input id="searchPhone" type="text" placeholder="输入手机号" />
+        </div>
+        <div class="form-group">
+            <label>会员等级</label>
+            <select id="searchLevel">
+                <option value="">全部等级</option>
+                <option value="vip">VIP</option>
+                <option value="gold">黄金</option>
+                <option value="silver">白银</option>
+                <option value="bronze">青铜</option>
+            </select>
+        </div>
+        <div class="crm-search-actions">
+            <button id="searchBtn" class="btn btn-primary">
+                <i class="fas fa-search"></i> 搜索
+            </button>
+            <button id="resetBtn" class="btn btn-secondary">
+                <i class="fas fa-undo"></i> 重置
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="crm-toolbar">
+    <div class="left">
+        <button class="btn btn-secondary" onclick="location.reload()">
+            <i class="fas fa-sync"></i> 刷新
+        </button>
+    </div>
+    <div class="right">
+        <span style="font-size:14px;color:#6B7280;">共 <span id="totalCount">0</span> 位客户</span>
+    </div>
+</div>
+
+
+<div id="loadingSpinner" class="hidden text-center py-8">
+    <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+    <p class="mt-2 text-gray-500">加载中...</p>
+</div>
+
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>客户信息</th>
+                <th>手机号</th>
+                <th>邮箱</th>
+                <th>等级</th>
+                <th class="text-right">累计消费</th>
+                <th class="text-center">订单数</th>
+                <th>最近访问</th>
+                <th style="width:120px;">操作</th>
+            </tr>
+        </thead>
+        <tbody id="customersTableBody">
+            <tr>
+                <td colspan="8" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                    <p class="mt-2">加载中...</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<div id="paginationContainer" style="margin-top:16px;"></div>
+
+
+
+
+<div id="customerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;max-width:560px;width:90%;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #E5E7EB;">
+            <h3 id="modalTitle" style="font-size:18px;font-weight:600;margin:0;">新建客户</h3>
+            <button id="closeModal" style="background:none;border:none;font-size:24px;cursor:pointer;color:#9CA3AF;">&times;</button>
+        </div>
+        <div style="padding:24px;overflow-y:auto;max-height:calc(90vh - 120px);">
+            <form id="customerForm">
+                <input type="hidden" id="customerId" value="" />
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">客户姓名 <span style="color:#EF4444;">*</span></label>
+                    <input type="text" id="customerName" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;" placeholder="请输入客户姓名" required />
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">手机号 <span style="color:#EF4444;">*</span></label>
+                    <input type="tel" id="customerPhone" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;" placeholder="请输入手机号" required />
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">邮箱</label>
+                    <input type="email" id="customerEmail" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;" placeholder="请输入邮箱" />
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">会员等级</label>
+                    <select id="customerLevel" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;background:white;">
+                        <option value="bronze">青铜</option>
+                        <option value="silver">白银</option>
+                        <option value="gold">黄金</option>
+                        <option value="vip">VIP</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">地址</label>
+                    <input type="text" id="customerAddress" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;" placeholder="请输入地址" />
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:14px;font-weight:500;color:#374151;margin-bottom:4px;">备注</label>
+                    <textarea id="customerNotes" style="width:100%;padding:10px 14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;box-sizing:border-box;resize:vertical;min-height:60px;" rows="3" placeholder="请输入备注信息"></textarea>
+                </div>
+            </form>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid #E5E7EB;">
+            <button id="cancelModal" class="btn btn-secondary">取消</button>
+            <button id="saveCustomer" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div id="deleteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;max-width:400px;width:90%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #E5E7EB;">
+            <h3 style="font-size:18px;font-weight:600;margin:0;">⚠️ 确认删除</h3>
+            <button id="closeDeleteModal" style="background:none;border:none;font-size:24px;cursor:pointer;color:#9CA3AF;">&times;</button>
+        </div>
+        <div style="text-align:center;padding:24px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:48px;color:#EF4444;margin-bottom:16px;"></i>
+            <p style="font-size:16px;margin-bottom:8px;">确定要删除该客户吗？</p>
+            <p style="color:#6B7280;font-size:14px;" id="deleteCustomerName"></p>
+            <p style="color:#9CA3AF;font-size:12px;margin-top:8px;">此操作不可撤销</p>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;padding:16px 24px;border-top:1px solid #E5E7EB;">
+            <button id="cancelDelete" class="btn btn-secondary">取消</button>
+            <button id="confirmDelete" class="btn btn-danger"><i class="fas fa-trash"></i> 确认删除</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script type="module">
+    import { init } from './customers.js';
+    window.editCustomer = window.editCustomer;
+    window.deleteCustomer = window.deleteCustomer;
+    window.viewCustomer = window.viewCustomer;
+    window.changePage = window.changePage;
+    init();
+</script>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Customers',
+  data() {
+    return {}
+  },
+  mounted() {
+    // 从原 JS 迁移的初始化逻辑
+    /**
+ * modules/05-customers/customers/customers.js - 客户管理
+ * 直接使用 supabase.js 服务
+ */
+
+// ============================================================
+// 1. 导入服务
+// ============================================================
+
+import {
+    customerService,
+    formatCurrency,
+    formatDate,
+    showToast
+} from '../../../src/core/supabase.js';
+
+// ============================================================
+// 2. 状态管理
+// ============================================================
+
+const state = {
+    customers: [],
+    loading: false,
+    pagination: { page: 1, limit: 10, total: 0 },
+    filters: { name: '', phone: '', level: '' },
+    _initialized: false
+};
+
+const LEVEL_MAP = {
+    vip: { label: 'VIP', color: '#6D28D9', bg: '#EDE9FE', icon: 'fa-crown' },
+    gold: { label: '黄金', color: '#92400E', bg: '#FEF3C7', icon: 'fa-star' },
+    silver: { label: '白银', color: '#4B5563', bg: '#F3F4F6', icon: 'fa-star-half-alt' },
+    bronze: { label: '青铜', color: '#92400E', bg: '#FDE68A', icon: 'fa-star' }
+};
+
+// ============================================================
+// 3. 核心功能
+// ============================================================
+
+export async function init() {
+    if (state._initialized) {
+        console.log('👥 客户管理已初始化，跳过');
+        return;
+    }
+
+    console.log('👥 客户管理初始化...');
+    state._initialized = true;
+
+    bindModalEvents();
+    await loadCustomers();
+    await loadStats();
+    bindEvents();
+
+    console.log('✅ 客户管理初始化完成');
+}
+
+// ============================================================
+// 4. 数据加载
+// ============================================================
+
+async function loadCustomers() {
+    state.loading = true;
+    showLoading();
+
+    try {
+        const result = await customerService.getList({
+            page: state.pagination.page,
+            limit: state.pagination.limit,
+            name: state.filters.name,
+            phone: state.filters.phone,
+            level: state.filters.level
+        });
+
+        console.log('📊 加载客户数据:', result);
+
+        state.customers = result.list || [];
+        state.pagination.total = result.total || 0;
+
+        renderTable();
+        renderPagination();
+        updateTotalCount();
+
+    } catch (error) {
+        console.error('❌ 加载客户失败:', error);
+        showToast('加载数据失败', 'error');
+    } finally {
+        state.loading = false;
+        hideLoading();
+    }
+}
+
+async function loadStats() {
+    try {
+        const stats = await customerService.getStats();
+        console.log('📊 加载统计:', stats);
+        renderStats(stats);
+    } catch (error) {
+        console.error('❌ 加载统计失败:', error);
+    }
+}
+
+// ============================================================
+// 5. 渲染函数
+// ============================================================
+
+function renderStats(stats) {
+    const totalEl = document.getElementById('totalCustomers');
+    const vipEl = document.getElementById('vipCount');
+    const goldEl = document.getElementById('goldCount');
+    const spentEl = document.getElementById('totalSpent');
+
+    if (totalEl) totalEl.textContent = stats.total || 0;
+    if (vipEl) vipEl.textContent = stats.vip || 0;
+    if (goldEl) goldEl.textContent = stats.gold || 0;
+    if (spentEl) spentEl.textContent = '¥' + formatCurrency(stats.totalSpent || 0);
+}
+
+function renderTable() {
+    const tbody = document.getElementById('customersTableBody');
+    if (!tbody) return;
+
+    if (!state.customers || state.customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:#6B7280;">暂无客户数据</td></tr>';
+        return;
+    }
+
+    let html = '';
+    for (let i = 0; i < state.customers.length; i++) {
+        const c = state.customers[i];
+        const lv = LEVEL_MAP[c.level] || LEVEL_MAP.bronze;
+        const initial = c.name ? c.name.charAt(0) : '?';
+        const spent = c.total_spent || c.totalSpent || 0;
+        const orders = c.total_orders || c.orderCount || 0;
+        const visit = c.last_visit || c.lastVisit || '';
+
+        html += `<tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:#DBEAFE;color:#2563EB;">${initial}</div>
+                    <div>
+                        <div style="font-weight:500;">${c.name || '-'}</div>
+                        <div style="font-size:12px;color:#6B7280;">${c.id || ''}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.email || '-'}</td>
+            <td>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:500;background:${lv.bg};color:${lv.color};">
+                    <i class="fas ${lv.icon}"></i> ${lv.label}
+                </span>
+            </td>
+            <td style="text-align:right;font-weight:600;">¥${formatCurrency(spent)}</td>
+            <td style="text-align:center;">${orders}</td>
+            <td>${formatDate(visit)}</td>
+            <td>
+                <div style="display:flex;gap:4px;">
+                    <button class="btn-sm btn-primary" onclick="viewCustomer('${c.id}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn-sm btn-warning" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-sm btn-danger" onclick="deleteCustomer('${c.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
+}
+
+function renderPagination() {
+    const container = document.getElementById('paginationContainer');
+    if (!container) return;
+
+    const page = state.pagination.page;
+    const total = state.pagination.total;
+    const limit = state.pagination.limit;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    let html = `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
+        <div style="font-size:14px;color:#6B7280;">共 ${total} 位客户，第 ${page}/${totalPages} 页</div>
+        <div style="display:flex;gap:4px;">
+            <button class="btn-sm btn-secondary" onclick="changePage(${page - 1})" ${page <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+
+    for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) {
+        html += `<button class="btn-sm ${i === page ? 'btn-primary' : 'btn-secondary'}" onclick="changePage(${i})">${i}</button>`;
+    }
+
+    html += `<button class="btn-sm btn-secondary" onclick="changePage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>`;
+    container.innerHTML = html;
+}
+
+function updateTotalCount() {
+    const el = document.getElementById('totalCount');
+    if (el) el.textContent = state.pagination.total || 0;
+}
+
+// ============================================================
+// 6. 全局函数
+// ============================================================
+
+window.changePage = function(page) {
+    const totalPages = Math.ceil(state.pagination.total / state.pagination.limit) || 1;
+    if (page < 1 || page > totalPages) return;
+    state.pagination.page = page;
+    loadCustomers();
+};
+
+window.viewCustomer = function(id) {
+    const c = state.customers.find(item => item.id === id);
+    showToast('查看客户: ' + (c ? c.name : id), 'info');
+};
+
+window.editCustomer = function(id) {
+    const c = state.customers.find(item => item.id === id);
+    if (!c) { showToast('客户不存在', 'error'); return; }
+    document.getElementById('customerId').value = c.id;
+    document.getElementById('customerName').value = c.name || '';
+    document.getElementById('customerPhone').value = c.phone || '';
+    document.getElementById('customerEmail').value = c.email || '';
+    document.getElementById('customerLevel').value = c.level || 'bronze';
+    document.getElementById('customerAddress').value = c.address || '';
+    document.getElementById('customerNotes').value = c.notes || '';
+    document.getElementById('modalTitle').textContent = '编辑客户';
+    document.getElementById('customerModal').style.display = 'flex';
+};
+
+window.deleteCustomer = function(id) {
+    const c = state.customers.find(item => item.id === id);
+    if (!c) { showToast('客户不存在', 'error'); return; }
+    document.getElementById('deleteCustomerName').textContent = '客户: ' + c.name;
+    document.getElementById('confirmDelete').dataset.id = id;
+    document.getElementById('deleteModal').style.display = 'flex';
+};
+
+// ============================================================
+// 7. 弹窗控制
+// ============================================================
+
+function closeModal() {
+    document.getElementById('customerModal').style.display = 'none';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function showCreate() {
+    document.getElementById('customerId').value = '';
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.getElementById('customerEmail').value = '';
+    document.getElementById('customerLevel').value = 'bronze';
+    document.getElementById('customerAddress').value = '';
+    document.getElementById('customerNotes').value = '';
+    document.getElementById('modalTitle').textContent = '新建客户';
+    document.getElementById('customerModal').style.display = 'flex';
+}
+
+// ============================================================
+// 8. 保存/删除
+// ============================================================
+
+async function handleSave() {
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    if (!name || !phone) { showToast('请填写姓名和手机号', 'warning'); return; }
+
+    const id = document.getElementById('customerId').value;
+    const data = {
+        name: name,
+        phone: phone,
+        email: document.getElementById('customerEmail').value.trim() || null,
+        level: document.getElementById('customerLevel').value,
+        address: document.getElementById('customerAddress').value.trim() || null,
+        notes: document.getElementById('customerNotes').value.trim() || null
+    };
+
+    try {
+        if (id) {
+            await customerService.update(id, data);
+            showToast('客户更新成功', 'success');
+        } else {
+            await customerService.create(data);
+            showToast('客户创建成功', 'success');
+        }
+        closeModal();
+        await loadCustomers();
+        await loadStats();
+    } catch (error) {
+        showToast('保存失败: ' + error.message, 'error');
+    }
+}
+
+async function handleDelete() {
+    const id = document.getElementById('confirmDelete').dataset.id;
+    if (!id) return;
+
+    try {
+        await customerService.delete(id);
+        showToast('删除成功', 'success');
+        closeDeleteModal();
+        await loadCustomers();
+        await loadStats();
+    } catch (error) {
+        showToast('删除失败: ' + error.message, 'error');
+    }
+}
+
+// ============================================================
+// 9. 搜索/重置
+// ============================================================
+
+function doSearch() {
+    state.pagination.page = 1;
+    state.filters.name = document.getElementById('searchName').value || '';
+    state.filters.phone = document.getElementById('searchPhone').value || '';
+    state.filters.level = document.getElementById('searchLevel').value || '';
+    loadCustomers();
+}
+
+function doReset() {
+    state.pagination.page = 1;
+    state.filters = { name: '', phone: '', level: '' };
+    document.getElementById('searchName').value = '';
+    document.getElementById('searchPhone').value = '';
+    document.getElementById('searchLevel').value = '';
+    loadCustomers();
+}
+
+// ============================================================
+// 10. 事件绑定
+// ============================================================
+
+function bindModalEvents() {
+    document.getElementById('closeModal')?.addEventListener('click', closeModal);
+    document.getElementById('cancelModal')?.addEventListener('click', closeModal);
+    document.getElementById('closeDeleteModal')?.addEventListener('click', closeDeleteModal);
+    document.getElementById('cancelDelete')?.addEventListener('click', closeDeleteModal);
+    document.getElementById('saveCustomer')?.addEventListener('click', handleSave);
+    document.getElementById('confirmDelete')?.addEventListener('click', handleDelete);
+}
+
+function bindEvents() {
+    document.getElementById('searchBtn')?.addEventListener('click', doSearch);
+    document.getElementById('resetBtn')?.addEventListener('click', doReset);
+    document.getElementById('createBtn')?.addEventListener('click', showCreate);
+}
+
+function showLoading() {
+    document.getElementById('loadingSpinner')?.classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner')?.classList.add('hidden');
+}
+
+// ============================================================
+// 11. 自动初始化
+// ============================================================
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    setTimeout(init, 100);
+}
+
+console.log('✅ 客户管理模块加载完成');
+  },
+  methods: {}
+}
+</script>
+
+<style scoped>
+/**
+ * customers.css - 客户管理专用样式
+ * 使用 !important 确保样式生效
+ */
+
+/* ============================================================
+   统计卡片 - 使用 !important 确保生效
+   ============================================================ */
+
+   .crm-stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+}
+
+.crm-stat-card {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    transition: all 0.3s !important;
+    min-height: 80px !important;
+}
+
+.crm-stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.crm-stat-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    color: white !important;
+    flex-shrink: 0 !important;
+}
+
+.crm-stat-icon.blue { background: #4F46E5 !important; }
+.crm-stat-icon.purple { background: #8B5CF6 !important; }
+.crm-stat-icon.gold { background: #F59E0B !important; }
+.crm-stat-icon.green { background: #10B981 !important; }
+
+.crm-stat-info {
+    flex: 1 !important;
+}
+
+.crm-stat-value {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #1F2937 !important;
+    line-height: 1.2 !important;
+}
+
+.crm-stat-label {
+    font-size: 14px !important;
+    color: #6B7280 !important;
+    margin-top: 2px !important;
+}
+
+/* ============================================================
+   搜索栏
+   ============================================================ */
+
+.crm-search-bar {
+    background: white !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    margin-bottom: 20px !important;
+}
+
+.crm-search-row {
+    display: flex !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    align-items: flex-end !important;
+}
+
+.crm-search-row .crm-form-group {
+    flex: 1 !important;
+    min-width: 150px !important;
+}
+
+.crm-search-row .crm-form-group label {
+    display: block !important;
+    font-size: 12px !important;
+    color: #6B7280 !important;
+    margin-bottom: 4px !important;
+}
+
+.crm-search-row .crm-form-group input,
+.crm-search-row .crm-form-group select {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    background: white !important;
+    box-sizing: border-box !important;
+}
+
+.crm-search-row .crm-form-group input:focus,
+.crm-search-row .crm-form-group select:focus {
+    outline: none !important;
+    border-color: #4F46E5 !important;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1) !important;
+}
+
+.crm-search-actions {
+    display: flex !important;
+    gap: 8px !important;
+    padding-top: 4px !important;
+}
+
+/* ============================================================
+   工具栏
+   ============================================================ */
+
+.crm-toolbar {
+    display: flex !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    margin-bottom: 16px !important;
+}
+
+.crm-toolbar .crm-left {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    flex: 1 !important;
+}
+
+.crm-toolbar .crm-right {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+/* ============================================================
+   客户头像
+   ============================================================ */
+
+.crm-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    flex-shrink: 0 !important;
+}
+
+/* ============================================================
+   等级徽章
+   ============================================================ */
+
+.crm-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+.crm-badge-vip {
+    background: #EDE9FE !important;
+    color: #6D28D9 !important;
+}
+
+.crm-badge-gold {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+}
+
+.crm-badge-silver {
+    background: #F3F4F6 !important;
+    color: #4B5563 !important;
+}
+
+.crm-badge-bronze {
+    background: #FDE68A !important;
+    color: #92400E !important;
+}
+
+/* ============================================================
+   弹窗 (Modal)
+   ============================================================ */
+
+.crm-modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    animation: crmFadeIn 0.2s ease !important;
+}
+
+.crm-modal-overlay.hidden {
+    display: none !important;
+}
+
+.crm-modal-content {
+    background: white !important;
+    border-radius: 12px !important;
+    max-width: 560px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+    animation: crmSlideUp 0.3s ease !important;
+}
+
+.crm-modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 16px 24px !important;
+    border-bottom: 1px solid #E5E7EB !important;
+}
+
+.crm-modal-header h3 {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+}
+
+.crm-modal-close {
+    background: none !important;
+    border: none !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    color: #9CA3AF !important;
+    padding: 0 4px !important;
+    transition: color 0.2s !important;
+}
+
+.crm-modal-close:hover { color: #1F2937 !important; }
+
+.crm-modal-body {
+    padding: 24px !important;
+    overflow-y: auto !important;
+    max-height: calc(90vh - 120px) !important;
+}
+
+.crm-modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    padding: 16px 24px !important;
+    border-top: 1px solid #E5E7EB !important;
+}
+
+/* ============================================================
+   表单
+   ============================================================ */
+
+.crm-form-group {
+    margin-bottom: 16px !important;
+}
+
+.crm-form-group label {
+    display: block !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    margin-bottom: 4px !important;
+}
+
+.crm-form-group .crm-required {
+    color: #EF4444 !important;
+}
+
+.crm-form-control {
+    width: 100% !important;
+    padding: 10px 14px !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    background: white !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.2s !important;
+}
+
+.crm-form-control:focus {
+    outline: none !important;
+    border-color: #4F46E5 !important;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1) !important;
+}
+
+textarea.crm-form-control {
+    resize: vertical !important;
+    min-height: 60px !important;
+}
+
+/* ============================================================
+   分页
+   ============================================================ */
+
+.crm-pagination {
+    margin-top: 16px !important;
+}
+
+/* ============================================================
+   动画
+   ============================================================ */
+
+@keyframes crmFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes crmSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .crm-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .crm-search-row .crm-form-group {
+        min-width: 100% !important;
+    }
+
+    .crm-search-actions {
+        width: 100% !important;
+    }
+
+    .crm-search-actions .btn {
+        flex: 1 !important;
+    }
+
+    .crm-modal-content {
+        width: 95% !important;
+        margin: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .crm-stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    .crm-stat-card {
+        padding: 12px !important;
+    }
+    .crm-stat-value {
+        font-size: 18px !important;
+    }
+}
+</style>
