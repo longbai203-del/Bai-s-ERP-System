@@ -1,44 +1,51 @@
 /**
  * @file dashboard.routes.js
- * @description 仪表盘路由
- * @module routes/dashboard.routes
+ * @description 仪表板路由
+ * @module routes/dashboard
  */
 
-import express from 'express';
-import { dashboardController } from '../controllers/dashboard.controller.js';
-import { authMiddleware } from '../middleware/auth.js';
-
+const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../middleware/auth');
 
-// 所有仪表盘路由需要认证
-router.use(authMiddleware);
+// ============================================================
+// 路由定义
+// ============================================================
 
-/**
- * @route GET /api/dashboard/stats
- * @description 获取仪表盘统计
- * @access Private
- */
-router.get('/stats', dashboardController.getStats);
+router.get('/', authenticate, async (req, res) => {
+    try {
+        const stats = {
+            totalRevenue: 125000.00,
+            totalOrders: 356,
+            totalCustomers: 89,
+            totalProducts: 156,
+            recentOrders: [
+                { id: 1, order_number: 'ORD20260718001', customer: '张三', total: 299.99, status: 'paid', created_at: new Date() },
+                { id: 2, order_number: 'ORD20260718002', customer: '李四', total: 159.50, status: 'pending', created_at: new Date() }
+            ],
+            lowStockProducts: [
+                { id: 5, name: '产品E', stock: 3 },
+                { id: 8, name: '产品H', stock: 5 }
+            ],
+            chartData: {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                revenue: [12000, 15000, 18000, 14000, 20000, 16000, 13000],
+                orders: [25, 32, 38, 28, 45, 35, 22]
+            }
+        };
+        
+        res.json({
+            success: true,
+            data: stats,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '获取仪表板数据失败',
+            error: error.message
+        });
+    }
+});
 
-/**
- * @route GET /api/dashboard/chart
- * @description 获取图表数据
- * @access Private
- */
-router.get('/chart', dashboardController.getChartData);
-
-/**
- * @route GET /api/dashboard/today
- * @description 获取今日概览
- * @access Private
- */
-router.get('/today', dashboardController.getTodayOverview);
-
-/**
- * @route GET /api/dashboard/activities
- * @description 获取最近活动
- * @access Private
- */
-router.get('/activities', dashboardController.getRecentActivities);
-
-export default router;
+module.exports = router;

@@ -1,6 +1,9 @@
 /**
- * 基础Service - 核心业务逻辑
+ * @file BaseService.js
+ * @description 基础服务 - 通用业务逻辑
+ * @module services/BaseService
  */
+
 class BaseService {
     constructor(repository) {
         this.repository = repository;
@@ -14,7 +17,7 @@ class BaseService {
     }
 
     /**
-     * 根据ID获取
+     * 根据ID获取记录
      */
     async getById(id) {
         const result = await this.repository.findById(id);
