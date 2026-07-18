@@ -1,41 +1,20 @@
-﻿const express = require('express');
+﻿/**
+ * 分析路由
+ */
+const express = require('express');
 const router = express.Router();
+const analyticsController = require('../controllers/AnalyticsController');
+const { authenticate } = require('../middleware/auth');
 
-// 获取分析报表数据
-router.get('/reports', async (req, res) => {
-    try {
-        // TODO: 实现分析报表逻辑
-        res.json({
-            success: true,
-            data: {
-                totalOrders: 0,
-                totalRevenue: 0,
-                totalCustomers: 0,
-                growth: 0,
-                // 更多报表数据...
-            }
-        });
-    } catch (error) {
-        console.error('❌ Analytics reports error:', error);
-        res.status(500).json({ error: 'Failed to fetch analytics reports' });
-    }
-});
+// 所有分析路由需要认证
+router.use(authenticate);
 
-// 获取销售趋势
-router.get('/trends', async (req, res) => {
-    try {
-        // TODO: 实现销售趋势
-        res.json({
-            success: true,
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                values: [0, 0, 0, 0, 0, 0]
-            }
-        });
-    } catch (error) {
-        console.error('❌ Trends error:', error);
-        res.status(500).json({ error: 'Failed to fetch trends' });
-    }
-});
+// 分析查询
+router.get('/overview', analyticsController.getOverview.bind(analyticsController));
+router.get('/customers', analyticsController.getCustomerAnalytics.bind(analyticsController));
+router.get('/products', analyticsController.getProductAnalytics.bind(analyticsController));
+router.get('/alerts', analyticsController.getAlerts.bind(analyticsController));
+router.get('/performance', analyticsController.getPerformance.bind(analyticsController));
+router.get('/activity', analyticsController.getRecentActivity.bind(analyticsController));
 
 module.exports = router;

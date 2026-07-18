@@ -1,25 +1,26 @@
 ﻿/**
- * @file order.routes.js
- * @description 订单路由
- * @module routes/order.routes
+ * 订单路由
+ * 职责：路由定义 + 中间件挂载
  */
-
-import express from 'express';
-import { orderController } from '../controllers/order.controller.js';
-import { authMiddleware } from '../middleware/auth.js';
-
+const express = require('express');
 const router = express.Router();
+const controllers = require('../controllers');
+const { authenticate, authorize } = require('../middleware/auth');
 
-router.use(authMiddleware);
+const orderController = controllers.Order;
 
-router.get('/', orderController.getList);
-router.get('/stats', orderController.getStats);
-router.get('/export', orderController.exportData);
-router.get('/:id', orderController.getDetail);
-router.post('/', orderController.create);
-router.put('/:id', orderController.update);
-router.delete('/:id', orderController.delete);
-router.patch('/:id/status', orderController.updateStatus);
-router.post('/:id/cancel', orderController.cancel);
+// 所有订单路由需要认证
+router.use(authenticate);
 
-export default router;
+// 订单操作
+router.get('/', orderController.getAll.bind(orderController));
+router.get('/stats', orderController.getStats.bind(orderController));
+router.get('/:id', orderController.getById.bind(orderController));
+router.post('/', orderController.create.bind(orderController));
+router.put('/:id/status', orderController.updateStatus.bind(orderController));
+router.post('/:id/cancel', orderController.cancel.bind(orderController));
+
+// 客户订单查询
+router.get('/customer/:customerId', orderController.getByCustomer.bind(orderController));
+
+module.exports = router;

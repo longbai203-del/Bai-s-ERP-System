@@ -1,27 +1,29 @@
 ﻿/**
- * @file product.routes.js
- * @description 商品路由
- * @module routes/product.routes
+ * 产品路由
+ * 职责：路由定义 + 中间件挂载
  */
-
-import express from 'express';
-import { productController } from '../controllers/product.controller.js';
-import { authMiddleware } from '../middleware/auth.js';
-
+const express = require('express');
 const router = express.Router();
+const controllers = require('../controllers');
+const { authenticate, authorize } = require('../middleware/auth');
 
-router.use(authMiddleware);
+const productController = controllers.Product;
 
-router.get('/', productController.getList);
-router.get('/categories', productController.getCategories);
-router.get('/stats', productController.getStats);
-router.get('/export', productController.exportData);
-router.get('/search', productController.search);
-router.get('/:id', productController.getDetail);
-router.post('/', productController.create);
-router.post('/bulk', productController.bulkImport);
-router.put('/:id', productController.update);
-router.delete('/:id', productController.delete);
-router.patch('/:id/stock', productController.updateStock);
+// 公开路由（产品查询）
+router.get('/', productController.getAll.bind(productController));
+router.get('/search', productController.search.bind(productController));
+router.get('/low-stock', productController.getLowStock.bind(productController));
+router.get('/stats', productController.getStats.bind(productController));
+router.get('/:id', productController.getById.bind(productController));
 
-export default router;
+// 需要认证的路由
+router.use(authenticate);
+
+// 管理操作
+router.use(authorize('admin'));
+router.post('/', productController.create.bind(productController));
+router.put('/:id', productController.update.bind(productController));
+router.delete('/:id', productController.delete.bind(productController));
+router.put('/:id/stock', productController.updateStock.bind(productController));
+
+module.exports = router;
