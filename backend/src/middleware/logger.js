@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 日志中间件
  */
 const fs = require('fs');

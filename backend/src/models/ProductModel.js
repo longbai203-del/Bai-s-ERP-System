@@ -1,4 +1,4 @@
-﻿const BaseModel = require('./BaseModel');
+const BaseModel = require('./BaseModel');
 
 /**
  * 产品模型 - 纯数据定义

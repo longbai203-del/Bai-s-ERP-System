@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 基础Service - 核心业务逻辑
  */
 class BaseService {

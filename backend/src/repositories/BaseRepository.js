@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 基础Repository - 数据库CRUD操作
  */
 class BaseRepository {

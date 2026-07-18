@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 分析服务 - 完整的数据分析功能
  */
 class AnalyticsService {

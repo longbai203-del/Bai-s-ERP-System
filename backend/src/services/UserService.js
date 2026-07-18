@@ -1,4 +1,4 @@
-﻿const BaseService = require('./BaseService');
+const BaseService = require('./BaseService');
 const jwt = require('jsonwebtoken');
 const { RegisterDTO, LoginDTO, UpdateUserDTO } = require('../dtos');
 

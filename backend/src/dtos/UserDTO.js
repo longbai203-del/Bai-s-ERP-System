@@ -1,4 +1,4 @@
-﻿const BaseDTO = require('./BaseDTO');
+const BaseDTO = require('./BaseDTO');
 
 /**
  * 用户注册DTO

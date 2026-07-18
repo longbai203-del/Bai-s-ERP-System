@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file app.js
  * @description 主应用文件 - 集成所有中间件和路由
  * @module app

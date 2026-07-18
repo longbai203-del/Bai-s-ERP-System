@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 基础Controller - 统一响应处理
  */
 class BaseController {

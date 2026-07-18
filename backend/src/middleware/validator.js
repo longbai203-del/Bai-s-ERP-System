@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 请求验证中间件
  */
 const Joi = require('joi');

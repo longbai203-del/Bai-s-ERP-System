@@ -1,4 +1,4 @@
-﻿const BaseService = require('./BaseService');
+const BaseService = require('./BaseService');
 const { CreateProductDTO, UpdateStockDTO } = require('../dtos');
 
 class ProductService extends BaseService {

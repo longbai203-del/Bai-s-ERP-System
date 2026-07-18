@@ -1,4 +1,4 @@
-﻿const BaseDTO = require('./BaseDTO');
+const BaseDTO = require('./BaseDTO');
 
 /**
  * 创建订单DTO

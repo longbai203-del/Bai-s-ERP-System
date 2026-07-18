@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 认证和授权中间件
  */
 const jwt = require('jsonwebtoken');

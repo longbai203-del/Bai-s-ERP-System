@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 报表服务 - 完整的报表业务逻辑
  */
 const BaseService = require('./BaseService');

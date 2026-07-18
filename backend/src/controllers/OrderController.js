@@ -1,4 +1,4 @@
-﻿const BaseController = require('./BaseController');
+const BaseController = require('./BaseController');
 
 class OrderController extends BaseController {
     constructor(service) {

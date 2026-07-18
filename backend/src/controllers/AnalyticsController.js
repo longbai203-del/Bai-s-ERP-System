@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 分析控制器
  */
 const BaseController = require('./BaseController');

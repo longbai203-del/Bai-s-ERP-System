@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 分析路由
  */
 const express = require('express');

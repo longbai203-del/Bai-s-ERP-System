@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file useApi.js
  * @description API 组合式函数 - 增强完整版
  * @module composables/useApi
