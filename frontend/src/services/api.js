@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -11,7 +11,9 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
     config => {
-        const token = localStorage.getItem('accessToken');
+        // 尝试获取token（支持多种键名）
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || sessionStorage.getItem('token');
+        console.log('🔑 Token check:', token ? 'Found' : 'Not found');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
