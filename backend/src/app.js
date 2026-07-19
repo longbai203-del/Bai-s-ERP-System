@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file app.js
  * @description 主应用文件 - 集成所有中间件和路由
  * @module app
@@ -141,4 +141,17 @@ app.get('/health', (req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+
+// 根路径响应
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Bai\'s ERP API',
+        version: require('../package.json').version || '1.0.0',
+        docs: '/api-docs',
+        health: '/health',
+        api: '/api'
+    });
+});
+
 module.exports = app;
+
