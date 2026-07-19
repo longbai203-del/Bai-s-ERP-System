@@ -1,9 +1,10 @@
 ﻿/**
  * @file router/index.js
- * @description Vue Router 配置 - 薄入口层架构
+ * @description Vue Router 配置 - 使用布局
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
 // 自动加载所有模块路由
 const modules = import.meta.glob('../modules/*/routes.ts', { eager: true })
@@ -25,17 +26,27 @@ console.log(`✅ 已加载 ${moduleRoutes.length} 个模块路由`)
 
 const routes = [
   {
-    path: '/',
-    redirect: '/dashboard'
-  },
-  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
     meta: { requiresAuth: false }
   },
-  // 所有模块路由
-  ...moduleRoutes,
+  // 所有模块路由都使用 DefaultLayout 包裹
+  {
+    path: '/',
+    component: DefaultLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/dashboard'
+      },
+      ...moduleRoutes.map(route => ({
+        ...route,
+        path: route.path.replace('/', '')
+      }))
+    ]
+  },
   // 404
   {
     path: '/:pathMatch(.*)*',

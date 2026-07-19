@@ -92,6 +92,7 @@ const handleLogin = async () => {
     const result = await authStore.login(form.username, form.password)
     if (result.success) {
       ElMessage.success('登录成功')
+      // 跳转到仪表板
       router.push('/dashboard')
     } else {
       ElMessage.error(result.error || '登录失败')

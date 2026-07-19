@@ -14,23 +14,45 @@
         <span>仪表板</span>
       </el-menu-item>
 
-      <!-- POS -->
+      <!-- 收银台 -->
       <el-menu-item index="/pos">
-        <el-icon><CashRegister /></el-icon>
+        <el-icon><Money /></el-icon>
         <span>收银台</span>
       </el-menu-item>
 
-      <!-- 订单管理 -->
-      <el-menu-item index="/orders">
-        <el-icon><Document /></el-icon>
-        <span>订单管理</span>
-      </el-menu-item>
+      <!-- 订单管理 (带子菜单) -->
+      <el-sub-menu index="orders-group">
+        <template #title>
+          <el-icon><Document /></el-icon>
+          <span>订单管理</span>
+        </template>
+        <el-menu-item index="/orders">
+          <span>订单列表</span>
+        </el-menu-item>
+        <el-menu-item index="/orders/create">
+          <span>新建订单</span>
+        </el-menu-item>
+        <el-menu-item index="/orders/returns">
+          <span>退货管理</span>
+        </el-menu-item>
+      </el-sub-menu>
 
-      <!-- 产品管理 -->
-      <el-menu-item index="/products">
-        <el-icon><Box /></el-icon>
-        <span>产品管理</span>
-      </el-menu-item>
+      <!-- 产品管理 (带子菜单) -->
+      <el-sub-menu index="products-group">
+        <template #title>
+          <el-icon><Box /></el-icon>
+          <span>产品管理</span>
+        </template>
+        <el-menu-item index="/products">
+          <span>产品列表</span>
+        </el-menu-item>
+        <el-menu-item index="/products/categories">
+          <span>分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="/products/brands">
+          <span>品牌管理</span>
+        </el-menu-item>
+      </el-sub-menu>
 
       <!-- 客户管理 -->
       <el-menu-item index="/customers">
@@ -44,11 +66,19 @@
         <span>营销管理</span>
       </el-menu-item>
 
-      <!-- 库存管理 -->
-      <el-menu-item index="/inventory">
-        <el-icon><Inventory /></el-icon>
-        <span>库存管理</span>
-      </el-menu-item>
+      <!-- 库存管理 (带子菜单) -->
+      <el-sub-menu index="inventory-group">
+        <template #title>
+          <el-icon><Shop /></el-icon>
+          <span>库存管理</span>
+        </template>
+        <el-menu-item index="/inventory">
+          <span>库存列表</span>
+        </el-menu-item>
+        <el-menu-item index="/inventory/stock-adjust">
+          <span>库存调整</span>
+        </el-menu-item>
+      </el-sub-menu>
 
       <!-- 采购管理 -->
       <el-menu-item index="/purchase">
@@ -58,7 +88,7 @@
 
       <!-- 财务管理 -->
       <el-menu-item index="/finance">
-        <el-icon><Money /></el-icon>
+        <el-icon><Coin /></el-icon>
         <span>财务管理</span>
       </el-menu-item>
 
@@ -82,7 +112,7 @@
 
       <!-- 数据分析 -->
       <el-menu-item index="/analytics">
-        <el-icon><DataAnalysis /></el-icon>
+        <el-icon><TrendCharts /></el-icon>
         <span>数据分析</span>
       </el-menu-item>
 
@@ -104,9 +134,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  HomeFilled, CashRegister, Document, Box, User, Promotion,
-  Inventory, ShoppingCart, Money, UserFilled, Connection,
-  Setting, DataAnalysis, PieChart, Cpu
+  HomeFilled, Money, Document, Box, User, Promotion,
+  Shop, ShoppingCart, Coin, UserFilled, Connection,
+  Setting, TrendCharts, PieChart, Cpu
 } from '@element-plus/icons-vue'
 
 const isCollapsed = ref(false)
@@ -146,5 +176,13 @@ onUnmounted(() => {
 }
 .app-sidebar :deep(.el-menu-item.is-active) {
   background: rgba(129, 140, 248, 0.15) !important;
+}
+.app-sidebar :deep(.el-sub-menu .el-sub-menu__title) {
+  height: 44px;
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+.app-sidebar :deep(.el-sub-menu .el-sub-menu__title:hover) {
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 </style>

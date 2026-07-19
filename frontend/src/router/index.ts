@@ -1,10 +1,11 @@
 ﻿/**
  * @file router/index.ts
- * @description Vue Router 配置
+ * @description Vue Router 配置 - 使用布局
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
 // 自动导入所有模块路由
 const modules = import.meta.glob('../modules/*/routes.ts', { eager: true })
@@ -18,25 +19,37 @@ for (const path in modules) {
   }
 }
 
-// 定义路由
+console.log(`✅ 已加载 ${moduleRoutes.length} 个模块路由`)
+
 const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    redirect: '/dashboard'
-  },
   {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
     meta: { requiresAuth: false }
   },
-  // 模块路由
-  ...moduleRoutes,
+  // 所有模块路由都使用 DefaultLayout 包裹
+  {
+    path: '/',
+    component: DefaultLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/dashboard'
+      },
+      ...moduleRoutes.map(route => ({
+        ...route,
+        path: route.path.replace('/', '')
+      }))
+    ]
+  },
   // 404
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('../views/NotFound.vue')
+    component: () => import('../views/NotFound.vue'),
+    meta: { requiresAuth: false }
   }
 ]
 
