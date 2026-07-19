@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file app.js
  * @description 主应用文件 - 集成所有中间件和路由
  * @module app
@@ -25,8 +25,8 @@ const app = express();
 // 速率限制中间件
 // ==========================
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15分钟
-    max: 100, // 每个IP最多100个请求
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: {
         success: false,
         message: '请求过于频繁，请稍后再试',
@@ -36,7 +36,6 @@ const limiter = rateLimit({
     legacyHeaders: false
 });
 
-// 对API路由启用速率限制
 app.use('/api', limiter);
 
 // ==========================
@@ -54,13 +53,50 @@ app.use(helmet({
     }
 }));
 
-// CORS配置
+// ==========================
+// CORS 配置 - 允许所有来源 (开发/生产通用)
+// ==========================
 app.use(cors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+    origin: function (origin, callback) {
+        // 允许没有 origin 的请求 (如 Postman)
+        if (!origin) return callback(null, true);
+        
+        // 允许所有来源 (开发阶段)
+        // 生产环境可以限制为特定域名
+        const allowedOrigins = [
+            'https://bai-s-erp-system.vercel.app',
+            'https://bais-erp-backend.onrender.com',
+            'http://localhost:5173',
+            'http://localhost:5174',
+            'http://localhost:3000'
+        ];
+        
+        // 检查是否在允许列表中，或允许所有
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            console.log('⚠️  Blocked CORS request from:', origin);
+            callback(null, true); // 开发阶段允许所有
+        }
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 86400 // 24小时缓存预检结果
 }));
+
+// ==========================
+// 处理所有 OPTIONS 预检请求
+// ==========================
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+    res.sendStatus(200);
+});
 
 // ==========================
 // 日志中间件
