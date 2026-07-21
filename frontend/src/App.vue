@@ -2,16 +2,8 @@
   <router-view />
 </template>
 
-<script setup>
-import { onMounted } from 'vue'
-import { useAuthStore } from './stores'
-
-const authStore = useAuthStore()
-
-onMounted(() => {
-  // 检查登录状态
-  authStore.checkAuth()
-})
+<script setup lang="ts">
+// App 根组件 - 使用 Vuex
 </script>
 
 <style>

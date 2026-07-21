@@ -1,52 +1,20 @@
-﻿/**
- * @module hr/store
- * @description Hr 状态管理
- */
+﻿import { Module } from 'vuex'
+import { hrState } from './types'
+import { state } from './state'
+import { mutations } from './mutations'
+import { actions } from './actions'
+import { getters } from './getters'
 
-import { defineStore } from 'pinia'
-import { hrApi } from '../api'
+export const hrStore: Module<hrState, any> = {
+    namespaced: true,
+    state,
+    mutations,
+    actions,
+    getters
+}
 
-export const useHrStore = defineStore('hr', {
-  state: () => ({
-    list: [] as any[],
-    current: null as any,
-    loading: false,
-    total: 0
-  }),
-
-  actions: {
-    async fetchList(params?: any) {
-      this.loading = true
-      try {
-        const { data } = await hrApi.list(params)
-        this.list = data.data || []
-        this.total = data.pagination?.total || 0
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async fetchById(id: string) {
-      const { data } = await hrApi.detail(id)
-      this.current = data.data
-    },
-
-    async create(data: any) {
-      const { data: result } = await hrApi.create(data)
-      this.list.unshift(result.data)
-      return result
-    },
-
-    async update(id: string, data: any) {
-      const { data: result } = await hrApi.update(id, data)
-      const index = this.list.findIndex((item: any) => item.id === id)
-      if (index > -1) this.list[index] = result.data
-      return result
-    },
-
-    async delete(id: string) {
-      await hrApi.delete(id)
-      this.list = this.list.filter((item: any) => item.id !== id)
-    }
-  }
-})
+export * from './types'
+export { state } from './state'
+export { mutations } from './mutations'
+export { actions } from './actions'
+export { getters } from './getters'

@@ -1,10 +1,3 @@
-﻿// 文件路径: frontend/src/modules/analytics/index.ts
-// 功能: Analytics模块导出
-
-import routes from './routes'
-
-export { routes }
-
-export default {
-  routes,
-}
+﻿// analytics 模块入口
+export { default as routes } from './router'
+export { default as store } from './store'

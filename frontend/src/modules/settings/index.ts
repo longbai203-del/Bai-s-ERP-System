@@ -1,2 +1,3 @@
-﻿export { default as routes } from './routes'
+﻿// settings 模块入口
+export { default as routes } from './router'
 export { default as store } from './store'

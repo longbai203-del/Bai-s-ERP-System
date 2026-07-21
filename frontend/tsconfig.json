@@ -19,7 +19,14 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@services/*": ["./src/services/*"],
+      "@components/*": ["./src/components/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@views/*": ["./src/views/*"]
     },
 
     "types": ["vite/client"],

@@ -1,52 +1,20 @@
-﻿/**
- * @module orders/store
- * @description Orders 状态管理
- */
+﻿import { Module } from 'vuex'
+import { ordersState } from './types'
+import { state } from './state'
+import { mutations } from './mutations'
+import { actions } from './actions'
+import { getters } from './getters'
 
-import { defineStore } from 'pinia'
-import { ordersApi } from '../api'
+export const ordersStore: Module<ordersState, any> = {
+    namespaced: true,
+    state,
+    mutations,
+    actions,
+    getters
+}
 
-export const useOrdersStore = defineStore('orders', {
-  state: () => ({
-    list: [] as any[],
-    current: null as any,
-    loading: false,
-    total: 0
-  }),
-
-  actions: {
-    async fetchList(params?: any) {
-      this.loading = true
-      try {
-        const { data } = await ordersApi.list(params)
-        this.list = data.data || []
-        this.total = data.pagination?.total || 0
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async fetchById(id: string) {
-      const { data } = await ordersApi.detail(id)
-      this.current = data.data
-    },
-
-    async create(data: any) {
-      const { data: result } = await ordersApi.create(data)
-      this.list.unshift(result.data)
-      return result
-    },
-
-    async update(id: string, data: any) {
-      const { data: result } = await ordersApi.update(id, data)
-      const index = this.list.findIndex((item: any) => item.id === id)
-      if (index > -1) this.list[index] = result.data
-      return result
-    },
-
-    async delete(id: string) {
-      await ordersApi.delete(id)
-      this.list = this.list.filter((item: any) => item.id !== id)
-    }
-  }
-})
+export * from './types'
+export { state } from './state'
+export { mutations } from './mutations'
+export { actions } from './actions'
+export { getters } from './getters'
