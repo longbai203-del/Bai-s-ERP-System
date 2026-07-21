@@ -1,7 +1,2 @@
-﻿/**
- * @module hr
- * @description Hr 模块入口
- */
-
-export { default as routes } from './routes'
-export { useHrStore } from './store'
+﻿export { default as routes } from './routes'
+export { default as store } from './store'

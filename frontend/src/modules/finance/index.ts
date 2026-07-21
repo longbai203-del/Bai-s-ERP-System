@@ -1,7 +1,2 @@
-﻿/**
- * @module finance
- * @description Finance 模块入口
- */
-
-export { default as routes } from './routes'
-export { useFinanceStore } from './store'
+﻿export { default as routes } from './routes'
+export { default as store } from './store'

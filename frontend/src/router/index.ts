@@ -1,74 +1,85 @@
-﻿/**
- * @file router/index.ts
- * @description Vue Router 配置 - 使用布局
- */
+﻿// 文件路径: frontend/src/router/index.ts
+// 功能: 主路由配置 - 注册所有模块路由
 
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
-// 自动导入所有模块路由
-const modules = import.meta.glob('../modules/*/routes.ts', { eager: true })
-
-// 收集所有模块路由
-const moduleRoutes: RouteRecordRaw[] = []
-for (const path in modules) {
-  const module = modules[path] as { default: RouteRecordRaw[] }
-  if (module.default) {
-    moduleRoutes.push(...module.default)
-  }
-}
-
-console.log(`✅ 已加载 ${moduleRoutes.length} 个模块路由`)
+// 导入所有模块路由
+import dashboardRoutes from '@/modules/dashboard/routes'
+import ordersRoutes from '@/modules/orders/routes'
+import productsRoutes from '@/modules/products/routes'
+import customersRoutes from '@/modules/customers/routes'
+import posRoutes from '@/modules/pos/routes'
+import marketingRoutes from '@/modules/marketing/routes'
+import inventoryRoutes from '@/modules/inventory/routes'
+import purchaseRoutes from '@/modules/purchase/routes'
+import financeRoutes from '@/modules/finance/routes'
+import hrRoutes from '@/modules/hr/routes'
+import saasRoutes from '@/modules/saas/routes'
+import systemRoutes from '@/modules/system/routes'
+import analyticsRoutes from '@/modules/analytics/routes'
+import reportsRoutes from '@/modules/reports/routes'
+import aiRoutes from '@/modules/ai/routes'
+import productionRoutes from '@/modules/production/routes'
+import projectRoutes from '@/modules/project/routes'
+import approvalRoutes from '@/modules/approval/routes'
+import settingsRoutes from '@/modules/settings/routes'
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/',
+    redirect: '/dashboard/overview',
+  },
+  {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
-    meta: { requiresAuth: false }
+    component: () => import('@/views/Login.vue'),
+    meta: { title: '登录', hidden: true },
   },
-  // 所有模块路由都使用 DefaultLayout 包裹
   {
-    path: '/',
-    component: DefaultLayout,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        redirect: '/dashboard'
-      },
-      ...moduleRoutes.map(route => ({
-        ...route,
-        path: route.path.replace('/', '')
-      }))
-    ]
+    path: '/404',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { title: '404', hidden: true },
   },
-  // 404
+  // 注册所有模块路由
+  ...dashboardRoutes,
+  ...ordersRoutes,
+  ...productsRoutes,
+  ...customersRoutes,
+  ...posRoutes,
+  ...marketingRoutes,
+  ...inventoryRoutes,
+  ...purchaseRoutes,
+  ...financeRoutes,
+  ...hrRoutes,
+  ...saasRoutes,
+  ...systemRoutes,
+  ...analyticsRoutes,
+  ...reportsRoutes,
+  ...aiRoutes,
+  ...productionRoutes,
+  ...projectRoutes,
+  ...approvalRoutes,
+  ...settingsRoutes,
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('../views/NotFound.vue'),
-    meta: { requiresAuth: false }
-  }
+    redirect: '/404',
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  
-  if (to.meta.requiresAuth && !token) {
-    next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/dashboard')
-  } else {
-    next()
+  // 设置页面标题
+  if (to.meta?.title) {
+    document.title = \ - Bai's ERP
   }
+  next()
 })
 
 export default router

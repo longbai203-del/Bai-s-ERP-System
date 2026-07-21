@@ -1,7 +1,2 @@
-﻿/**
- * @module customers
- * @description Customers 模块入口
- */
-
-export { default as routes } from './routes'
-export { useCustomersStore } from './store'
+﻿export { default as routes } from './routes'
+export { default as store } from './store'
