@@ -18,3 +18,13 @@ export { state } from './state'
 export { mutations } from './mutations'
 export { actions } from './actions'
 export { getters } from './getters'
+
+// 导出 useDashboardStore (用于 Composition API)
+export const useDashboardStore = () => {
+    // 这里返回一个包含 store 方法的对象
+    return {
+        state,
+        ...actions,
+        ...getters
+    }
+}
