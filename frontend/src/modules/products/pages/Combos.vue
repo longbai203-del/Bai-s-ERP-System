@@ -1,233 +1,185 @@
 ﻿<template>
-  <div class="products-">
-    
-<div class="page-container" data-page="04-products-combos">
+  <div class="combo-container">
+    <!-- 页面头部 -->
     <div class="page-header">
-        <h1><i class="fas fa-object-group"></i> 组合产品</h1>
-        <div class="page-actions">
-            <button class="btn btn-primary" onclick="window.ComboModule.newCombo()">
-                <i class="fas fa-plus"></i> 新建组合
-            </button>
-            <button class="btn btn-outline" onclick="location.reload()">
-                <i class="fas fa-sync-alt"></i> 刷新
-            </button>
-        </div>
+      <div>
+        <h1>
+          <i class="fas fa-object-group" style="color:#4F46E5;"></i>
+          组合产品
+          <span style="font-size:13px;font-weight:400;color:#6B7280;margin-left:8px;">套餐管理</span>
+        </h1>
+        <div class="subtitle">管理商品套餐组合 · 打包销售提升客单价</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-success" @click="showCreateModal">
+          <i class="fas fa-plus"></i> 新建组合
+        </button>
+        <button class="btn btn-outline" @click="refreshData">
+          <i class="fas fa-sync"></i>
+        </button>
+      </div>
     </div>
-    <div class="page-content">
-        <div class="combo-container">
-            
-            <div class="combo-stats">
-                <div class="stat-card">
-                    <span class="stat-label">组合总数</span>
-                    <span class="stat-number" id="totalCombos">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">活跃组合</span>
-                    <span class="stat-number" id="activeCombos">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">节省最多</span>
-                    <span class="stat-number" id="bestSaving">¥0</span>
-                </div>
-            </div>
 
-            
-            <div class="combo-grid" id="comboGrid">
-                
-            </div>
-        </div>
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number primary">{{ stats.total }}</div>
+        <div class="stat-label">📊 组合总数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number success">{{ stats.active }}</div>
+        <div class="stat-label">✅ 上架</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number warning">{{ stats.bestSaving }}</div>
+        <div class="stat-label">💰 最大节省</div>
+      </div>
     </div>
-</div>
 
-<style>
-    .combo-container { max-width: 1200px; margin: 0 auto; }
-    
-    .combo-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-    .combo-stats .stat-card { background: white; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #e5e7eb; }
-    .combo-stats .stat-card .stat-label { display: block; font-size: 13px; color: #6B7280; }
-    .combo-stats .stat-card .stat-number { display: block; font-size: 28px; font-weight: 700; color: #1F2937; margin-top: 4px; }
-    .combo-stats .stat-card:nth-child(1) .stat-number { color: #4F46E5; }
-    .combo-stats .stat-card:nth-child(2) .stat-number { color: #10B981; }
-    .combo-stats .stat-card:nth-child(3) .stat-number { color: #F59E0B; }
-    
-    .combo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-    .combo-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb; transition: all 0.3s; }
-    .combo-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
-    .combo-card .combo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .combo-card .combo-name { font-size: 18px; font-weight: 600; }
-    .combo-card .combo-price { font-size: 20px; font-weight: 700; color: #4F46E5; }
-    .combo-card .combo-original { font-size: 14px; color: #9CA3AF; text-decoration: line-through; }
-    .combo-card .combo-items { margin: 8px 0; padding: 8px 0; border-top: 1px solid #F3F4F6; border-bottom: 1px solid #F3F4F6; }
-    .combo-card .combo-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-    .combo-card .combo-saving { color: #10B981; font-weight: 600; }
-    .combo-card .combo-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
-    
-    .empty-combos { grid-column: 1 / -1; text-align: center; padding: 60px 0; color: #9CA3AF; }
-    .empty-combos i { font-size: 48px; margin-bottom: 12px; }
-    
-    [data-theme="dark"] .combo-stats .stat-card,
-    [data-theme="dark"] .combo-card { background: #2C2C2E; border-color: #48484A; }
-    [data-theme="dark"] .combo-stats .stat-card .stat-number { color: #F5F5F7; }
-    [data-theme="dark"] .combo-card .combo-item { border-color: #3A3A3C; }
-    
-    @media (max-width: 768px) { .combo-stats { grid-template-columns: 1fr; } }
-</style>
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <input 
+        type="text" 
+        class="search-box" 
+        v-model="searchKeyword" 
+        placeholder="🔍 搜索组合名称..."
+        @keyup.enter="handleSearch"
+      />
+      <select class="filter-select" v-model="selectedStatus" @change="handleSearch">
+        <option value="">全部状态</option>
+        <option value="active">上架</option>
+        <option value="inactive">下架</option>
+      </select>
+      <button class="btn btn-primary" @click="handleSearch">
+        <i class="fas fa-search"></i> 搜索
+      </button>
+      <button class="btn btn-outline" @click="resetSearch">
+        <i class="fas fa-undo"></i> 重置
+      </button>
+    </div>
 
-<script>
-    (function() {
-        window.ComboModule = {
-            combos: [],
-            
-            init: function() {
-                this.loadCombos();
-                this.render();
-            },
-            
-            loadCombos: function() {
-                const saved = localStorage.getItem('combo_data');
-                if (saved) {
-                    try {
-                        this.combos = JSON.parse(saved);
-                    } catch (e) {
-                        this.combos = this.getMockCombos();
-                    }
-                } else {
-                    this.combos = this.getMockCombos();
-                    localStorage.setItem('combo_data', JSON.stringify(this.combos));
-                }
-            },
-            
-            getMockCombos: function() {
-                return [
-                    { id: 'CB-001', name: '洗车套餐A', price: 128, original: 168, status: 'active',
-                      items: ['标准洗车 ¥68', '内饰清洁 ¥100'], saving: 40 },
-                    { id: 'CB-002', name: '美容套餐', price: 388, original: 488, status: 'active',
-                      items: ['抛光打蜡 ¥388', '玻璃镀膜 ¥100'], saving: 100 },
-                    { id: 'CB-003', name: '保养套餐', price: 268, original: 348, status: 'inactive',
-                      items: ['发动机清洗 ¥188', '空调清洗 ¥160'], saving: 80 }
-                ];
-            },
-            
-            render: function() {
-                const grid = document.getElementById('comboGrid');
-                
-                if (this.combos.length === 0) {
-                    grid.innerHTML = `
-                        <div class="empty-combos">
-                            <i class="fas fa-object-group"></i>
-                            <p>暂无组合产品</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                grid.innerHTML = this.combos.map(c => `
-                    <div class="combo-card">
-                        <div class="combo-header">
-                            <span class="combo-name">${c.name}</span>
-                            <div>
-                                <span class="combo-price">¥${c.price}</span>
-                                <span class="combo-original">¥${c.original}</span>
-                            </div>
-                        </div>
-                        <div style="font-size:13px;color:#6B7280;margin-bottom:8px;">
-                            <span class="combo-saving">节省 ¥${c.saving || (c.original - c.price)}</span>
-                            <span class="badge ${c.status === 'active' ? 'badge-success' : 'badge-secondary'}" style="margin-left:8px;">
-                                ${c.status === 'active' ? '上架' : '下架'}
-                            </span>
-                        </div>
-                        <div class="combo-items">
-                            ${c.items.map(item => `
-                                <div class="combo-item">
-                                    <span>${item}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="combo-actions">
-                            <button class="btn-sm btn-primary" onclick="window.ComboModule.editCombo('${c.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-sm ${c.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="window.ComboModule.toggleCombo('${c.id}')">
-                                <i class="fas ${c.status === 'active' ? 'fa-pause' : 'fa-play'}"></i>
-                            </button>
-                            <button class="btn-sm btn-danger" onclick="window.ComboModule.deleteCombo('${c.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                this.updateStats();
-            },
-            
-            updateStats: function() {
-                document.getElementById('totalCombos').textContent = this.combos.length;
-                document.getElementById('activeCombos').textContent = this.combos.filter(c => c.status === 'active').length;
-                const maxSaving = this.combos.reduce((max, c) => Math.max(max, c.saving || c.original - c.price), 0);
-                document.getElementById('bestSaving').textContent = '¥' + maxSaving;
-            },
-            
-            newCombo: function() {
-                const name = prompt('输入组合名称：');
-                if (!name) return;
-                const price = parseFloat(prompt('输入组合价格：'));
-                if (isNaN(price) || price <= 0) return;
-                const original = parseFloat(prompt('输入原价（总价）：'));
-                if (isNaN(original) || original <= 0) return;
-                const items = prompt('输入包含商品（用逗号分隔）：') || '';
-                const combo = {
-                    id: 'CB-' + Date.now().toString().slice(-6),
-                    name: name,
-                    price: price,
-                    original: original,
-                    status: 'active',
-                    items: items.split(',').map(i => i.trim()).filter(i => i),
-                    saving: original - price
-                };
-                this.combos.push(combo);
-                localStorage.setItem('combo_data', JSON.stringify(this.combos));
-                this.render();
-                alert('组合已创建: ' + name);
-            },
-            
-            editCombo: function(id) {
-                const combo = this.combos.find(c => c.id === id);
-                if (combo) {
-                    const newName = prompt('修改组合名称：', combo.name);
-                    if (newName) {
-                        combo.name = newName;
-                        localStorage.setItem('combo_data', JSON.stringify(this.combos));
-                        this.render();
-                        alert('组合已更新');
-                    }
-                }
-            },
-            
-            toggleCombo: function(id) {
-                const combo = this.combos.find(c => c.id === id);
-                if (combo) {
-                    combo.status = combo.status === 'active' ? 'inactive' : 'active';
-                    localStorage.setItem('combo_data', JSON.stringify(this.combos));
-                    this.render();
-                    alert('组合状态已切换');
-                }
-            },
-            
-            deleteCombo: function(id) {
-                if (confirm('确认删除该组合？')) {
-                    this.combos = this.combos.filter(c => c.id !== id);
-                    localStorage.setItem('combo_data', JSON.stringify(this.combos));
-                    this.render();
-                    alert('组合已删除');
-                }
-            }
-        };
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            window.ComboModule.init();
-        });
-    })();
-</script>
+    <!-- 组合网格 -->
+    <div class="combo-grid" v-if="filteredCombos.length > 0">
+      <div class="combo-card" v-for="combo in paginatedCombos" :key="combo.id">
+        <div class="combo-header">
+          <div>
+            <span class="combo-name">{{ combo.name }}</span>
+            <span class="badge" :class="combo.status === 'active' ? 'badge-success' : 'badge-danger'">
+              {{ combo.status === 'active' ? '上架' : '下架' }}
+            </span>
+          </div>
+          <div>
+            <span class="combo-price">¥{{ formatPrice(combo.price) }}</span>
+            <span class="combo-original">¥{{ formatPrice(combo.original) }}</span>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:8px;">
+          <span class="combo-saving">节省 ¥{{ combo.saving || (combo.original - combo.price) }}</span>
+        </div>
+        <div class="combo-items">
+          <div class="combo-item" v-for="(item, index) in combo.items" :key="index">
+            <span>{{ item }}</span>
+          </div>
+        </div>
+        <div class="combo-actions">
+          <button class="btn-icon btn-icon-primary" @click="editCombo(combo.id)" title="编辑">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button 
+            class="btn-icon" 
+            :class="combo.status === 'active' ? 'btn-icon-warning' : 'btn-icon-success'"
+            @click="toggleCombo(combo.id)"
+            :title="combo.status === 'active' ? '下架' : '上架'"
+          >
+            <i class="fas" :class="combo.status === 'active' ? 'fa-pause' : 'fa-play'"></i>
+          </button>
+          <button class="btn-icon btn-icon-danger" @click="deleteCombo(combo.id)" title="删除">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div v-else class="empty-state">
+      <i class="fas fa-object-group"></i>
+      <p>暂无组合产品</p>
+      <span class="hint">点击「新建组合」创建</span>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination" v-if="filteredCombos.length > 0">
+      <span class="info">共 {{ filteredCombos.length }} 条，第 {{ currentPage }}/{{ totalPages }} 页</span>
+      <div class="btn-group">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button 
+          v-for="page in pageNumbers" 
+          :key="page"
+          :class="{ active: page === currentPage }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 组合编辑模态框 -->
+    <div class="modal-overlay" :class="{ active: showModal }">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ editingId ? '编辑组合' : '新建组合' }}</h3>
+          <button class="modal-close" @click="closeModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveCombo" autocomplete="off">
+            <div class="form-group">
+              <label>组合名称 <span class="required">*</span></label>
+              <input type="text" v-model="form.name" placeholder="如: 洗车套餐A" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>组合价格 <span class="required">*</span></label>
+                <input type="number" v-model.number="form.price" placeholder="0.00" step="0.01" min="0" required>
+              </div>
+              <div class="form-group">
+                <label>原价（总价） <span class="required">*</span></label>
+                <input type="number" v-model.number="form.original" placeholder="0.00" step="0.01" min="0" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>包含商品 <span class="required">*</span></label>
+              <div class="items-editor">
+                <div class="item-row" v-for="(item, index) in form.items" :key="index">
+                  <input type="text" v-model="form.items[index]" placeholder="商品名称" style="flex:1;">
+                  <button type="button" class="btn-icon btn-icon-danger" @click="removeItem(index)" title="移除">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" @click="addItem">
+                  <i class="fas fa-plus"></i> 添加商品
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <select v-model="form.status">
+                <option value="active">上架</option>
+                <option value="inactive">下架</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeModal">取消</button>
+          <button class="btn btn-primary" @click="saveCombo">
+            <i class="fas fa-save"></i> 保存
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -235,530 +187,901 @@
 export default {
   name: 'Combos',
   data() {
-    return {}
+    return {
+      combos: [],
+      filteredCombos: [],
+      loading: false,
+      currentPage: 1,
+      pageSize: 6,
+      searchKeyword: '',
+      selectedStatus: '',
+      showModal: false,
+      editingId: null,
+      form: {
+        name: '',
+        price: 0,
+        original: 0,
+        items: [''],
+        status: 'active'
+      }
+    }
+  },
+  computed: {
+    stats() {
+      const total = this.combos.length
+      const active = this.combos.filter(c => c.status === 'active').length
+      const bestSaving = this.combos.reduce((max, c) => {
+        const saving = c.saving || (c.original - c.price)
+        return Math.max(max, saving)
+      }, 0)
+      return { total, active, bestSaving: '¥' + bestSaving.toFixed(2) }
+    },
+    totalPages() {
+      return Math.ceil(this.filteredCombos.length / this.pageSize) || 1
+    },
+    paginatedCombos() {
+      const start = (this.currentPage - 1) * this.pageSize
+      const end = start + this.pageSize
+      return this.filteredCombos.slice(start, end)
+    },
+    pageNumbers() {
+      const pages = []
+      const total = this.totalPages
+      const current = this.currentPage
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+      } else {
+        pages.push(1)
+        if (current > 3) pages.push('...')
+        for (let i = Math.max(2, current - 2); i <= Math.min(total - 1, current + 2); i++) {
+          pages.push(i)
+        }
+        if (current < total - 2) pages.push('...')
+        pages.push(total)
+      }
+      return pages
+    }
   },
   mounted() {
-    // 从原 JS 迁移的初始化逻辑
-    /**
- * @file combos.js
- * @module combos
- * @description 组合产品管理 - 套餐组合的创建和管理
- * 
- * @example
- * import { init } from './combos.js';
- * await init();
- * 
- * @author Carwash Pro Team
- * @version 1.0.0
- */
-
-//  (已注释);
-import { showToast } from '../js/core/init.js';
-
-/**
- * @typedef {Object} ComboItem
- * @property {string} productId - 商品ID
- * @property {string} productName - 商品名称
- * @property {number} qty - 数量
- * @property {number} price - 单价
- */
-
-/**
- * @typedef {Object} Combo
- * @property {string} id - 组合ID
- * @property {string} name - 组合名称
- * @property {string} [description] - 组合描述
- * @property {ComboItem[]} items - 组合商品列表
- * @property {number} totalPrice - 原价合计
- * @property {number} comboPrice - 组合价格
- * @property {number} discount - 折扣金额
- * @property {string} status - 状态 (active/inactive)
- * @property {string} createdAt - 创建时间
- * @property {string} updatedAt - 更新时间
- */
-
-/** @type {{combos: Combo[], searchQuery: string, statusFilter: string}} 状态 */
-const state = {
-    combos: [],
-    searchQuery: '',
-    statusFilter: 'all'
-};
-
-/**
- * @private
- * @param {number} amount - 金额
- * @returns {string} 格式化后的货币字符串
- */
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return '0.00';
-    return amount.toFixed(2);
-}
-
-/**
- * @private
- * @param {string} date - 日期字符串
- * @returns {string} 格式化后的日期
- */
-function formatDate(date) {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-/**
- * @private
- * @returns {Combo[]} 模拟组合数据
- */
-function getMockCombos() {
-    return [
-        {
-            id: 'COMBO001',
-            name: '标准洗车套餐',
-            description: '标准洗车 + 内饰吸尘',
-            items: [
-                { productId: 'P001', productName: '标准洗车', qty: 1, price: 68 },
-                { productId: 'P005', productName: '内饰清洗', qty: 1, price: 328 }
-            ],
-            totalPrice: 396,
-            comboPrice: 298,
-            discount: 98,
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        },
-        {
-            id: 'COMBO002',
-            name: '精致养护套餐',
-            description: '精致洗车 + 抛光打蜡',
-            items: [
-                { productId: 'P002', productName: '精致洗车', qty: 1, price: 128 },
-                { productId: 'P004', productName: '抛光打蜡', qty: 1, price: 388 }
-            ],
-            totalPrice: 516,
-            comboPrice: 398,
-            discount: 118,
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        },
-        {
-            id: 'COMBO003',
-            name: '深度清洁套餐',
-            description: '深度清洁 + 发动机清洗',
-            items: [
-                { productId: 'P003', productName: '深度清洁', qty: 1, price: 268 },
-                { productId: 'P006', productName: '发动机清洗', qty: 1, price: 188 }
-            ],
-            totalPrice: 456,
-            comboPrice: 358,
-            discount: 98,
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        }
-    ];
-}
-
-/**
- * @private
- * @description 加载组合数据
- */
-function loadCombos() {
-    try {
-        const saved = localStorage.getItem('combo_data');
-        if (saved) {
-            state.combos = JSON.parse(saved);
-        } else {
-            state.combos = getMockCombos();
-            localStorage.setItem('combo_data', JSON.stringify(state.combos));
-        }
-    } catch (e) {
-        console.warn('加载组合数据失败:', e);
-        state.combos = getMockCombos();
-    }
-    renderCombos();
-    updateStats();
-}
-
-/**
- * @private
- * @description 保存组合数据
- */
-function saveCombos() {
-    try {
-        localStorage.setItem('combo_data', JSON.stringify(state.combos));
-    } catch (e) {
-        console.warn('保存组合数据失败:', e);
-    }
-}
-
-/**
- * @private
- * @description 渲染组合列表
- */
-function renderCombos() {
-    const container = document.getElementById('comboListBody');
-    if (!container) return;
-    
-    let filtered = state.combos;
-    
-    if (state.searchQuery) {
-        const query = state.searchQuery.toLowerCase();
-        filtered = filtered.filter(c => 
-            c.name.toLowerCase().includes(query) ||
-            (c.description && c.description.toLowerCase().includes(query))
-        );
-    }
-    
-    if (state.statusFilter !== 'all') {
-        filtered = filtered.filter(c => c.status === state.statusFilter);
-    }
-    
-    if (filtered.length === 0) {
-        container.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center;padding:40px;color:#9CA3AF;">
-                    <i class="fas fa-object-group" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-                    暂无组合数据
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    container.innerHTML = filtered.map(combo => `
-        <tr style="border-bottom:1px solid #F3F4F6;transition:background 0.2s;"
-            onmouseover="this.style.background='#F9FAFB'"
-            onmouseout="this.style.background=''">
-            <td style="padding:12px;font-weight:500;">${combo.name}</td>
-            <td style="padding:12px;color:#6B7280;font-size:13px;">${combo.description || '-'}</td>
-            <td style="padding:12px;font-size:13px;">
-                ${combo.items.map(item => `${item.productName} ×${item.qty}`).join(' + ')}
-            </td>
-            <td style="padding:12px;text-align:right;font-size:13px;color:#6B7280;text-decoration:line-through;">
-                ¥${formatCurrency(combo.totalPrice)}
-            </td>
-            <td style="padding:12px;text-align:right;font-weight:600;color:#4F46E5;">
-                ¥${formatCurrency(combo.comboPrice)}
-                <span style="font-size:11px;color:#10B981;display:block;">省 ¥${formatCurrency(combo.discount)}</span>
-            </td>
-            <td style="padding:12px;text-align:center;">
-                <button class="btn btn-sm btn-outline" onclick="window.CombosModule.editCombo('${combo.id}')" title="编辑">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="window.CombosModule.deleteCombo('${combo.id}')" title="删除">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-/**
- * @private
- * @description 更新统计数据
- */
-function updateStats() {
-    const total = state.combos.length;
-    const active = state.combos.filter(c => c.status === 'active').length;
-    const inactive = state.combos.filter(c => c.status === 'inactive').length;
-    const avgDiscount = total > 0 ? state.combos.reduce((sum, c) => sum + c.discount, 0) / total : 0;
-    
-    const elements = {
-        'statTotal': total,
-        'statActive': active,
-        'statInactive': inactive,
-        'statAvgDiscount': '¥' + formatCurrency(avgDiscount)
-    };
-    
-    Object.keys(elements).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = elements[id];
-    });
-}
-
-/**
- * @private
- * @param {string} id - 组合ID
- * @description 编辑组合
- */
-function editCombo(id) {
-    const combo = state.combos.find(c => c.id === id);
-    if (!combo) {
-        showToast('组合不存在', 'error');
-        return;
-    }
-    
-    const name = prompt('组合名称：', combo.name);
-    if (name === null) return;
-    if (!name.trim()) {
-        showToast('组合名称不能为空', 'warning');
-        return;
-    }
-    
-    const description = prompt('组合描述：', combo.description || '') || '';
-    const comboPrice = parseFloat(prompt('组合价格：', combo.comboPrice));
-    if (isNaN(comboPrice) || comboPrice < 0) {
-        showToast('请输入有效价格', 'error');
-        return;
-    }
-    
-    const status = confirm('是否启用？\n点击"确定"启用，点击"取消"禁用');
-    
-    combo.name = name.trim();
-    combo.description = description;
-    combo.comboPrice = comboPrice;
-    combo.discount = combo.totalPrice - comboPrice;
-    combo.status = status ? 'active' : 'inactive';
-    combo.updatedAt = new Date().toISOString();
-    
-    saveCombos();
-    renderCombos();
-    updateStats();
-    showToast('组合已更新: ' + combo.name, 'success');
-}
-
-/**
- * @private
- * @param {string} id - 组合ID
- * @description 删除组合
- */
-function deleteCombo(id) {
-    const combo = state.combos.find(c => c.id === id);
-    if (!combo) {
-        showToast('组合不存在', 'error');
-        return;
-    }
-    
-    if (!confirm(`确认删除组合 "${combo.name}"？`)) return;
-    
-    state.combos = state.combos.filter(c => c.id !== id);
-    saveCombos();
-    renderCombos();
-    updateStats();
-    showToast('组合已删除: ' + combo.name, 'success');
-}
-
-/**
- * @private
- * @description 新增组合
- */
-function newCombo() {
-    const name = prompt('组合名称：');
-    if (name === null) return;
-    if (!name.trim()) {
-        showToast('组合名称不能为空', 'warning');
-        return;
-    }
-    
-    const description = prompt('组合描述：') || '';
-    
-    // 添加商品
-    const items = [];
-    let totalPrice = 0;
-    
-    while (true) {
-        const productName = prompt('商品名称（输入空结束）：');
-        if (!productName) break;
-        const price = parseFloat(prompt('商品价格：', '68'));
-        if (isNaN(price) || price < 0) {
-            showToast('请输入有效价格', 'warning');
-            continue;
-        }
-        const qty = parseInt(prompt('数量：', '1'));
-        if (isNaN(qty) || qty < 1) {
-            showToast('请输入有效数量', 'warning');
-            continue;
-        }
-        
-        items.push({
-            productId: 'P' + String(Math.floor(Math.random() * 999) + 1).padStart(3, '0'),
-            productName: productName,
-            qty: qty,
-            price: price
-        });
-        totalPrice += price * qty;
-    }
-    
-    if (items.length === 0) {
-        showToast('至少需要一个商品', 'error');
-        return;
-    }
-    
-    const comboPrice = parseFloat(prompt('组合价格：', totalPrice * 0.8));
-    if (isNaN(comboPrice) || comboPrice < 0) {
-        showToast('请输入有效组合价格', 'error');
-        return;
-    }
-    
-    const status = confirm('是否启用？\n点击"确定"启用，点击"取消"禁用');
-    
-    const combo = {
-        id: 'COMBO' + String(state.combos.length + 1).padStart(3, '0'),
-        name: name.trim(),
-        description: description,
-        items: items,
-        totalPrice: totalPrice,
-        comboPrice: comboPrice,
-        discount: totalPrice - comboPrice,
-        status: status ? 'active' : 'inactive',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    
-    state.combos.push(combo);
-    saveCombos();
-    renderCombos();
-    updateStats();
-    showToast('组合已创建: ' + combo.name, 'success');
-}
-
-/**
- * @private
- * @description 搜索组合
- */
-function searchCombos(query) {
-    state.searchQuery = query;
-    renderCombos();
-}
-
-/**
- * @private
- * @description 应用筛选
- */
-function applyFilters() {
-    const statusFilter = document.getElementById('statusFilter');
-    state.statusFilter = statusFilter ? statusFilter.value : 'all';
-    renderCombos();
-}
-
-/**
- * @private
- * @description 重置筛选
- */
-function resetFilters() {
-    const statusFilter = document.getElementById('statusFilter');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (statusFilter) statusFilter.value = 'all';
-    if (searchInput) searchInput.value = '';
-    
-    state.statusFilter = 'all';
-    state.searchQuery = '';
-    renderCombos();
-}
-
-/**
- * @private
- * @description 刷新数据
- */
-function refresh() {
-    loadCombos();
-    showToast('数据已刷新', 'success');
-}
-
-/**
- * @private
- * @description 绑定事件
- */
-function bindEvents() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        let timeoutId;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                searchCombos(this.value);
-            }, 300);
-        });
-    }
-    
-    const statusFilter = document.getElementById('statusFilter');
-    if (statusFilter) {
-        statusFilter.addEventListener('change', applyFilters);
-    }
-    
-    const resetBtn = document.getElementById('resetFilters');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetFilters);
-    }
-    
-    const refreshBtn = document.getElementById('refreshCombos');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', refresh);
-    }
-    
-    const newBtn = document.getElementById('newCombo');
-    if (newBtn) {
-        newBtn.addEventListener('click', newCombo);
-    }
-}
-
-/**
- * @public
- * @param {Object} options - 初始化选项
- * @returns {Promise<void>}
- */
-export async function init(options) {
-    console.log('📦 组合产品 初始化...');
-    
-    if (options?.data) {
-        state.combos = options.data;
-        saveCombos();
-    } else {
-        loadCombos();
-    }
-    
-    updateStats();
-    bindEvents();
-    
-    window.CombosModule = {
-        state,
-        loadCombos,
-        renderCombos,
-        updateStats,
-        editCombo,
-        deleteCombo,
-        newCombo,
-        searchCombos,
-        applyFilters,
-        resetFilters,
-        refresh,
-        saveCombos
-    };
-    
-    console.log('✅ 组合产品 初始化完成');
-}
-
-// 自动初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-
-export default {
-    init,
-    loadCombos,
-    editCombo,
-    deleteCombo,
-    newCombo,
-    searchCombos,
-    refresh,
-    saveCombos
-};
+    this.loadCombos()
   },
-  methods: {}
+  methods: {
+    loadCombos() {
+      this.loading = true
+      try {
+        const saved = localStorage.getItem('combo_data')
+        if (saved) {
+          this.combos = JSON.parse(saved)
+        } else {
+          this.combos = this.getMockCombos()
+          localStorage.setItem('combo_data', JSON.stringify(this.combos))
+        }
+      } catch (e) {
+        this.combos = this.getMockCombos()
+      }
+      this.filteredCombos = [...this.combos]
+      this.loading = false
+    },
+    getMockCombos() {
+      return [
+        { 
+          id: 'CB-001', 
+          name: '洗车套餐A', 
+          price: 128, 
+          original: 168, 
+          status: 'active',
+          items: ['标准洗车 ¥68', '内饰清洁 ¥100'],
+          saving: 40 
+        },
+        { 
+          id: 'CB-002', 
+          name: '美容套餐', 
+          price: 388, 
+          original: 488, 
+          status: 'active',
+          items: ['抛光打蜡 ¥388', '玻璃镀膜 ¥100'],
+          saving: 100 
+        },
+        { 
+          id: 'CB-003', 
+          name: '保养套餐', 
+          price: 268, 
+          original: 348, 
+          status: 'inactive',
+          items: ['发动机清洗 ¥188', '空调清洗 ¥160'],
+          saving: 80 
+        },
+        { 
+          id: 'CB-004', 
+          name: 'VIP尊享套餐', 
+          price: 588, 
+          original: 788, 
+          status: 'active',
+          items: ['精致洗车 ¥128', '全车镀晶 ¥388', '内饰清洁 ¥272'],
+          saving: 200 
+        }
+      ]
+    },
+    saveCombos() {
+      try {
+        localStorage.setItem('combo_data', JSON.stringify(this.combos))
+      } catch (e) {}
+    },
+    formatPrice(price) {
+      return (price || 0).toFixed(2)
+    },
+    addItem() {
+      this.form.items.push('')
+    },
+    removeItem(index) {
+      if (this.form.items.length > 1) {
+        this.form.items.splice(index, 1)
+      } else {
+        alert('至少保留一个商品')
+      }
+    },
+    handleSearch() {
+      this.applyFilters()
+    },
+    resetSearch() {
+      this.searchKeyword = ''
+      this.selectedStatus = ''
+      this.applyFilters()
+    },
+    applyFilters() {
+      let filtered = [...this.combos]
+      if (this.searchKeyword) {
+        const keyword = this.searchKeyword.toLowerCase()
+        filtered = filtered.filter(c => 
+          c.name.toLowerCase().includes(keyword) ||
+          c.items.some(item => item.toLowerCase().includes(keyword))
+        )
+      }
+      if (this.selectedStatus) {
+        filtered = filtered.filter(c => c.status === this.selectedStatus)
+      }
+      this.filteredCombos = filtered
+      this.currentPage = 1
+    },
+    goToPage(page) {
+      if (page < 1 || page > this.totalPages) return
+      this.currentPage = page
+    },
+    showCreateModal() {
+      this.editingId = null
+      this.form = {
+        name: '',
+        price: 0,
+        original: 0,
+        items: [''],
+        status: 'active'
+      }
+      this.showModal = true
+    },
+    editCombo(id) {
+      const combo = this.combos.find(c => c.id === id)
+      if (!combo) return
+      this.editingId = id
+      this.form = { ...combo }
+      this.showModal = true
+    },
+    closeModal() {
+      this.showModal = false
+      this.editingId = null
+    },
+    saveCombo() {
+      if (!this.form.name) {
+        alert('请输入组合名称')
+        return
+      }
+      if (this.form.price < 0 || this.form.original < 0) {
+        alert('请输入有效的价格')
+        return
+      }
+      const validItems = this.form.items.filter(item => item.trim())
+      if (validItems.length === 0) {
+        alert('请至少添加一个商品')
+        return
+      }
+
+      const data = {
+        ...this.form,
+        items: validItems,
+        saving: this.form.original - this.form.price
+      }
+
+      if (this.editingId) {
+        const index = this.combos.findIndex(c => c.id === this.editingId)
+        if (index >= 0) {
+          this.combos[index] = { ...this.combos[index], ...data }
+        }
+        alert('✅ 组合已更新')
+      } else {
+        const newCombo = {
+          id: 'CB-' + Date.now().toString().slice(-6),
+          ...data
+        }
+        this.combos.push(newCombo)
+        alert('✅ 组合已创建')
+      }
+
+      this.saveCombos()
+      this.filteredCombos = [...this.combos]
+      this.closeModal()
+    },
+    toggleCombo(id) {
+      const combo = this.combos.find(c => c.id === id)
+      if (combo) {
+        combo.status = combo.status === 'active' ? 'inactive' : 'active'
+        this.saveCombos()
+        this.filteredCombos = [...this.combos]
+        alert(`✅ 组合 "${combo.name}" 已${combo.status === 'active' ? '上架' : '下架'}`)
+      }
+    },
+    deleteCombo(id) {
+      const combo = this.combos.find(c => c.id === id)
+      if (!combo) return
+      if (!confirm(`确认删除组合 "${combo.name}"？`)) return
+      this.combos = this.combos.filter(c => c.id !== id)
+      this.filteredCombos = [...this.combos]
+      this.saveCombos()
+      alert('🗑️ 组合已删除')
+    },
+    refreshData() {
+      this.loadCombos()
+      alert('✅ 数据已刷新')
+    }
+  }
 }
 </script>
 
 <style scoped>
+.combo-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-header .subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-success {
+  background: #10B981;
+  color: white;
+}
+.btn-success:hover { background: #059669; }
+
+.btn-outline {
+  background: white;
+  color: #1F2937;
+  border: 1px solid #D1D5DB;
+}
+.btn-outline:hover { background: #F9FAFB; }
+
+.btn-primary {
+  background: #4F46E5;
+  color: white;
+}
+.btn-primary:hover { background: #4338CA; }
+
+.btn-secondary {
+  background: #F3F4F6;
+  color: #374151;
+}
+.btn-secondary:hover { background: #E5E7EB; }
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.stat-card .stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.stat-card .stat-number.primary { color: #4F46E5; }
+.stat-card .stat-number.success { color: #10B981; }
+.stat-card .stat-number.warning { color: #F59E0B; }
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+.toolbar .search-box {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 14px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.toolbar .search-box:focus {
+  border-color: #4F46E5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.toolbar .filter-select {
+  padding: 8px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.combo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.combo-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #E5E7EB;
+  transition: all 0.3s ease;
+}
+
+.combo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #4F46E5;
+}
+
+.combo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.combo-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.combo-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4F46E5;
+}
+
+.combo-original {
+  font-size: 14px;
+  color: #9CA3AF;
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+
+.combo-saving {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.combo-items {
+  margin: 8px 0;
+  padding: 8px 0;
+  border-top: 1px solid #F3F4F6;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.combo-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.combo-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.badge-success { background: #D1FAE5; color: #065F46; }
+.badge-danger { background: #FEE2E2; color: #991B1B; }
+
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #D1D5DB;
+  background: white;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.05);
+}
+
+.btn-icon-primary { color: #4F46E5; border-color: #4F46E5; }
+.btn-icon-primary:hover { background: #EEF2FF; }
+
+.btn-icon-success { color: #10B981; border-color: #10B981; }
+.btn-icon-success:hover { background: #D1FAE5; }
+
+.btn-icon-warning { color: #F59E0B; border-color: #F59E0B; }
+.btn-icon-warning:hover { background: #FEF3C7; }
+
+.btn-icon-danger { color: #EF4444; border-color: #EF4444; }
+.btn-icon-danger:hover { background: #FEE2E2; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9CA3AF;
+  grid-column: 1 / -1;
+}
+
+.empty-state i {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+  color: #D1D5DB;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+.empty-state .hint {
+  font-size: 13px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination .info {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.pagination .btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination .btn-group button {
+  padding: 4px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.pagination .btn-group button:hover:not(:disabled) {
+  background: #F3F4F6;
+}
+
+.pagination .btn-group button.active {
+  background: #4F46E5;
+  color: white;
+  border-color: #4F46E5;
+}
+
+.pagination .btn-group button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(30px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #9CA3AF;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #374151;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4B5563;
+  margin-bottom: 4px;
+}
+
+.form-group .required {
+  color: #EF4444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #4F46E5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.items-editor {
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  padding: 8px;
+  background: #F9FAFB;
+}
+
+.item-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.item-row:last-child {
+  margin-bottom: 0;
+}
+
+.item-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+}
+
+.item-row input:focus {
+  border-color: #4F46E5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* 暗色模式 */
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .toolbar,
+[data-theme="dark"] .combo-card,
+[data-theme="dark"] .pagination,
+[data-theme="dark"] .modal-content {
+  background: #2C2C2E;
+  border-color: #48484A;
+}
+
+[data-theme="dark"] .stat-card .stat-number,
+[data-theme="dark"] .page-header h1 {
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .combo-item {
+  border-color: #3A3A3C;
+}
+
+[data-theme="dark"] .combo-items {
+  border-color: #3A3A3C;
+}
+
+[data-theme="dark"] .combo-original {
+  color: #6B7280;
+}
+
+[data-theme="dark"] .toolbar .search-box,
+[data-theme="dark"] .toolbar .filter-select,
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .items-editor,
+[data-theme="dark"] .item-row input {
+  background: #3A3A3C;
+  border-color: #48484A;
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .items-editor {
+  background: #3A3A3C;
+}
+
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: #48484A;
+}
+
+[data-theme="dark"] .pagination .btn-group button {
+  background: #3A3A3C;
+  border-color: #48484A;
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .pagination .btn-group button.active {
+  background: #4F46E5;
+  color: white;
+  border-color: #4F46E5;
+}
+
+[data-theme="dark"] .btn-outline {
+  background: #2C2C2E;
+  border-color: #48484A;
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .btn-outline:hover {
+  background: #3A3A3C;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: #3A3A3C;
+  color: #F5F5F7;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: #4A4A4C;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .toolbar .search-box {
+    width: 100%;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .header-actions button {
+    flex: 1;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .combo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .combo-container {
+    padding: 12px;
+  }
+  
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .modal-content {
+    width: 98%;
+    margin: 8px;
+  }
+  
+  .combo-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .pagination .btn-group {
+    justify-content: center;
+  }
+}
 </style>
-
