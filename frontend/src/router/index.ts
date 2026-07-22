@@ -1,44 +1,49 @@
 ﻿import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 
 // 自动导入所有模块路由
 const modules = import.meta.glob('../modules/*/router/index.ts', { eager: true })
 
+// 收集所有模块路由
+const moduleRoutes: RouteRecordRaw[] = []
+Object.values(modules).forEach((module: any) => {
+    if (module.default && Array.isArray(module.default)) {
+        moduleRoutes.push(...module.default)
+    }
+})
+
 const routes: RouteRecordRaw[] = [
-    {
-        path: '/',
-        redirect: '/dashboard'
-    },
     {
         path: '/login',
         name: 'Login',
-        component: () => import('@/views/Login.vue'),
+        component: () => import('@/modules/auth/pages/Login.vue'),
         meta: { requiresAuth: false }
     },
     {
-        path: '/404',
-        name: 'NotFound',
-        component: () => import('@/views/404.vue'),
-        meta: { requiresAuth: false }
+        path: '/',
+        component: DefaultLayout,
+        meta: { requiresAuth: true },
+        children: [
+            {
+                path: '',
+                redirect: '/dashboard'
+            },
+            ...moduleRoutes
+        ]
     },
     {
         path: '/:pathMatch(.*)*',
-        redirect: '/404'
+        name: 'NotFound',
+        component: () => import('@/modules/auth/pages/NotFound.vue'),
+        meta: { requiresAuth: false }
     }
 ]
-
-// 加载模块路由
-Object.values(modules).forEach((module: any) => {
-    if (module.default && Array.isArray(module.default)) {
-        routes.push(...module.default)
-    }
-})
 
 const router = createRouter({
     history: createWebHistory(),
     routes
 })
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token')
     const requiresAuth = to.meta.requiresAuth !== false

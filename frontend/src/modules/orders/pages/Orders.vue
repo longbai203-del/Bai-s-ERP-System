@@ -91,7 +91,7 @@ export default {
     // 从原 JS 迁移的初始化逻辑
     // modules/03-orders/list/orders.js
 import { getOrders, updateOrderStatus, deleteOrder } from '../../js/services/orders.js';
-import { formatCurrency, formatDate, formatDateTime, showToast } from '../../../../js/utils.js';
+//  (已注释);
 
 const state = {
     orders: [],
@@ -396,3 +396,4 @@ if (document.readyState === 'loading') {
 <style scoped>
 
 </style>
+

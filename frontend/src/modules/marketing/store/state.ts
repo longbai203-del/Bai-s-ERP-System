@@ -1,10 +1,9 @@
-﻿import { marketingState } from './types'
+﻿import { MarketingState } from './types'
 
-export const state = (): marketingState => ({
+export const state = (): MarketingState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

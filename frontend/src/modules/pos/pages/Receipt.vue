@@ -211,7 +211,7 @@ export default {
   },
   mounted() {
     // 从原 JS 迁移的初始化逻辑
-    export const meta = { name: '小票管理', path: '/pos/receipt', icon: 'fa-receipt', permission: 'pos:receipt' };
+    //  (已注释)
 export async function render(container) {
     container.innerHTML = `
         <div class="receipt-container">
@@ -242,3 +242,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

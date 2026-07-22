@@ -27,24 +27,20 @@ const goHome = () => {
   min-height: 100vh;
   background: #f5f7fa;
 }
-
 .not-found-content {
   text-align: center;
 }
-
 .not-found-content h1 {
   font-size: 120px;
   color: #667eea;
   margin: 0;
   font-weight: 700;
 }
-
 .not-found-content h2 {
   font-size: 36px;
   color: #333;
   margin: 20px 0;
 }
-
 .not-found-content p {
   color: #999;
   margin-bottom: 30px;

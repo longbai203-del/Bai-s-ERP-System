@@ -284,16 +284,11 @@ export default {
  * @module modules/pos/submodules/cash-register
  */
 
-import { apiClient } from '@services/api-client.js';
-import { formatCurrency } from '@utils/helpers.js';
+//  (已注释);
+//  (已注释);
 import { modal } from '@components/modal.js';
 
-export const meta = {
-    name: '收银台',
-    path: '/pos/cash-register',
-    icon: 'fa-cash-register',
-    permission: 'pos:cash-register'
-};
+//  (已注释)
 
 export async function render(container) {
     container.innerHTML = `
@@ -443,3 +438,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

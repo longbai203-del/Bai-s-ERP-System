@@ -1,2 +1,2 @@
-﻿// marketing 模块组件导出
-export { default as marketingFilter } from './marketingFilter.vue'
+﻿// marketing 组件导出
+// 在此统一导出组件

@@ -1,47 +1,28 @@
-﻿// dashboard 模块 API 服务
-import http from '../http'
+﻿// dashboard API 服务
+import http from '@/api/http'
 
-export interface dashboardData {
+export interface DashboardData {
     id: number
     name: string
-    // 根据业务需求添加更多字段
+    // 根据业务扩展
 }
 
-export interface dashboardListParams {
-    page?: number
-    pageSize?: number
-    keyword?: string
-    status?: string
-}
-
-export interface dashboardListResponse {
-    data: dashboardData[]
-    total: number
-    page: number
-    pageSize: number
-}
-
-// 获取列表
-export const getdashboardList = (params?: dashboardListParams) => {
+export const getDashboardList = (params?: any) => {
     return http.get('/dashboard', { params })
 }
 
-// 获取详情
-export const getdashboardDetail = (id: number) => {
-    return http.get(/ dashboard/\)
+export const getDashboardDetail = (id: number) => {
+    return http.get(/dashboard/\)
 }
 
-// 创建
-export const createdashboard = (data: any) => {
+export const createDashboard = (data: any) => {
     return http.post('/dashboard', data)
 }
 
-// 更新
-export const updatedashboard = (id: number, data: any) => {
-    return http.put(/ dashboard/\, data)
+export const updateDashboard = (id: number, data: any) => {
+    return http.put(/dashboard/\, data)
 }
 
-// 删除
-export const deletedashboard = (id: number) => {
-    return http.delete(/ dashboard/\)
+export const deleteDashboard = (id: number) => {
+    return http.delete(/dashboard/\)
 }

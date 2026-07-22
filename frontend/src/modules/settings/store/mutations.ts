@@ -1,8 +1,8 @@
 ﻿import { MutationTree } from 'vuex'
-import { settingsState } from './types'
+import { SettingsState } from './types'
 import { settingsMutations } from './types'
 
-export const mutations: MutationTree<settingsState> = {
+export const mutations: MutationTree<SettingsState> = {
     [settingsMutations.SET_LOADING](state, loading: boolean) {
         state.loading = loading
     },
@@ -11,9 +11,6 @@ export const mutations: MutationTree<settingsState> = {
     },
     [settingsMutations.SET_DATA](state, data: any[]) {
         state.data = data
-    },
-    [settingsMutations.SET_CURRENT_ITEM](state, item: any) {
-        state.currentItem = item
     },
     [settingsMutations.SET_TOTAL](state, total: number) {
         state.total = total
@@ -25,8 +22,7 @@ export const mutations: MutationTree<settingsState> = {
     [settingsMutations.RESET_STATE](state) {
         state.loading = false
         state.error = null
-        state.data = null
-        state.currentItem = null
+        state.data = []
         state.total = 0
         state.currentPage = 1
         state.pageSize = 10

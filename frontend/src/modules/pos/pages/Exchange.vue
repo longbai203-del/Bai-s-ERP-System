@@ -113,7 +113,7 @@ export default {
   },
   mounted() {
     // 从原 JS 迁移的初始化逻辑
-    export const meta = { name: '换货管理', path: '/pos/exchange', icon: 'fa-exchange-alt', permission: 'pos:exchange' };
+    //  (已注释)
 export async function render(container) {
     container.innerHTML = `
         <div class="exchange-container">
@@ -146,3 +146,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

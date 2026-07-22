@@ -1,10 +1,9 @@
-﻿import { customersState } from './types'
+﻿import { CustomersState } from './types'
 
-export const state = (): customersState => ({
+export const state = (): CustomersState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

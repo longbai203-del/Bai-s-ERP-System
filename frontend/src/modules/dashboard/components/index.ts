@@ -1,2 +1,2 @@
-﻿// dashboard 模块组件导出
-export { default as dashboardFilter } from './dashboardFilter.vue'
+﻿// dashboard 组件导出
+// 在此统一导出组件

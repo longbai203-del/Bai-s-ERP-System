@@ -1,47 +1,28 @@
-﻿// saas 模块 API 服务
-import http from '../http'
+﻿// saas API 服务
+import http from '@/api/http'
 
-export interface saasData {
+export interface SaasData {
     id: number
     name: string
-    // 根据业务需求添加更多字段
+    // 根据业务扩展
 }
 
-export interface saasListParams {
-    page?: number
-    pageSize?: number
-    keyword?: string
-    status?: string
-}
-
-export interface saasListResponse {
-    data: saasData[]
-    total: number
-    page: number
-    pageSize: number
-}
-
-// 获取列表
-export const getsaasList = (params?: saasListParams) => {
+export const getSaasList = (params?: any) => {
     return http.get('/saas', { params })
 }
 
-// 获取详情
-export const getsaasDetail = (id: number) => {
-    return http.get(/ saas/\)
+export const getSaasDetail = (id: number) => {
+    return http.get(/saas/\)
 }
 
-// 创建
-export const createsaas = (data: any) => {
+export const createSaas = (data: any) => {
     return http.post('/saas', data)
 }
 
-// 更新
-export const updatesaas = (id: number, data: any) => {
-    return http.put(/ saas/\, data)
+export const updateSaas = (id: number, data: any) => {
+    return http.put(/saas/\, data)
 }
 
-// 删除
-export const deletesaas = (id: number) => {
-    return http.delete(/ saas/\)
+export const deleteSaas = (id: number) => {
+    return http.delete(/saas/\)
 }

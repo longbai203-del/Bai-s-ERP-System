@@ -1,2 +1,2 @@
-﻿// orders 模块组件导出
-export { default as ordersFilter } from './ordersFilter.vue'
+﻿// orders 组件导出
+// 在此统一导出组件

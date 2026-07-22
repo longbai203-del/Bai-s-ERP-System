@@ -1,10 +1,9 @@
-﻿import { analyticsState } from './types'
+﻿import { AnalyticsState } from './types'
 
-export const state = (): analyticsState => ({
+export const state = (): AnalyticsState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

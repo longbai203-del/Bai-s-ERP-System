@@ -1,14 +1,13 @@
 ﻿import { GetterTree } from 'vuex'
-import { ordersState } from './types'
+import { OrdersState } from './types'
 
-export const getters: GetterTree<ordersState, any> = {
-    isLoading: (state): boolean => state.loading,
-    hasError: (state): boolean => state.error !== null,
-    errorMessage: (state): string | null => state.error,
-    getData: (state): any[] | null => state.data,
-    getCurrentItem: (state): any | null => state.currentItem,
-    getTotal: (state): number => state.total,
-    getCurrentPage: (state): number => state.currentPage,
-    getPageSize: (state): number => state.pageSize,
-    getDataCount: (state): number => state.data?.length || 0
+export const getters: GetterTree<OrdersState, any> = {
+    isLoading: (state) => state.loading,
+    hasError: (state) => state.error !== null,
+    errorMessage: (state) => state.error,
+    getData: (state) => state.data,
+    getTotal: (state) => state.total,
+    getCurrentPage: (state) => state.currentPage,
+    getPageSize: (state) => state.pageSize,
+    getDataCount: (state) => state.data.length
 }

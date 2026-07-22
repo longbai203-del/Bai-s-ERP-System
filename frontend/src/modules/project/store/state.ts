@@ -1,10 +1,9 @@
-﻿import { projectState } from './types'
+﻿import { ProjectState } from './types'
 
-export const state = (): projectState => ({
+export const state = (): ProjectState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

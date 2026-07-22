@@ -1,2 +1,2 @@
-﻿// project 模块组件导出
-export { default as projectFilter } from './projectFilter.vue'
+﻿// project 组件导出
+// 在此统一导出组件

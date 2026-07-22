@@ -154,7 +154,7 @@ export default {
   },
   mounted() {
     // 从原 JS 迁移的初始化逻辑
-    export const meta = { name: '厨房显示屏', path: '/pos/kitchen-display', icon: 'fa-utensils', permission: 'pos:kitchen-display' };
+    //  (已注释)
 export async function render(container) {
     container.innerHTML = `
         <div class="kitchen-display-container">
@@ -177,3 +177,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

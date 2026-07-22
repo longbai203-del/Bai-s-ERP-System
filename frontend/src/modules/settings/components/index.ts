@@ -1,2 +1,2 @@
-﻿// settings 模块组件导出
-export { default as settingsFilter } from './settingsFilter.vue'
+﻿// settings 组件导出
+// 在此统一导出组件

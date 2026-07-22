@@ -1,10 +1,9 @@
-﻿import { posState } from './types'
+﻿import { PosState } from './types'
 
-export const state = (): posState => ({
+export const state = (): PosState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

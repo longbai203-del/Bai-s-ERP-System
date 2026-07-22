@@ -1,47 +1,28 @@
-﻿// pos 模块 API 服务
-import http from '../http'
+﻿// pos API 服务
+import http from '@/api/http'
 
-export interface posData {
+export interface PosData {
     id: number
     name: string
-    // 根据业务需求添加更多字段
+    // 根据业务扩展
 }
 
-export interface posListParams {
-    page?: number
-    pageSize?: number
-    keyword?: string
-    status?: string
-}
-
-export interface posListResponse {
-    data: posData[]
-    total: number
-    page: number
-    pageSize: number
-}
-
-// 获取列表
-export const getposList = (params?: posListParams) => {
+export const getPosList = (params?: any) => {
     return http.get('/pos', { params })
 }
 
-// 获取详情
-export const getposDetail = (id: number) => {
-    return http.get(/ pos/\)
+export const getPosDetail = (id: number) => {
+    return http.get(/pos/\)
 }
 
-// 创建
-export const createpos = (data: any) => {
+export const createPos = (data: any) => {
     return http.post('/pos', data)
 }
 
-// 更新
-export const updatepos = (id: number, data: any) => {
-    return http.put(/ pos/\, data)
+export const updatePos = (id: number, data: any) => {
+    return http.put(/pos/\, data)
 }
 
-// 删除
-export const deletepos = (id: number) => {
-    return http.delete(/ pos/\)
+export const deletePos = (id: number) => {
+    return http.delete(/pos/\)
 }

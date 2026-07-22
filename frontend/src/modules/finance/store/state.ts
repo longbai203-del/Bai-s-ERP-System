@@ -1,10 +1,9 @@
-﻿import { financeState } from './types'
+﻿import { FinanceState } from './types'
 
-export const state = (): financeState => ({
+export const state = (): FinanceState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

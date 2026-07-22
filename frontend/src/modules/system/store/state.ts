@@ -1,10 +1,9 @@
-﻿import { systemState } from './types'
+﻿import { SystemState } from './types'
 
-export const state = (): systemState => ({
+export const state = (): SystemState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

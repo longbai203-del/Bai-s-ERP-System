@@ -1,2 +1,2 @@
-﻿// analytics 模块组件导出
-export { default as analyticsFilter } from './analyticsFilter.vue'
+﻿// analytics 组件导出
+// 在此统一导出组件

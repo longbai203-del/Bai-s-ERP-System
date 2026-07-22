@@ -1,10 +1,9 @@
-﻿import { approvalState } from './types'
+﻿import { ApprovalState } from './types'
 
-export const state = (): approvalState => ({
+export const state = (): ApprovalState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

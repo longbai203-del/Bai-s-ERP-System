@@ -1,10 +1,9 @@
-﻿import { aiState } from './types'
+﻿import { AiState } from './types'
 
-export const state = (): aiState => ({
+export const state = (): AiState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

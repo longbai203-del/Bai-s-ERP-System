@@ -1,47 +1,28 @@
-﻿// orders 模块 API 服务
-import http from '../http'
+﻿// orders API 服务
+import http from '@/api/http'
 
-export interface ordersData {
+export interface OrdersData {
     id: number
     name: string
-    // 根据业务需求添加更多字段
+    // 根据业务扩展
 }
 
-export interface ordersListParams {
-    page?: number
-    pageSize?: number
-    keyword?: string
-    status?: string
-}
-
-export interface ordersListResponse {
-    data: ordersData[]
-    total: number
-    page: number
-    pageSize: number
-}
-
-// 获取列表
-export const getordersList = (params?: ordersListParams) => {
+export const getOrdersList = (params?: any) => {
     return http.get('/orders', { params })
 }
 
-// 获取详情
-export const getordersDetail = (id: number) => {
-    return http.get(/ orders/\)
+export const getOrdersDetail = (id: number) => {
+    return http.get(/orders/\)
 }
 
-// 创建
-export const createorders = (data: any) => {
+export const createOrders = (data: any) => {
     return http.post('/orders', data)
 }
 
-// 更新
-export const updateorders = (id: number, data: any) => {
-    return http.put(/ orders/\, data)
+export const updateOrders = (id: number, data: any) => {
+    return http.put(/orders/\, data)
 }
 
-// 删除
-export const deleteorders = (id: number) => {
-    return http.delete(/ orders/\)
+export const deleteOrders = (id: number) => {
+    return http.delete(/orders/\)
 }

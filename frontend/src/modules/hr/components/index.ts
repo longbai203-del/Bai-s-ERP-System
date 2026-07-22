@@ -1,2 +1,2 @@
-﻿// hr 模块组件导出
-export { default as hrFilter } from './hrFilter.vue'
+﻿// hr 组件导出
+// 在此统一导出组件

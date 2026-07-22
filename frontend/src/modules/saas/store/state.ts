@@ -1,10 +1,9 @@
-﻿import { saasState } from './types'
+﻿import { SaasState } from './types'
 
-export const state = (): saasState => ({
+export const state = (): SaasState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

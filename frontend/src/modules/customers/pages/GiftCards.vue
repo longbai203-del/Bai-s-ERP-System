@@ -437,7 +437,7 @@ export default {
  * @version 1.0.0
  */
 
-import { store } from '../js/core/store.js';
+//  (已注释);
 import { showToast } from '../js/core/init.js';
 
 /**
@@ -1183,3 +1183,4 @@ export default {
 <style scoped>
 
 </style>
+

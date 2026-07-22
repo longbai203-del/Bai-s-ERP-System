@@ -1,8 +1,8 @@
 ﻿import { MutationTree } from 'vuex'
-import { dashboardState } from './types'
+import { DashboardState } from './types'
 import { dashboardMutations } from './types'
 
-export const mutations: MutationTree<dashboardState> = {
+export const mutations: MutationTree<DashboardState> = {
     [dashboardMutations.SET_LOADING](state, loading: boolean) {
         state.loading = loading
     },
@@ -11,9 +11,6 @@ export const mutations: MutationTree<dashboardState> = {
     },
     [dashboardMutations.SET_DATA](state, data: any[]) {
         state.data = data
-    },
-    [dashboardMutations.SET_CURRENT_ITEM](state, item: any) {
-        state.currentItem = item
     },
     [dashboardMutations.SET_TOTAL](state, total: number) {
         state.total = total
@@ -25,8 +22,7 @@ export const mutations: MutationTree<dashboardState> = {
     [dashboardMutations.RESET_STATE](state) {
         state.loading = false
         state.error = null
-        state.data = null
-        state.currentItem = null
+        state.data = []
         state.total = 0
         state.currentPage = 1
         state.pageSize = 10

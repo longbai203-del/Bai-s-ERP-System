@@ -95,14 +95,9 @@ export default {
  * @module modules/02-pos/customer-display
  */
 
-import { formatCurrency } from '@utils/helpers.js';
+//  (已注释);
 
-export const meta = {
-    name: '客户显示屏',
-    path: '/pos/customer-display',
-    icon: 'fa-tv',
-    permission: 'pos:customer-display'
-};
+//  (已注释)
 
 /**
  * 状态管理
@@ -416,3 +411,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

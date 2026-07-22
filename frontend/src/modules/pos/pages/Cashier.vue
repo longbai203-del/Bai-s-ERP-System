@@ -153,16 +153,11 @@ export default {
  * @description 收银员管理子模块
  */
 
-import { apiClient } from '@services/api-client.js';
+//  (已注释);
 import { datatable } from '@components/datatable.js';
 import { modal } from '@components/modal.js';
 
-export const meta = {
-    name: '收银员管理',
-    path: '/pos/cashier',
-    icon: 'fa-user',
-    permission: 'pos:cashier'
-};
+//  (已注释)
 
 export async function render(container) {
     container.innerHTML = `
@@ -234,3 +229,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

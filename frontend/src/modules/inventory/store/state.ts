@@ -1,10 +1,9 @@
-﻿import { inventoryState } from './types'
+﻿import { InventoryState } from './types'
 
-export const state = (): inventoryState => ({
+export const state = (): InventoryState => ({
     loading: false,
     error: null,
-    data: null,
-    currentItem: null,
+    data: [],
     total: 0,
     currentPage: 1,
     pageSize: 10

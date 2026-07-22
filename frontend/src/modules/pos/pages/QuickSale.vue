@@ -271,7 +271,7 @@ export default {
   },
   mounted() {
     // 从原 JS 迁移的初始化逻辑
-    export const meta = { name: '快速销售', path: '/pos/quick-sale', icon: 'fa-bolt', permission: 'pos:quick-sale' };
+    //  (已注释)
 export async function render(container) {
     container.innerHTML = `
         <div class="quick-sale-container">
@@ -300,3 +300,4 @@ export default { meta, render, init };
 <style scoped>
 
 </style>
+

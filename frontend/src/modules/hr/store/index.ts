@@ -1,11 +1,11 @@
 ﻿import { Module } from 'vuex'
-import { hrState } from './types'
+import { HrState } from './types'
 import { state } from './state'
 import { mutations } from './mutations'
 import { actions } from './actions'
 import { getters } from './getters'
 
-export const hrStore: Module<hrState, any> = {
+export const hrStore: Module<HrState, any> = {
     namespaced: true,
     state,
     mutations,
@@ -14,7 +14,3 @@ export const hrStore: Module<hrState, any> = {
 }
 
 export * from './types'
-export { state } from './state'
-export { mutations } from './mutations'
-export { actions } from './actions'
-export { getters } from './getters'
