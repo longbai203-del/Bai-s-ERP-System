@@ -23,8 +23,8 @@ const InventorySchema = new Schema<IInventory>({
   price: { type: Number, required: true },
   supplier: { type: String, required: true },
   warehouse: { type: String, required: true },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['in_stock', 'low_stock', 'out_of_stock'],
     default: 'out_of_stock'
   },

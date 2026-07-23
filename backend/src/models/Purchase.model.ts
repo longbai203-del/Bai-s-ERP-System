@@ -1,5 +1,6 @@
 ﻿import mongoose, { Schema, Document } from 'mongoose';
 
+// ===== Purchase Order =====
 export interface IPurchaseOrder extends Document {
   poNo: string;
   supplierId: string;
@@ -27,6 +28,38 @@ export interface IPurchaseOrder extends Document {
   updatedAt: Date;
 }
 
+const PurchaseOrderSchema = new Schema<IPurchaseOrder>({
+  poNo: { type: String, required: true, unique: true },
+  supplierId: { type: String, required: true },
+  supplierName: { type: String, required: true },
+  items: [{
+    productId: { type: String, required: true },
+    productName: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    unitPrice: { type: Number, required: true, min: 0 },
+    total: { type: Number, required: true, min: 0 }
+  }],
+  totalAmount: { type: Number, required: true, min: 0 },
+  tax: { type: Number, default: 0 },
+  shippingCost: { type: Number, default: 0 },
+  finalAmount: { type: Number, required: true, min: 0 },
+  status: {
+    type: String,
+    enum: ['draft', 'sent', 'confirmed', 'shipped', 'received', 'cancelled'],
+    default: 'draft'
+  },
+  expectedDelivery: { type: Date },
+  actualDelivery: { type: Date },
+  paymentTerms: { type: String },
+  shippingAddress: { type: String },
+  notes: { type: String },
+  createdBy: { type: String, required: true },
+  approvedBy: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// ===== Purchase Requisition =====
 export interface IPurchaseRequisition extends Document {
   prNo: string;
   department: string;
@@ -46,37 +79,6 @@ export interface IPurchaseRequisition extends Document {
   updatedAt: Date;
 }
 
-const PurchaseOrderSchema = new Schema<IPurchaseOrder>({
-  poNo: { type: String, required: true, unique: true },
-  supplierId: { type: String, required: true },
-  supplierName: { type: String, required: true },
-  items: [{
-    productId: { type: String, required: true },
-    productName: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 1 },
-    unitPrice: { type: Number, required: true, min: 0 },
-    total: { type: Number, required: true, min: 0 }
-  }],
-  totalAmount: { type: Number, required: true, min: 0 },
-  tax: { type: Number, default: 0 },
-  shippingCost: { type: Number, default: 0 },
-  finalAmount: { type: Number, required: true, min: 0 },
-  status: { 
-    type: String, 
-    enum: ['draft', 'sent', 'confirmed', 'shipped', 'received', 'cancelled'],
-    default: 'draft'
-  },
-  expectedDelivery: { type: Date },
-  actualDelivery: { type: Date },
-  paymentTerms: { type: String },
-  shippingAddress: { type: String },
-  notes: { type: String },
-  createdBy: { type: String, required: true },
-  approvedBy: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
 const PurchaseRequisitionSchema = new Schema<IPurchaseRequisition>({
   prNo: { type: String, required: true, unique: true },
   department: { type: String, required: true },
@@ -88,13 +90,13 @@ const PurchaseRequisitionSchema = new Schema<IPurchaseRequisition>({
     unit: { type: String, required: true },
     reason: { type: String }
   }],
-  priority: { 
-    type: String, 
+  priority: {
+    type: String,
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium'
   },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['pending', 'approved', 'rejected', 'converted'],
     default: 'pending'
   },

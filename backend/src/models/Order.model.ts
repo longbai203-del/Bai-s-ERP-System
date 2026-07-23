@@ -46,8 +46,8 @@ const OrderSchema = new Schema<IOrder>({
   discount: { type: Number, default: 0, min: 0 },
   tax: { type: Number, default: 0, min: 0 },
   finalAmount: { type: Number, required: true, min: 0 },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['pending', 'processing', 'shipped', 'completed', 'cancelled'],
     default: 'pending'
   },

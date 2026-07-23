@@ -1,5 +1,6 @@
 ﻿import mongoose, { Schema, Document } from 'mongoose';
 
+// ===== Employee =====
 export interface IEmployee extends Document {
   employeeNo: string;
   firstName: string;
@@ -32,33 +33,6 @@ export interface IEmployee extends Document {
   updatedAt: Date;
 }
 
-export interface IAttendance extends Document {
-  employeeId: string;
-  date: Date;
-  checkIn: Date;
-  checkOut: Date;
-  hoursWorked: number;
-  overtime: number;
-  status: 'present' | 'absent' | 'leave' | 'holiday';
-  notes: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ILeave extends Document {
-  employeeId: string;
-  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'other';
-  startDate: Date;
-  endDate: Date;
-  days: number;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
-  approvedBy: string;
-  notes: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 const EmployeeSchema = new Schema<IEmployee>({
   employeeNo: { type: String, required: true, unique: true },
   firstName: { type: String, required: true },
@@ -72,11 +46,7 @@ const EmployeeSchema = new Schema<IEmployee>({
   hireDate: { type: Date, required: true },
   salary: { type: Number, required: true, min: 0 },
   bankAccount: { type: String },
-  status: { 
-    type: String, 
-    enum: ['active', 'inactive', 'terminated'],
-    default: 'active'
-  },
+  status: { type: String, enum: ['active', 'inactive', 'terminated'], default: 'active' },
   address: { type: String },
   city: { type: String },
   province: { type: String },
@@ -95,6 +65,20 @@ const EmployeeSchema = new Schema<IEmployee>({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// ===== Attendance =====
+export interface IAttendance extends Document {
+  employeeId: string;
+  date: Date;
+  checkIn: Date;
+  checkOut: Date;
+  hoursWorked: number;
+  overtime: number;
+  status: 'present' | 'absent' | 'leave' | 'holiday';
+  notes: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const AttendanceSchema = new Schema<IAttendance>({
   employeeId: { type: String, required: true },
   date: { type: Date, required: true },
@@ -102,32 +86,35 @@ const AttendanceSchema = new Schema<IAttendance>({
   checkOut: { type: Date },
   hoursWorked: { type: Number, default: 0 },
   overtime: { type: Number, default: 0 },
-  status: { 
-    type: String, 
-    enum: ['present', 'absent', 'leave', 'holiday'],
-    default: 'present'
-  },
+  status: { type: String, enum: ['present', 'absent', 'leave', 'holiday'], default: 'present' },
   notes: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
+// ===== Leave =====
+export interface ILeave extends Document {
+  employeeId: string;
+  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'other';
+  startDate: Date;
+  endDate: Date;
+  days: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  approvedBy: string;
+  notes: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const LeaveSchema = new Schema<ILeave>({
   employeeId: { type: String, required: true },
-  type: { 
-    type: String, 
-    enum: ['annual', 'sick', 'personal', 'maternity', 'other'],
-    required: true
-  },
+  type: { type: String, enum: ['annual', 'sick', 'personal', 'maternity', 'other'], required: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   days: { type: Number, required: true },
   reason: { type: String, required: true },
-  status: { 
-    type: String, 
-    enum: ['pending', 'approved', 'rejected', 'cancelled'],
-    default: 'pending'
-  },
+  status: { type: String, enum: ['pending', 'approved', 'rejected', 'cancelled'], default: 'pending' },
   approvedBy: { type: String },
   notes: { type: String },
   createdAt: { type: Date, default: Date.now },

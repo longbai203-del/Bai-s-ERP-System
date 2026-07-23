@@ -1,5 +1,6 @@
 ﻿import mongoose, { Schema, Document } from 'mongoose';
 
+// ===== Transaction =====
 export interface ITransaction extends Document {
   transactionNo: string;
   type: 'income' | 'expense' | 'transfer';
@@ -20,19 +21,6 @@ export interface ITransaction extends Document {
   createdBy: string;
   approvedBy: string;
   notes: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface IAccount extends Document {
-  accountCode: string;
-  name: string;
-  type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
-  balance: number;
-  currency: string;
-  parentAccountId: string;
-  description: string;
-  status: 'active' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,6 +48,20 @@ const TransactionSchema = new Schema<ITransaction>({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// ===== Account =====
+export interface IAccount extends Document {
+  accountCode: string;
+  name: string;
+  type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+  balance: number;
+  currency: string;
+  parentAccountId: string;
+  description: string;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const AccountSchema = new Schema<IAccount>({
   accountCode: { type: String, required: true, unique: true },

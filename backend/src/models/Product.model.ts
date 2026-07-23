@@ -49,8 +49,8 @@ const ProductSchema = new Schema<IProduct>({
     height: { type: Number, min: 0 }
   },
   images: [{ type: String }],
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     enum: ['active', 'inactive', 'discontinued'],
     default: 'active'
   },

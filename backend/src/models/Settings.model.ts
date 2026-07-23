@@ -1,5 +1,6 @@
 ﻿import mongoose, { Schema, Document } from 'mongoose';
 
+// ===== System Setting =====
 export interface ISystemSetting extends Document {
   key: string;
   value: any;
@@ -11,6 +12,22 @@ export interface ISystemSetting extends Document {
   updatedAt: Date;
 }
 
+const SystemSettingSchema = new Schema<ISystemSetting>({
+  key: { type: String, required: true, unique: true },
+  value: { type: Schema.Types.Mixed, required: true },
+  category: {
+    type: String,
+    enum: ['general', 'email', 'payment', 'shipping', 'tax', 'security'],
+    required: true
+  },
+  description: { type: String },
+  isEncrypted: { type: Boolean, default: false },
+  updatedBy: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// ===== Company Info =====
 export interface ICompanyInfo extends Document {
   companyName: string;
   legalName: string;
@@ -32,36 +49,6 @@ export interface ICompanyInfo extends Document {
   updatedAt: Date;
 }
 
-export interface IEmailConfig extends Document {
-  provider: 'smtp' | 'sendgrid' | 'aws';
-  host: string;
-  port: number;
-  secure: boolean;
-  username: string;
-  password: string;
-  fromEmail: string;
-  fromName: string;
-  testEmail: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const SystemSettingSchema = new Schema<ISystemSetting>({
-  key: { type: String, required: true, unique: true },
-  value: { type: Schema.Types.Mixed, required: true },
-  category: {
-    type: String,
-    enum: ['general', 'email', 'payment', 'shipping', 'tax', 'security'],
-    required: true
-  },
-  description: { type: String },
-  isEncrypted: { type: Boolean, default: false },
-  updatedBy: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
 const CompanyInfoSchema = new Schema<ICompanyInfo>({
   companyName: { type: String, required: true },
   legalName: { type: String },
@@ -82,6 +69,22 @@ const CompanyInfoSchema = new Schema<ICompanyInfo>({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// ===== Email Config =====
+export interface IEmailConfig extends Document {
+  provider: 'smtp' | 'sendgrid' | 'aws';
+  host: string;
+  port: number;
+  secure: boolean;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  testEmail: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const EmailConfigSchema = new Schema<IEmailConfig>({
   provider: {
