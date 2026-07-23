@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="dashboard-page">
+  <div class="dashboard">
     <el-row :gutter="20">
       <el-col :span="6" v-for="stat in stats" :key="stat.title">
         <el-card shadow="hover" class="stat-card">
@@ -16,28 +16,13 @@
       </el-col>
     </el-row>
     <el-row :gutter="20" style="margin-top: 20px;">
-      <el-col :span="12">
+      <el-col :span="24">
         <el-card shadow="hover">
-          <template #header><span>最近订单</span></template>
-          <el-table :data="orders" style="width: 100%">
-            <el-table-column prop="orderNo" label="订单号" />
-            <el-table-column prop="customer" label="客户" />
-            <el-table-column prop="amount" label="金额" />
-            <el-table-column prop="status" label="状态">
-              <template #default="{ row }">
-                <el-tag :type="row.status === '已完成' ? 'success' : 'warning'">{{ row.status }}</el-tag>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="hover">
-          <template #header><span>系统信息</span></template>
-          <div class="system-info">
-            <p><strong>系统版本：</strong>v3.0.0</p>
-            <p><strong>运行时间：</strong>{{ uptime }}</p>
-            <p><strong>当前用户：</strong>{{ username }}</p>
+          <template #header><span>欢迎使用 Bai's ERP System</span></template>
+          <div style="padding: 20px; text-align: center;">
+            <h2 style="color: #409EFF;">🎉 系统运行正常</h2>
+            <p style="color: #666; margin-top: 10px;">点击左侧菜单开始使用</p>
+            <el-button type="primary" style="margin-top: 10px;" @click="logout">退出登录</el-button>
           </div>
         </el-card>
       </el-col>
@@ -46,11 +31,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useUserStore } from '@/store/modules/user'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
-const userStore = useUserStore()
-const username = computed(() => userStore.username || 'admin')
+const router = useRouter()
 
 const stats = ref([
   { title: '总订单', value: '1,234', icon: 'Document', color: '#409EFF' },
@@ -59,22 +44,19 @@ const stats = ref([
   { title: '库存商品', value: '4,321', icon: 'Box', color: '#F56C6C' },
 ])
 
-const orders = ref([
-  { orderNo: 'ORD-2026-001', customer: '张三', amount: '¥1,200', status: '已完成' },
-  { orderNo: 'ORD-2026-002', customer: '李四', amount: '¥850', status: '处理中' },
-  { orderNo: 'ORD-2026-003', customer: '王五', amount: '¥2,300', status: '已完成' },
-])
-
-const uptime = ref('12小时30分钟')
+const logout = () => {
+  localStorage.removeItem('token')
+  ElMessage.success('已退出登录')
+  router.push('/login')
+}
 </script>
 
 <style scoped>
-.dashboard-page { padding: 0; }
+.dashboard { padding: 20px; }
 .stat-card { cursor: pointer; transition: transform 0.2s; }
 .stat-card:hover { transform: translateY(-5px); }
 .stat-content { display: flex; align-items: center; gap: 15px; }
 .stat-icon { width: 50px; height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
 .stat-number { font-size: 24px; font-weight: bold; color: #333; }
 .stat-title { font-size: 14px; color: #999; margin-top: 4px; }
-.system-info p { margin: 8px 0; color: #666; }
 </style>

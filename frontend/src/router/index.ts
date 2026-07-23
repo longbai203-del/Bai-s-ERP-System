@@ -14,6 +14,12 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: { title: '登录', hidden: true }
   },
   {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/modules/dashboard/pages/Index.vue'),
+    meta: { title: '仪表盘' }
+  },
+  {
     path: '/404',
     name: 'NotFound',
     component: () => import('@/modules/system/pages/error/404.vue'),
@@ -43,7 +49,7 @@ Object.keys(modules).forEach((key) => {
 })
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [...baseRoutes, ...moduleRoutes],
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) return savedPosition
@@ -61,6 +67,11 @@ router.beforeEach((to, _from, next) => {
     } else {
       next()
     }
+    return
+  }
+  
+  if (to.path === '/dashboard' && !token) {
+    next('/login')
     return
   }
   

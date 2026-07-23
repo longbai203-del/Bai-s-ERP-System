@@ -1,12 +1,51 @@
-﻿node_modules/
+﻿# ===== 依赖 =====
+node_modules/
+**/node_modules/
+*/node_modules/
+
+# ===== 日志 =====
 *.log
+logs/
+npm-debug.log*
+
+# ===== 环境变量 =====
 .env
 .env.local
+.env.*.local
+
+# ===== 构建产物 =====
 dist/
+dist-ssr/
+*.local
+
+# ===== IDE =====
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# ===== 系统文件 =====
 .DS_Store
 Thumbs.db
-backup_*/
+
+# ===== 临时文件 =====
+*.tmp
+*.temp
 *.bak
+*.bkp
+
+# ===== 备份 =====
+backup_*/
+**/backup_*/
+
+# ===== 测试 =====
+coverage/
+.nyc_output/
+
+# ===== 项目特定 =====
 token.txt
+file-tree.txt
+folders.txt
+
+# ===== Vite =====
+.vite/
