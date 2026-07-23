@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/marketing/pages/Campaigns.vue
   功能: 营销活动列表 - 管理所有营销活动
 -->
@@ -207,10 +207,23 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  Plus, Refresh, Download, Search, RefreshLeft,
-  View, Edit, Delete, WarningFilled,
-  TrendCharts, User, Present, Star, Calendar
+  Megaphone,
+  Plus,
+  Search,
+  Refresh,
+  Download,
+  View,
+  Edit,
+  Delete,
+  Top,
+  Bottom,
+  Play,
+  Pause
 } from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { getCampaignList, deleteCampaign, startCampaign, pauseCampaign } from '@/api/modules/marketing'
 
 // ============================================================
 // 路由

@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/ai/pages/AIChat.vue
   功能: AI聊天 - 智能对话助手
 -->
@@ -69,7 +69,18 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
-import { Plus, Delete, Promotion, UserFilled, Cpu } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/ai'
 import { ElMessage } from 'element-plus'
 
 const message = ref('')

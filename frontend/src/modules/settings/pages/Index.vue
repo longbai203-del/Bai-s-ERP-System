@@ -17,7 +17,18 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Plus } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/settings'
 
 const router = useRouter()
 
@@ -30,3 +41,4 @@ const handleCreate = () => {
 .settings-page { padding: 20px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
 </style>
+

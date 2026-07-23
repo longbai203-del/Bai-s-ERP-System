@@ -19,6 +19,11 @@ const reportsRoutes = require('./reports.routes');
 const settingsRoutes = require('./settings.routes');
 
 // ============================================================
+// 新增：项目模块路由
+// ============================================================
+const projectRoutes = require('./project.routes');
+
+// ============================================================
 // 路由挂载
 // ============================================================
 
@@ -50,6 +55,11 @@ router.use('/reports', reportsRoutes);
 router.use('/settings', settingsRoutes);
 
 // ============================================================
+// 新增：项目路由
+// ============================================================
+router.use('/projects', projectRoutes);
+
+// ============================================================
 // 系统路由
 // ============================================================
 
@@ -65,7 +75,11 @@ router.get('/health', (req, res) => {
         environment: process.env.NODE_ENV || 'development',
         version: require('../../package.json').version || '1.0.0',
         memory: process.memoryUsage(),
-        cpu: process.cpuUsage()
+        cpu: process.cpuUsage(),
+        services: {
+            database: req.supabase ? 'connected' : 'not_initialized',
+            redis: req.redis ? 'connected' : 'not_initialized'
+        }
     });
 });
 
@@ -80,7 +94,74 @@ router.get('/version', (req, res) => {
         description: require('../../package.json').description || 'Bai\'s ERP System API',
         nodeVersion: process.version,
         platform: process.platform,
-        arch: process.arch
+        arch: process.arch,
+        dependencies: Object.keys(require('../../package.json').dependencies || {}).length,
+        devDependencies: Object.keys(require('../../package.json').devDependencies || {}).length
+    });
+});
+
+/**
+ * GET /api/routes
+ * @description 获取所有已注册路由（开发环境）
+ */
+if (process.env.NODE_ENV !== 'production') {
+    router.get('/routes', (req, res) => {
+        const routes = [];
+        const stack = router.stack || [];
+        
+        const extractRoutes = (layer, basePath = '') => {
+            if (layer.route) {
+                const path = basePath + layer.route.path;
+                const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
+                routes.push({ path, methods });
+            } else if (layer.name === 'router' && layer.handle.stack) {
+                const path = basePath + (layer.regexp.source || '');
+                layer.handle.stack.forEach((subLayer) => {
+                    extractRoutes(subLayer, path);
+                });
+            }
+        };
+        
+        stack.forEach((layer) => {
+            extractRoutes(layer);
+        });
+        
+        res.json({
+            totalRoutes: routes.length,
+            routes: routes
+        });
+    });
+}
+
+/**
+ * GET /api/info
+ * @description 系统信息
+ */
+router.get('/info', (req, res) => {
+    const os = require('os');
+    res.json({
+        system: {
+            hostname: os.hostname(),
+            platform: os.platform(),
+            release: os.release(),
+            cpus: os.cpus().length,
+            memory: {
+                total: os.totalmem(),
+                free: os.freemem()
+            },
+            loadAverage: os.loadavg()
+        },
+        process: {
+            pid: process.pid,
+            title: process.title,
+            argv: process.argv,
+            execPath: process.execPath,
+            versions: process.versions
+        },
+        time: {
+            now: new Date().toISOString(),
+            uptime: process.uptime()
+        }
     });
 });
 

@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/hr/pages/Employees.vue
   功能: 员工管理 - 员工列表与查询
 -->
@@ -82,7 +82,18 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { Search, Download, Plus, View, Edit, Delete } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/hr'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const searchForm = reactive({ employeeNo: '', name: '', department: 'all' })

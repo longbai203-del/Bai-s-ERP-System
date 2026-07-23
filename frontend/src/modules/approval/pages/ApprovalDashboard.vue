@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/approval/pages/ApprovalDashboard.vue
   功能: 审批中心 - 审批中心首页
 -->
@@ -74,7 +74,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Plus, Check } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/approval'
 import { ElMessage } from 'element-plus'
 
 const approvalStats = ref([

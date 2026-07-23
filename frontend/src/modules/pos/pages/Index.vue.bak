@@ -1,0 +1,818 @@
+﻿<template>
+  <div class="pos-index">
+    <!-- 统计卡片 -->
+    <el-row :gutter="20" class="stat-cards">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon total">
+              <el-icon><Money /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">今日收入</div>
+              <div class="stat-value">¥{{ formatNumber(todayIncome) }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                12.5% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon orders">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">今日订单</div>
+              <div class="stat-value">{{ todayOrders }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                8.3% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon customers">
+              <el-icon><User /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">今日客流</div>
+              <div class="stat-value">{{ todayCustomers }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                5.2% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon avg">
+              <el-icon><TrendCharts /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">客单价</div>
+              <div class="stat-value">¥{{ formatNumber(avgPrice) }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                3.8% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- POS 快捷操作 -->
+    <el-card class="quick-actions-card" shadow="hover">
+      <template #header>
+        <span class="card-title">快捷操作</span>
+      </template>
+      <el-row :gutter="16">
+        <el-col :xs="12" :sm="8" :md="4" v-for="action in quickActions" :key="action.key">
+          <div class="quick-action-item" @click="handleQuickAction(action.key)">
+            <el-icon :size="32" :color="action.color"><component :is="action.icon" /></el-icon>
+            <span>{{ action.label }}</span>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <!-- 搜索和筛选 -->
+    <el-card class="filter-card" shadow="hover">
+      <el-form :model="filterForm" inline class="filter-form">
+        <el-form-item label="订单编号">
+          <el-input v-model="filterForm.orderNo" placeholder="输入订单编号" clearable style="width: 160px" />
+        </el-form-item>
+        <el-form-item label="客户名称">
+          <el-input v-model="filterForm.customer" placeholder="输入客户名称" clearable style="width: 160px" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="filterForm.status" placeholder="全部状态" clearable style="width: 140px">
+            <el-option label="待处理" value="pending" />
+            <el-option label="处理中" value="processing" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="已取消" value="cancelled" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 240px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon> 搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon> 重置
+          </el-button>
+          <el-button type="success" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建订单
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 数据表格 -->
+    <el-card class="table-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>POS 订单列表</span>
+          <div class="header-actions">
+            <el-button size="small" @click="handleExport">
+              <el-icon><Download /></el-icon> 导出
+            </el-button>
+            <el-button size="small" @click="handleRefresh">
+              <el-icon><RefreshRight /></el-icon> 刷新
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        v-loading="loading"
+        stripe
+        border
+        @sort-change="handleSortChange"
+      >
+        <el-table-column prop="id" label="ID" width="60" align="center" />
+        <el-table-column prop="orderNo" label="订单编号" min-width="140" sortable>
+          <template #default="{ row }">
+            <el-link type="primary" @click="handleViewDetail(row.id)">
+              {{ row.orderNo }}
+            </el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="customer" label="客户名称" min-width="120" sortable />
+        <el-table-column prop="items" label="商品明细" min-width="150">
+          <template #default="{ row }">
+            <el-tag
+              v-for="(item, idx) in row.items.slice(0, 2)"
+              :key="idx"
+              size="small"
+              style="margin: 2px 4px 2px 0;"
+            >
+              {{ item.name }} × {{ item.qty }}
+            </el-tag>
+            <el-tag v-if="row.items.length > 2" size="small" type="info">
+              +{{ row.items.length - 2 }} 项
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="amount" label="金额" width="140" align="right" sortable>
+          <template #default="{ row }">
+            <span style="font-weight: 600; color: #409eff;">
+              ¥{{ formatNumber(row.amount) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="paymentMethod" label="支付方式" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getPaymentTag(row.paymentMethod)" size="small">
+              {{ row.paymentMethod }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTag(row.status)" effect="light" size="small">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderDate" label="下单时间" width="160" sortable />
+        <el-table-column prop="cashier" label="收银员" width="100" />
+        <el-table-column label="操作" width="220" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button size="small" type="primary" link @click="handleViewDetail(row.id)">
+              <el-icon><View /></el-icon> 查看
+            </el-button>
+            <el-button size="small" type="warning" link @click="handleEdit(row.id)">
+              <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button size="small" type="danger" link @click="handleDelete(row.id)">
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+
+    <!-- 删除确认对话框 -->
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <div class="delete-confirm">
+        <el-icon color="#f56c6c" size="56"><WarningFilled /></el-icon>
+        <p>确定要删除该订单吗？</p>
+        <p class="delete-hint">订单编号：<strong>{{ deleteOrderNo }}</strong></p>
+        <p class="delete-hint">此操作不可恢复，请谨慎操作！</p>
+      </div>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="deleteLoading" @click="confirmDelete">
+          确定删除
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  Money,
+  Document,
+  User,
+  TrendCharts,
+  Top,
+  Search,
+  Refresh,
+  Plus,
+  Download,
+  RefreshRight,
+  View,
+  Edit,
+  Delete,
+  WarningFilled,
+  ShoppingCart,
+  Printer,
+  CreditCard,
+  Tickets,
+  Setting
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { getPOSStats, getPOSOrderList } from '@/api/modules/pos'
+
+const router = useRouter()
+
+// ========== 响应式数据 ==========
+const loading = ref(false)
+const deleteLoading = ref(false)
+const deleteDialogVisible = ref(false)
+const deleteId = ref<number | null>(null)
+const deleteOrderNo = ref('')
+
+// 统计数据
+const todayIncome = ref(12580)
+const todayOrders = ref(42)
+const todayCustomers = ref(38)
+const avgPrice = ref(299)
+
+// 快捷操作
+const quickActions = ref([
+  { key: 'quickSale', label: '快速销售', icon: 'ShoppingCart', color: '#409eff' },
+  { key: 'cashRegister', label: '收银台', icon: 'CreditCard', color: '#67c23a' },
+  { key: 'receipt', label: '小票打印', icon: 'Printer', color: '#e6a23c' },
+  { key: 'coupon', label: '优惠券', icon: 'Tickets', color: '#8b5cf6' },
+  { key: 'dailyClose', label: '日结管理', icon: 'Setting', color: '#f56c6c' }
+])
+
+// 筛选表单
+const filterForm = reactive({
+  orderNo: '',
+  customer: '',
+  status: '',
+  dateRange: [] as string[]
+})
+
+// 分页
+const pagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 表格数据
+const tableData = ref<any[]>([])
+const allData = ref<any[]>([])
+
+// ========== 计算属性 ==========
+const formatNumber = (num: number) => {
+  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const getStatusTag = (status: string) => {
+  const map: Record<string, string> = {
+    pending: 'warning',
+    processing: 'primary',
+    completed: 'success',
+    cancelled: 'danger'
+  }
+  return map[status] || 'info'
+}
+
+const getStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    pending: '待处理',
+    processing: '处理中',
+    completed: '已完成',
+    cancelled: '已取消'
+  }
+  return map[status] || status
+}
+
+const getPaymentTag = (method: string) => {
+  const map: Record<string, string> = {
+    '现金': 'success',
+    '微信支付': 'primary',
+    '支付宝': 'warning',
+    '信用卡': 'danger',
+    '会员卡': 'info'
+  }
+  return map[method] || 'info'
+}
+
+// ============================================================
+// API 数据获取
+// ============================================================
+
+const fetchStats = async () => {
+  try {
+    const res = await getPOSStats()
+    if (res.code === 0 && res.data) {
+      todayIncome.value = res.data.todayIncome || 0
+      todayOrders.value = res.data.todayOrders || 0
+      todayCustomers.value = res.data.todayCustomers || 0
+      avgPrice.value = res.data.avgPrice || 0
+    }
+  } catch (error) {
+    console.error('获取统计失败:', error)
+  }
+}
+
+const fetchOrders = async () => {
+  loading.value = true
+  try {
+    const params = {
+      page: pagination.current,
+      limit: pagination.pageSize,
+      status: filterForm.status
+    }
+    const res = await getPOSOrderList(params)
+    if (res.code === 0 && res.data) {
+      allData.value = res.data.list || []
+      pagination.total = res.data.total || 0
+      tableData.value = allData.value
+    }
+  } catch (error) {
+    ElMessage.error('加载订单列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const initData = async () => {
+  loading.value = true
+  try {
+    await Promise.all([
+      fetchStats(),
+      fetchOrders()
+    ])
+  } finally {
+    loading.value = false
+  }
+}
+// 已移除模拟数据)
+      totalAmount += price * qty
+    }
+
+    const date = new Date(now)
+    date.setHours(date.getHours() - Math.floor(Math.random() * 12))
+    date.setMinutes(Math.floor(Math.random() * 60))
+
+    data.push({
+      id: i,
+      orderNo: `POS-${String(i).padStart(6, '0')}`,
+      customer: customers[Math.floor(Math.random() * customers.length)],
+      items: items,
+      amount: Math.round(totalAmount * 100) / 100,
+      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+      status: status,
+      orderDate: date.toISOString().replace('T', ' ').slice(0, 16),
+      cashier: cashiers[Math.floor(Math.random() * cashiers.length)]
+    })
+  }
+
+  data.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+  return data
+}
+
+// ========== 初始化数据 ==========
+const initData = () => {
+  loading.value = true
+  setTimeout(() => {
+    allData.value = generateMockData()
+    filterData()
+    loading.value = false
+  }, 500)
+}
+
+// ========== 筛选数据 ==========
+const filterData = () => {
+  let data = [...allData.value]
+
+  if (filterForm.orderNo) {
+    data = data.filter(item => item.orderNo.includes(filterForm.orderNo))
+  }
+  if (filterForm.customer) {
+    data = data.filter(item => item.customer.includes(filterForm.customer))
+  }
+  if (filterForm.status) {
+    data = data.filter(item => item.status === filterForm.status)
+  }
+  if (filterForm.dateRange && filterForm.dateRange.length === 2) {
+    const [start, end] = filterForm.dateRange
+    data = data.filter(item => item.orderDate >= start && item.orderDate <= end)
+  }
+
+  pagination.total = data.length
+
+  const start = (pagination.current - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = data.slice(start, end)
+}
+
+// ========== 事件处理 ==========
+const handleSearch = () => {
+  pagination.current = 1
+  filterData()
+}
+
+const handleReset = () => {
+  filterForm.orderNo = ''
+  filterForm.customer = ''
+  filterForm.status = ''
+  filterForm.dateRange = []
+  pagination.current = 1
+  filterData()
+}
+
+const handleCreate = () => {
+  router.push('/pos/create')
+}
+
+const handleViewDetail = (id: number) => {
+  router.push(`/pos/detail/${id}`)
+}
+
+const handleEdit = (id: number) => {
+  router.push(`/pos/edit/${id}`)
+}
+
+const handleDelete = (id: number) => {
+  const order = allData.value.find(item => item.id === id)
+  if (order) {
+    deleteOrderNo.value = order.orderNo
+  }
+  deleteId.value = id
+  deleteDialogVisible.value = true
+}
+
+const confirmDelete = async () => {
+  if (!deleteId.value) return
+  deleteLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 800))
+    allData.value = allData.value.filter(item => item.id !== deleteId.value)
+    filterData()
+    ElMessage.success('删除成功！')
+    deleteDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error('删除失败，请重试！')
+  } finally {
+    deleteLoading.value = false
+    deleteId.value = null
+    deleteOrderNo.value = ''
+  }
+}
+
+const handleQuickAction = (key: string) => {
+  const routes: Record<string, string> = {
+    quickSale: '/pos/quick-sale',
+    cashRegister: '/pos/cash-register',
+    receipt: '/pos/receipt',
+    coupon: '/pos/coupon',
+    dailyClose: '/pos/daily-close'
+  }
+  router.push(routes[key] || '/pos')
+}
+
+const handleSortChange = ({ prop, order }: any) => {
+  if (!prop) return
+  const sorted = [...allData.value]
+  sorted.sort((a, b) => {
+    let valA = a[prop]
+    let valB = b[prop]
+    if (prop === 'amount' || prop === 'id') {
+      valA = Number(valA)
+      valB = Number(valB)
+    } else if (prop === 'orderDate') {
+      valA = new Date(valA).getTime()
+      valB = new Date(valB).getTime()
+    }
+    if (order === 'ascending') {
+      return valA > valB ? 1 : -1
+    } else {
+      return valA < valB ? 1 : -1
+    }
+  })
+  allData.value = sorted
+  filterData()
+}
+
+const handleExport = () => {
+  ElMessage.success('导出任务已提交，文件将发送到您的邮箱')
+}
+
+const handleRefresh = () => {
+  initData()
+}
+
+const handleSizeChange = (val: number) => {
+  pagination.pageSize = val
+  pagination.current = 1
+  filterData()
+}
+
+const handleCurrentChange = (val: number) => {
+  pagination.current = val
+  filterData()
+}
+
+// ========== 生命周期 ==========
+onMounted(() => {
+  initData()
+})
+</script>
+
+<style scoped>
+.pos-index {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.stat-cards {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+.stat-icon.total {
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+}
+.stat-icon.orders {
+  background: linear-gradient(135deg, #67c23a, #85ce61);
+}
+.stat-icon.customers {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+.stat-icon.avg {
+  background: linear-gradient(135deg, #e6a23c, #f0c78a);
+}
+
+.stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.3;
+}
+
+.stat-change {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.stat-change.positive {
+  color: #67c23a;
+}
+.stat-change.negative {
+  color: #f56c6c;
+}
+
+.quick-actions-card {
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.quick-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+  border: 1px solid #ebeef5;
+}
+
+.quick-action-item:hover {
+  background: #ecf5ff;
+  border-color: #409eff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+}
+
+.quick-action-item span {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #606266;
+}
+
+.filter-card {
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+
+.filter-form :deep(.el-form-item:last-child) {
+  margin-right: 0;
+}
+
+.table-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+  margin-top: 16px;
+}
+
+.delete-confirm {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.delete-confirm p {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: #606266;
+}
+
+.delete-confirm .delete-hint {
+  font-size: 13px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .pos-index {
+    padding: 12px;
+  }
+
+  .stat-cards .el-col {
+    margin-bottom: 12px;
+  }
+
+  .quick-action-item {
+    padding: 12px 4px;
+  }
+
+  .quick-action-item .el-icon {
+    font-size: 24px !important;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-form :deep(.el-form-item) {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .filter-form :deep(.el-form-item:last-child) {
+    margin-bottom: 0;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+}
+</style>
+

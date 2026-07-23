@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/inventory/pages/StockQuery.vue
   功能: 库存查询 - 实时库存查询与筛选
 -->
@@ -96,7 +96,18 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { Search, Download, View, Edit } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/inventory'
 import { ElMessage } from 'element-plus'
 
 const searchForm = reactive({ product: '', sku: '', category: '', warehouse: 'all' })

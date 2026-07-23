@@ -1,0 +1,653 @@
+﻿<template>
+  <div class="products-create-page">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="header-left">
+        <el-button @click="handleBack">
+          <el-icon><ArrowLeft /></el-icon> 返回列表
+        </el-button>
+        <h1>
+          <el-icon :size="28" color="#4F46E5"><Plus /></el-icon>
+          创建产品
+        </h1>
+        <el-tag type="info" size="large" effect="plain">新记录</el-tag>
+      </div>
+      <div class="header-actions">
+        <el-button @click="handleReset">
+          <el-icon><Refresh /></el-icon> 重置
+        </el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          <el-icon><Check /></el-icon> 提交
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 表单 -->
+    <el-card class="form-card" shadow="hover" v-loading="loading">
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="130px"
+        label-position="right"
+      >
+        <!-- 基本信息 -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-indicator"></span>
+            基本信息
+          </div>
+
+          <el-row :gutter="24">
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="产品名称" prop="name">
+                <el-input v-model="formData.name" placeholder="请输入产品名称" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="产品编号" prop="code">
+                <el-input v-model="formData.code" placeholder="请输入产品编号">
+                  <template #append>
+                    <el-button @click="generateCode">生成</el-button>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="分类" prop="category">
+                <el-select v-model="formData.category" placeholder="请选择分类" style="width: 100%">
+                  <el-option label="洗车" value="洗车" />
+                  <el-option label="美容" value="美容" />
+                  <el-option label="保养" value="保养" />
+                  <el-option label="配件" value="配件" />
+                  <el-option label="套餐" value="套餐" />
+                  <el-option label="会员" value="会员" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
+        <!-- 价格与库存 -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-indicator"></span>
+            价格与库存
+          </div>
+
+          <el-row :gutter="24">
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="售价" prop="price">
+                <el-input-number
+                  v-model="formData.price"
+                  :min="0"
+                  :precision="2"
+                  :max="999999.99"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="成本" prop="cost">
+                <el-input-number
+                  v-model="formData.cost"
+                  :min="0"
+                  :precision="2"
+                  :max="999999.99"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="库存数量" prop="stock">
+                <el-input-number
+                  v-model="formData.stock"
+                  :min="0"
+                  :max="999999"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="单位" prop="unit">
+                <el-select v-model="formData.unit" placeholder="请选择单位" style="width: 100%">
+                  <el-option label="个" value="个" />
+                  <el-option label="件" value="件" />
+                  <el-option label="瓶" value="瓶" />
+                  <el-option label="盒" value="盒" />
+                  <el-option label="套" value="套" />
+                  <el-option label="张" value="张" />
+                  <el-option label="kg" value="kg" />
+                  <el-option label="g" value="g" />
+                  <el-option label="L" value="L" />
+                  <el-option label="ml" value="ml" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="状态" prop="status">
+                <el-select v-model="formData.status" placeholder="请选择状态" style="width: 100%">
+                  <el-option label="上架" value="active" />
+                  <el-option label="下架" value="inactive" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12" :lg="8">
+              <el-form-item label="品牌" prop="brand">
+                <el-select v-model="formData.brand" placeholder="请选择品牌" style="width: 100%" filterable>
+                  <el-option label="3M" value="3M" />
+                  <el-option label="Turtle Wax" value="Turtle Wax" />
+                  <el-option label="Meguiars" value="Meguiars" />
+                  <el-option label="SONAX" value="SONAX" />
+                  <el-option label="CarPro" value="CarPro" />
+                  <el-option label="其他" value="其他" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
+        <!-- 描述 -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-indicator"></span>
+            产品描述
+          </div>
+
+          <el-row :gutter="24">
+            <el-col :span="24">
+              <el-form-item label="描述" prop="description">
+                <el-input
+                  v-model="formData.description"
+                  type="textarea"
+                  :rows="4"
+                  placeholder="请输入产品描述信息"
+                  maxlength="500"
+                  show-word-limit
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
+        <!-- 附件 -->
+        <div class="form-section">
+          <div class="section-title">
+            <span class="section-indicator"></span>
+            产品图片
+            <span class="section-tip">支持上传 JPG、PNG 格式</span>
+          </div>
+
+          <el-row :gutter="24">
+            <el-col :span="24">
+              <el-upload
+                ref="uploadRef"
+                action="#"
+                :auto-upload="false"
+                :file-list="fileList"
+                :on-change="handleFileChange"
+                :on-remove="handleFileRemove"
+                :on-preview="handleFilePreview"
+                :limit="5"
+                :on-exceed="handleExceed"
+                list-type="picture-card"
+                multiple
+              >
+                <el-icon><Plus /></el-icon>
+              </el-upload>
+            </el-col>
+          </el-row>
+        </div>
+
+        <!-- 表单底部 -->
+        <el-divider />
+        <div class="form-footer">
+          <div class="footer-left">
+            <el-button @click="handleBack">
+              <el-icon><ArrowLeft /></el-icon> 返回
+            </el-button>
+          </div>
+          <div class="footer-right">
+            <el-button @click="handleReset">
+              <el-icon><Refresh /></el-icon> 重置
+            </el-button>
+            <el-button type="primary" :loading="submitting" @click="handleSubmit">
+              <el-icon><Check /></el-icon> 提交
+            </el-button>
+          </div>
+        </div>
+      </el-form>
+    </el-card>
+
+    <!-- 提交确认对话框 -->
+    <el-dialog
+      v-model="submitDialogVisible"
+      title="提交确认"
+      width="440px"
+      :close-on-click-modal="false"
+    >
+      <div class="submit-confirm">
+        <el-icon color="#e6a23c" size="56"><Warning /></el-icon>
+        <p>确定要提交该产品吗？</p>
+        <div class="summary">
+          <div class="summary-row">
+            <span>名称：</span>
+            <strong>{{ formData.name || '未填写' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>分类：</span>
+            <strong>{{ formData.category || '未选择' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>售价：</span>
+            <strong style="color: #409eff;">¥{{ formatNumber(formData.price) }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>库存：</span>
+            <strong>{{ formData.stock }} {{ formData.unit || '个' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>状态：</span>
+            <strong>{{ formData.status === 'active' ? '上架' : '下架' }}</strong>
+          </div>
+        </div>
+        <p class="hint">提交后产品将正式上架</p>
+      </div>
+      <template #footer>
+        <el-button @click="submitDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="confirmSubmit">
+          确定提交
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance, FormRules, UploadInstance, UploadFile } from 'element-plus'
+import {
+  ArrowLeft,
+  Plus,
+  Refresh,
+  Check,
+  Warning,
+  UploadFilled
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { createProduct } from '@/api/modules/products'
+
+const router = useRouter()
+
+// ========== 响应式数据 ==========
+const formRef = ref<FormInstance>()
+const uploadRef = ref<UploadInstance>()
+const loading = ref(false)
+const submitting = ref(false)
+const submitDialogVisible = ref(false)
+
+// 表单数据
+const formData = reactive({
+  name: '',
+  code: '',
+  category: '',
+  price: 0,
+  cost: 0,
+  stock: 0,
+  unit: '个',
+  status: 'active',
+  brand: '',
+  description: ''
+})
+
+// 文件列表
+const fileList = ref<UploadFile[]>([])
+
+// ========== 表单验证规则 ==========
+const formRules: FormRules = {
+  name: [
+    { required: true, message: '请输入产品名称', trigger: 'blur' },
+    { min: 2, max: 100, message: '名称长度在 2 到 100 个字符', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入产品编号', trigger: 'blur' }
+  ],
+  category: [
+    { required: true, message: '请选择分类', trigger: 'change' }
+  ],
+  price: [
+    { required: true, message: '请输入售价', trigger: 'blur' },
+    { type: 'number', min: 0, message: '售价不能为负数', trigger: 'blur' }
+  ],
+  cost: [
+    { type: 'number', min: 0, message: '成本不能为负数', trigger: 'blur' }
+  ],
+  stock: [
+    { required: true, message: '请输入库存数量', trigger: 'blur' },
+    { type: 'number', min: 0, message: '库存不能为负数', trigger: 'blur' }
+  ],
+  unit: [
+    { required: true, message: '请选择单位', trigger: 'change' }
+  ],
+  status: [
+    { required: true, message: '请选择状态', trigger: 'change' }
+  ]
+}
+
+// ========== 计算属性 ==========
+const formatNumber = (num: number) => {
+  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// ========== 生成编号 ==========
+const generateCode = () => {
+  const now = new Date()
+  const year = now.getFullYear().toString().slice(-2)
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0')
+  formData.code = `P-${year}${month}${day}-${random}`
+}
+
+// ========== 初始化 ==========
+const initForm = () => {
+  generateCode()
+}
+
+// ========== 附件处理 ==========
+const handleFileChange = (file: UploadFile, fileList: UploadFile[]) => {
+  if (file.size && file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过5MB')
+    const index = fileList.indexOf(file)
+    if (index > -1) {
+      fileList.splice(index, 1)
+    }
+    return
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  if (file.raw && !allowedTypes.includes(file.raw.type)) {
+    ElMessage.warning('只支持 JPG、PNG、GIF、WEBP 格式')
+    const index = fileList.indexOf(file)
+    if (index > -1) {
+      fileList.splice(index, 1)
+    }
+    return
+  }
+}
+
+const handleFileRemove = (file: UploadFile, fileList: UploadFile[]) => {}
+
+const handleFilePreview = (file: UploadFile) => {
+  if (file.url) {
+    window.open(file.url, '_blank')
+  }
+}
+
+const handleExceed = () => {
+  ElMessage.warning('最多只能上传5张图片')
+}
+
+// ========== 表单操作 ==========
+const handleBack = () => {
+  router.push('/products')
+}
+
+const handleReset = () => {
+  ElMessageBox.confirm('确定要重置表单吗？所有数据将被清空', '确认重置', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    formData.name = ''
+    generateCode()
+    formData.category = ''
+    formData.price = 0
+    formData.cost = 0
+    formData.stock = 0
+    formData.unit = '个'
+    formData.status = 'active'
+    formData.brand = ''
+    formData.description = ''
+    fileList.value = []
+    ElMessage.success('已重置')
+  }).catch(() => {})
+}
+
+const handleSubmit = async () => {
+  if (!formRef.value) return
+  try {
+    await formRef.value.validate()
+  } catch {
+    return
+  }
+
+  submitDialogVisible.value = true
+}
+
+const confirmSubmit = async () => {
+  submitting.value = true
+  try {
+    const submitData = {
+      name: formData.name,
+      category: formData.category,
+      price: formData.price,
+      cost: formData.cost,
+      stock: formData.stock,
+      unit: formData.unit,
+      status: formData.status,
+      brand: formData.brand,
+      description: formData.description
+    }
+    const res = await createProduct(submitData)
+    if (res.code === 0) {
+      ElMessage.success('产品创建成功！')
+      submitDialogVisible.value = false
+      router.push('/products')
+    } else {
+      ElMessage.error(res.message || '创建失败，请重试')
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || '创建失败，请重试')
+  } finally {
+    submitting.value = false
+  }
+} // catch (error) {
+    ElMessage.error('创建失败，请重试')
+  } finally {
+    submitting.value = false
+  }
+}
+
+// ========== 生命周期 ==========
+onMounted(() => {
+  initForm()
+})
+</script>
+
+<style scoped>
+.products-create-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.form-section {
+  padding: 20px 24px;
+  margin-bottom: 8px;
+}
+
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-indicator {
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+  border-radius: 2px;
+  margin-right: 10px;
+}
+
+.section-tip {
+  font-size: 12px;
+  font-weight: 400;
+  color: #909399;
+  margin-left: 8px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.submit-confirm {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.submit-confirm p {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: #606266;
+}
+
+.submit-confirm .hint {
+  font-size: 13px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.summary {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row strong {
+  color: #303133;
+}
+
+:deep(.el-upload--picture-card) {
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+}
+
+@media (max-width: 768px) {
+  .products-create-page {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-button {
+    flex: 1;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footer-left,
+  .footer-right {
+    justify-content: stretch;
+  }
+
+  .footer-left .el-button,
+  .footer-right .el-button {
+    flex: 1;
+  }
+}
+</style>
+
+

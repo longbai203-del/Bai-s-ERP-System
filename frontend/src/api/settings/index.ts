@@ -6,7 +6,7 @@ export const getsettingsList = (params?: any) => {
 }
 
 export const getsettingsDetail = (id: number) => {
-    return http.get(/settings/\)
+    return http.get("/settings")
 }
 
 export const createsettings = (data: any) => {
@@ -14,9 +14,12 @@ export const createsettings = (data: any) => {
 }
 
 export const updatesettings = (id: number, data: any) => {
-    return http.put(/settings/\, data)
+    return http.put("/settings", data)
 }
 
 export const deletesettings = (id: number) => {
-    return http.delete(/settings/\)
+    return http.delete("/settings")
 }
+
+
+

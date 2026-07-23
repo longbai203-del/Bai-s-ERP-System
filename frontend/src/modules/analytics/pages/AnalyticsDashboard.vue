@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/analytics/pages/AnalyticsDashboard.vue
   功能: 分析中心首页 - 数据分析总览
 -->
@@ -80,7 +80,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
-import { Refresh, TrendCharts, User, Box, DataLine, Monitor } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/analytics'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 

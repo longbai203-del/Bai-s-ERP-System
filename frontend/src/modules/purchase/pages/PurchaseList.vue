@@ -59,7 +59,24 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import {
+  ShoppingCart,
+  Plus,
+  Search,
+  Refresh,
+  Download,
+  View,
+  Edit,
+  Delete,
+  Top,
+  Bottom,
+  Check,
+  Close
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { getPurchaseList, deletePurchase, approvePurchase } from '@/api/modules/purchase'
 import { usePurchaseStore } from '../store'
 
 const router = useRouter()
@@ -93,3 +110,4 @@ onMounted(loadData)
 .search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .pagination { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>
+

@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/saas/pages/SaasDashboard.vue
   功能: SaaS中心首页 - SaaS管理总览
 -->
@@ -85,7 +85,18 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { User, Money, Box, DataLine, TrendCharts, Setting } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Search,
+  Refresh,
+  View,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import {  } from '@/api/modules/saas'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 

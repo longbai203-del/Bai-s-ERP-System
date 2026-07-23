@@ -1,53 +1,40 @@
-# Dependencies
+﻿# 依赖目录
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
+*.log.*
 
-# Environment
+# 环境文件
 .env
 .env.local
 .env.*.local
 
-# Build outputs
+# 构建产物
 dist/
-build/
+dist-ssr/
+*.local
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
+# 编辑器
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Temp files
-*.log
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
 *.tmp
 *.temp
 
-# Project specific
-tree.txt
-file-tree.txt
-folders.txt
-fix-modules.ps1# 临时文件和备份
+# 备份文件
+backup_*/
 *.bak
-*.tmp
-*.swp
-*~
 
-# 项目分析文件（已移到docs）
-file-tree.txt
-folders.txt
+# 测试覆盖率
+coverage/
+.nyc_output/
 
-# 开发工具脚本（已移到scripts/archive）
-generate-all-pages.js
-refactor-to-v2.js
-
-# 空目录（保留结构）
-**/empty/
-
-# PowerShell 脚本输出
-*.ps1
+# 项目特定
+token.txt

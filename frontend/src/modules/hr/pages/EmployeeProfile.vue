@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/hr/pages/EmployeeProfile.vue
   功能: 员工档案 - 完整员工档案管理
 -->

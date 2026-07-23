@@ -1,0 +1,677 @@
+﻿<template>
+  <div class="products-detail-page">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <div class="header-left">
+        <el-button @click="handleBack">
+          <el-icon><ArrowLeft /></el-icon> 返回列表
+        </el-button>
+        <h1>
+          <el-icon :size="28" color="#4F46E5"><Box /></el-icon>
+          产品详情
+        </h1>
+        <el-tag :type="detailData.status === 'active' ? 'success' : 'danger'" size="large" effect="dark">
+          {{ detailData.status === 'active' ? '上架' : '下架' }}
+        </el-tag>
+        <el-tag v-if="detailData.stock === 0" type="danger" size="large" effect="dark">
+          <el-icon><CircleCloseFilled /></el-icon> 缺货
+        </el-tag>
+        <el-tag v-else-if="detailData.stock < 10" type="warning" size="large" effect="dark">
+          <el-icon><Warning /></el-icon> 低库存
+        </el-tag>
+      </div>
+      <div class="header-actions">
+        <el-button type="warning" @click="handleEdit">
+          <el-icon><Edit /></el-icon> 编辑
+        </el-button>
+        <el-button type="success" @click="handleExport">
+          <el-icon><Download /></el-icon> 导出
+        </el-button>
+        <el-button type="danger" @click="handleDelete">
+          <el-icon><Delete /></el-icon> 删除
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 详情内容 -->
+    <div v-loading="loading">
+      <el-row :gutter="20">
+        <!-- 主信息 -->
+        <el-col :xs="24" :lg="16">
+          <el-card class="info-card" shadow="hover">
+            <template #header>
+              <span class="card-title">
+                <el-icon><InfoFilled /></el-icon> 产品信息
+              </span>
+            </template>
+
+            <el-descriptions :column="2" border>
+              <el-descriptions-item label="产品名称">
+                <strong>{{ detailData.name }}</strong>
+              </el-descriptions-item>
+              <el-descriptions-item label="产品编号">
+                {{ detailData.code }}
+              </el-descriptions-item>
+              <el-descriptions-item label="分类">
+                <el-tag size="small">{{ detailData.category || '-' }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="品牌">
+                {{ detailData.brand || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="售价">
+                <span style="font-weight: 700; color: #409eff; font-size: 18px;">
+                  ¥{{ formatNumber(detailData.price) }}
+                </span>
+              </el-descriptions-item>
+              <el-descriptions-item label="成本">
+                ¥{{ formatNumber(detailData.cost) }}
+              </el-descriptions-item>
+              <el-descriptions-item label="库存">
+                <span :style="{ color: getStockColor(detailData.stock), fontWeight: 600 }">
+                  {{ detailData.stock }} {{ detailData.unit || '个' }}
+                </span>
+              </el-descriptions-item>
+              <el-descriptions-item label="单位">
+                {{ detailData.unit || '个' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="状态">
+                <el-tag :type="detailData.status === 'active' ? 'success' : 'danger'">
+                  {{ detailData.status === 'active' ? '上架' : '下架' }}
+                </el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="创建时间">
+                {{ detailData.createdAt || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="更新时间">
+                {{ detailData.updatedAt || '-' }}
+              </el-descriptions-item>
+              <el-descriptions-item label="描述" :span="2">
+                <div class="description-text">{{ detailData.description || '暂无描述' }}</div>
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+
+          <!-- 产品图片 -->
+          <el-card class="image-card" shadow="hover" style="margin-top: 20px;">
+            <template #header>
+              <span class="card-title">
+                <el-icon><Picture /></el-icon> 产品图片
+                <span class="image-count">{{ images.length }} 张</span>
+              </span>
+            </template>
+
+            <div class="image-list">
+              <div v-if="images.length === 0" class="empty-image">
+                <el-empty description="暂无图片" :image-size="60" />
+              </div>
+              <el-image
+                v-for="(img, index) in images"
+                :key="index"
+                :src="img"
+                :preview-src-list="images"
+                fit="cover"
+                class="product-image"
+                :preview-teleported="true"
+              />
+            </div>
+          </el-card>
+        </el-col>
+
+        <!-- 侧边信息 -->
+        <el-col :xs="24" :lg="8">
+          <!-- 库存状态 -->
+          <el-card class="stock-card" shadow="hover">
+            <template #header>
+              <span class="card-title">
+                <el-icon><ShoppingCart /></el-icon> 库存状态
+              </span>
+            </template>
+
+            <div class="stock-status">
+              <div class="status-item">
+                <span class="status-label">当前库存</span>
+                <span class="status-value" :style="{ color: getStockColor(detailData.stock), fontSize: '24px', fontWeight: 700 }">
+                  {{ detailData.stock }}
+                </span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">单位</span>
+                <span class="status-value">{{ detailData.unit || '个' }}</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">库存状态</span>
+                <span class="status-value">
+                  <el-tag :type="getStockStatusTag(detailData.stock)" size="large">
+                    {{ getStockStatusLabel(detailData.stock) }}
+                  </el-tag>
+                </span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">库存价值</span>
+                <span class="status-value" style="font-weight: 700; color: #8b5cf6;">
+                  ¥{{ formatNumber(detailData.price * detailData.stock) }}
+                </span>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 销售统计 -->
+          <el-card class="sales-card" shadow="hover" style="margin-top: 20px;">
+            <template #header>
+              <span class="card-title">
+                <el-icon><TrendCharts /></el-icon> 销售统计
+              </span>
+            </template>
+
+            <div class="sales-stats">
+              <div class="sales-item">
+                <span class="sales-label">总销量</span>
+                <span class="sales-value">{{ salesStats.totalSales || 0 }}</span>
+              </div>
+              <div class="sales-item">
+                <span class="sales-label">本月销量</span>
+                <span class="sales-value">{{ salesStats.monthSales || 0 }}</span>
+              </div>
+              <div class="sales-item">
+                <span class="sales-label">总销售额</span>
+                <span class="sales-value" style="color: #409eff; font-weight: 700;">
+                  ¥{{ formatNumber(salesStats.totalRevenue || 0) }}
+                </span>
+              </div>
+              <div class="sales-item">
+                <span class="sales-label">评价数</span>
+                <span class="sales-value">{{ salesStats.reviews || 0 }}</span>
+              </div>
+              <div class="sales-item">
+                <span class="sales-label">平均评分</span>
+                <span class="sales-value">
+                  <el-rate v-model="salesStats.rating" disabled :colors="['#f56c6c', '#e6a23c', '#67c23a']" />
+                  ({{ salesStats.rating || 0 }})
+                </span>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 快捷操作 -->
+          <el-card class="quick-actions-card" shadow="hover" style="margin-top: 20px;">
+            <template #header>
+              <span class="card-title">
+                <el-icon><Operation /></el-icon> 快捷操作
+              </span>
+            </template>
+
+            <div class="quick-actions">
+              <el-button type="primary" plain size="small" @click="handleEdit">
+                <el-icon><Edit /></el-icon> 编辑
+              </el-button>
+              <el-button type="success" plain size="small" @click="handleDuplicate">
+                <el-icon><CopyDocument /></el-icon> 复制
+              </el-button>
+              <el-button type="warning" plain size="small" @click="handleExport">
+                <el-icon><Download /></el-icon> 导出
+              </el-button>
+              <el-button type="danger" plain size="small" @click="handleDelete">
+                <el-icon><Delete /></el-icon> 删除
+              </el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 删除确认对话框 -->
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <div class="delete-confirm">
+        <el-icon color="#f56c6c" size="56"><WarningFilled /></el-icon>
+        <p>确定要删除该产品吗？</p>
+        <p class="delete-hint">产品名称：<strong>{{ detailData.name }}</strong></p>
+        <p class="delete-hint">此操作不可恢复，请谨慎操作！</p>
+      </div>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="deleteLoading" @click="confirmDelete">
+          确定删除
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ArrowLeft,
+  Box,
+  Edit,
+  Download,
+  Delete,
+  InfoFilled,
+  Picture,
+  ShoppingCart,
+  TrendCharts,
+  Operation,
+  CopyDocument,
+  WarningFilled,
+  CircleCloseFilled,
+  Warning,
+  User,
+  Clock,
+  Star
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { getProductDetail, deleteProduct } from '@/api/modules/products'
+
+const router = useRouter()
+const route = useRoute()
+
+// ========== 响应式数据 ==========
+const loading = ref(false)
+const deleteLoading = ref(false)
+const deleteDialogVisible = ref(false)
+
+// 详情数据
+const detailData = reactive({
+  id: 0,
+  name: '',
+  code: '',
+  category: '',
+  price: 0,
+  cost: 0,
+  stock: 0,
+  unit: '个',
+  status: 'active',
+  brand: '',
+  description: '',
+  createdAt: '',
+  updatedAt: ''
+})
+
+// 产品图片
+const images = ref([
+  'https://via.placeholder.com/200x200/409eff/ffffff?text=Product+Image+1',
+  'https://via.placeholder.com/200x200/67c23a/ffffff?text=Product+Image+2',
+  'https://via.placeholder.com/200x200/e6a23c/ffffff?text=Product+Image+3'
+])
+
+// 销售统计
+const salesStats = reactive({
+  totalSales: 156,
+  monthSales: 32,
+  totalRevenue: 28560,
+  reviews: 48,
+  rating: 4.5
+})
+
+// ========== 计算属性 ==========
+const formatNumber = (num: number) => {
+  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const getStockColor = (stock: number) => {
+  if (stock === 0) return '#f56c6c'
+  if (stock < 10) return '#e6a23c'
+  return '#67c23a'
+}
+
+const getStockStatusTag = (stock: number) => {
+  if (stock === 0) return 'danger'
+  if (stock < 10) return 'warning'
+  return 'success'
+}
+
+const getStockStatusLabel = (stock: number) => {
+  if (stock === 0) return '缺货'
+  if (stock < 10) return '库存不足'
+  return '库存充足'
+}
+
+// ========== 获取详情数据 ==========
+const fetchDetail = async () => {
+  const id = route.params.id as string
+  if (!id) {
+    ElMessage.error('无效的产品ID')
+    router.push('/products')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await getProductDetail(Number(id))
+    if (res.code === 0 && res.data) {
+      const data = res.data
+      detailData.id = data.id
+      detailData.name = data.name
+      detailData.code = data.code
+      detailData.category = data.category
+      detailData.price = data.price || 0
+      detailData.cost = data.cost || 0
+      detailData.stock = data.stock || 0
+      detailData.unit = data.unit || '个'
+      detailData.status = data.status || 'active'
+      detailData.brand = data.brand || ''
+      detailData.description = data.description || ''
+      detailData.createdAt = data.created_at || ''
+      detailData.updatedAt = data.updated_at || ''
+    }
+  } catch (error) {
+    ElMessage.error('加载详情失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+  loading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    const mockData = {
+      id: parseInt(id),
+      name: `产品 ${id}`,
+      code: `P-${String(id).padStart(6, '0')}`,
+      category: ['洗车', '美容', '保养', '配件', '套餐', '会员'][parseInt(id) % 6],
+      price: Math.round((Math.random() * 500 + 20) * 100) / 100,
+      cost: Math.round((Math.random() * 300 + 10) * 100) / 100,
+      stock: Math.floor(Math.random() * 100),
+      unit: ['个', '件', '瓶', '盒', '套', '张'][parseInt(id) % 6],
+      status: ['active', 'active', 'inactive', 'active'][parseInt(id) % 4],
+      brand: ['3M', 'Turtle Wax', 'Meguiars', 'SONAX', 'CarPro'][parseInt(id) % 5],
+      description: '这是一条示例产品描述信息，包含产品的详细说明和特点。',
+      createdAt: '2026-07-20 10:30:00',
+      updatedAt: '2026-07-22 14:20:00'
+    }
+
+    Object.assign(detailData, mockData)
+  } catch (error) {
+    ElMessage.error('加载详情失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// ========== 事件处理 ==========
+const handleBack = () => {
+  router.push('/products')
+}
+
+const handleEdit = () => {
+  router.push(`/products/edit/${detailData.id}`)
+}
+
+const handleDelete = () => {
+  deleteDialogVisible.value = true
+}
+
+const confirmDelete = async () => {
+  deleteLoading.value = true
+  try {
+    await deleteProduct(detailData.id)
+    ElMessage.success('删除成功！')
+    deleteDialogVisible.value = false
+    router.push('/products')
+  } catch (error) {
+    ElMessage.error('删除失败，请重试')
+  } finally {
+    deleteLoading.value = false
+  }
+} catch (error) {
+    ElMessage.error('删除失败，请重试')
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
+const handleDuplicate = () => {
+  ElMessage.success('产品已复制')
+}
+
+const handleExport = () => {
+  ElMessage.success('导出任务已提交')
+}
+
+// ========== 生命周期 ==========
+onMounted(() => {
+  fetchDetail()
+})
+</script>
+
+<style scoped>
+.products-detail-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.info-card,
+.stock-card,
+.sales-card,
+.quick-actions-card,
+.image-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.image-count {
+  font-size: 13px;
+  font-weight: 400;
+  color: #909399;
+  margin-left: 8px;
+}
+
+.description-text {
+  line-height: 1.8;
+  color: #606266;
+  word-break: break-all;
+}
+
+.image-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.empty-image {
+  width: 100%;
+  padding: 8px 0;
+}
+
+.product-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  border: 1px solid #ebeef5;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stock-status {
+  padding: 4px 0;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  color: #909399;
+  font-size: 14px;
+}
+
+.status-value {
+  font-weight: 500;
+  color: #303133;
+}
+
+.sales-stats {
+  padding: 4px 0;
+}
+
+.sales-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f2f5;
+  align-items: center;
+}
+
+.sales-item:last-child {
+  border-bottom: none;
+}
+
+.sales-label {
+  color: #909399;
+  font-size: 14px;
+}
+
+.sales-value {
+  font-weight: 500;
+  color: #303133;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quick-actions .el-button {
+  width: 100%;
+}
+
+.delete-confirm {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.delete-confirm p {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: #606266;
+}
+
+.delete-confirm .delete-hint {
+  font-size: 14px;
+  color: #909399;
+  margin-top: 6px;
+}
+
+.delete-confirm .delete-hint strong {
+  color: #303133;
+}
+
+@media (max-width: 768px) {
+  .products-detail-page {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-button {
+    flex: 1;
+    font-size: 12px;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .image-list {
+    justify-content: center;
+  }
+
+  .product-image {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media print {
+  .header-actions,
+  .quick-actions .el-button {
+    display: none !important;
+  }
+
+  .products-detail-page {
+    background: white;
+    padding: 0;
+  }
+
+  .info-card,
+  .stock-card,
+  .sales-card,
+  .quick-actions-card,
+  .image-card {
+    box-shadow: none !important;
+    border: 1px solid #ebeef5;
+  }
+
+  .page-header {
+    margin-bottom: 12px;
+  }
+}
+</style>
+

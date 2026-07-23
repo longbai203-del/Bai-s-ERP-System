@@ -1,21 +1,46 @@
 ﻿<template>
-  <div class="pos-edit">
-    <el-card>
+  <div class="page-container">
+    <el-card shadow="never">
       <template #header>
-        <div class="card-header">
-          <span>编辑 pos</span>
+        <div class="page-header">
+          <span class="page-title">编辑pos</span>
           <el-button @click="handleBack">返回</el-button>
         </div>
       </template>
-      <el-empty description="编辑 pos 页面开发中" />
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="名称">
+          <el-input v-model="form.name" placeholder="请输入名称" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="form.description" type="textarea" placeholder="请输入描述" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSubmit">保存</el-button>
+          <el-button @click="handleBack">取消</el-button>
+        </el-form-item>
+      </el-form>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()
+const form = reactive({ name: '示例数据', description: '编辑示例' })
+
+onMounted(() => {
+  const id = route.params.id
+  console.log('编辑ID:', id)
+})
+
+const handleSubmit = () => {
+  ElMessage.success('保存成功')
+  router.push('/pos')
+}
 
 const handleBack = () => {
   router.push('/pos')
@@ -23,6 +48,7 @@ const handleBack = () => {
 </script>
 
 <style scoped>
-.pos-edit { padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
+.page-container { padding: 0; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.page-title { font-size: 18px; font-weight: bold; }
 </style>

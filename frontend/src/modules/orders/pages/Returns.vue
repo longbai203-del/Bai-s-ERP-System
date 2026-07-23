@@ -1,1196 +1,1145 @@
 ﻿<template>
-  <div class="orders-">
-    
-<div class="page-container" data-page="03-orders-returns">
+  <div class="returns-page">
+    <!-- 页面标题 -->
     <div class="page-header">
-        <h1><i class="fas fa-undo"></i> 退货管理</h1>
-        <div class="page-actions">
-            <button class="btn btn-primary" onclick="window.ReturnOrderModule.newReturn()">
-                <i class="fas fa-plus"></i> 新建退货
-            </button>
-            <button class="btn btn-success" onclick="window.ReturnOrderModule.processReturns()">
-                <i class="fas fa-check"></i> 批量处理
-            </button>
-            <button class="btn btn-outline" onclick="location.reload()">
-                <i class="fas fa-sync-alt"></i> 刷新
-            </button>
-        </div>
+      <div class="header-left">
+        <h1>
+          <el-icon :size="28" color="#8B5CF6"><RefreshLeft /></el-icon>
+          退货管理
+        </h1>
+        <span class="subtitle">退货申请处理与流程追踪</span>
+      </div>
+      <div class="header-actions">
+        <el-button type="success" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建退货
+        </el-button>
+        <el-button type="primary" @click="handleBatchProcess" :disabled="selectedIds.length === 0">
+          <el-icon><Check /></el-icon> 批量处理 ({{ selectedIds.length }})
+        </el-button>
+        <el-button @click="handleExport">
+          <el-icon><Download /></el-icon> 导出
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><RefreshRight /></el-icon> 刷新
+        </el-button>
+      </div>
     </div>
-    <div class="page-content">
-        <div class="return-container">
-            
-            <div class="return-stats">
-                <div class="stat-card">
-                    <span class="stat-label">待审核</span>
-                    <span class="stat-number" id="pendingReturns">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">审核通过</span>
-                    <span class="stat-number" id="approvedReturns">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">退货中</span>
-                    <span class="stat-number" id="shippingReturns">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">已完成</span>
-                    <span class="stat-number" id="completedReturns">0</span>
-                </div>
-            </div>
 
-            
-            <div class="return-search">
-                <input type="text" id="returnSearch" placeholder="搜索退货单号或订单号..." 
-                       oninput="window.ReturnOrderModule.search(this.value)" />
-                <select id="returnStatusFilter" onchange="window.ReturnOrderModule.filterByStatus(this.value)">
-                    <option value="">全部状态</option>
-                    <option value="pending">待审核</option>
-                    <option value="approved">审核通过</option>
-                    <option value="shipping">退货中</option>
-                    <option value="completed">已完成</option>
-                    <option value="rejected">已拒绝</option>
-                </select>
-                <button class="btn btn-primary" onclick="window.ReturnOrderModule.searchReturns()">
-                    <i class="fas fa-search"></i> 搜索
-                </button>
+    <!-- 统计卡片 -->
+    <el-row :gutter="20" class="stat-cards">
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover" @click="filterByStatus('pending')">
+          <div class="stat-content">
+            <div class="stat-icon pending">
+              <el-icon><Clock /></el-icon>
             </div>
+            <div class="stat-info">
+              <div class="stat-label">待审核</div>
+              <div class="stat-value">{{ statistics.pending }}</div>
+              <div class="stat-change warning">等待审核</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover" @click="filterByStatus('approved')">
+          <div class="stat-content">
+            <div class="stat-icon approved">
+              <el-icon><Select /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">审核通过</div>
+              <div class="stat-value">{{ statistics.approved }}</div>
+              <div class="stat-change info">等待退货</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover" @click="filterByStatus('shipping')">
+          <div class="stat-content">
+            <div class="stat-icon shipping">
+              <el-icon><Van /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">退货中</div>
+              <div class="stat-value">{{ statistics.shipping }}</div>
+              <div class="stat-change primary">运输中</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover" @click="filterByStatus('completed')">
+          <div class="stat-content">
+            <div class="stat-icon completed">
+              <el-icon><SuccessFilled /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已完成</div>
+              <div class="stat-value">{{ statistics.completed }}</div>
+              <div class="stat-change positive">退货完成</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover" @click="filterByStatus('rejected')">
+          <div class="stat-content">
+            <div class="stat-icon rejected">
+              <el-icon><CircleClose /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已拒绝</div>
+              <div class="stat-value">{{ statistics.rejected }}</div>
+              <div class="stat-change negative">已驳回</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="4">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon total">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">退货总额</div>
+              <div class="stat-value">¥{{ formatNumber(statistics.totalAmount) }}</div>
+              <div class="stat-change info">累计金额</div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
-            
-            <div class="return-list">
-                <table class="return-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selectAll" onchange="window.ReturnOrderModule.toggleAll(this.checked)" /></th>
-                            <th>退货单号</th>
-                            <th>原订单</th>
-                            <th>客户</th>
-                            <th>退货商品</th>
-                            <th>退款金额</th>
-                            <th>状态</th>
-                            <th>申请时间</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="returnTableBody">
-                        <tr>
-                            <td colspan="9" style="text-align:center;padding:40px;color:#9CA3AF;">
-                                <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-                                暂无退货记录
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- 搜索筛选 -->
+    <el-card class="filter-card" shadow="hover">
+      <el-form :model="filterForm" inline class="filter-form">
+        <el-form-item label="退货单号">
+          <el-input v-model="filterForm.returnNo" placeholder="输入退货单号" clearable style="width: 150px" />
+        </el-form-item>
+        <el-form-item label="原订单">
+          <el-input v-model="filterForm.orderNo" placeholder="输入订单号" clearable style="width: 150px" />
+        </el-form-item>
+        <el-form-item label="客户">
+          <el-input v-model="filterForm.customer" placeholder="输入客户名称" clearable style="width: 140px" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="filterForm.status" placeholder="全部状态" clearable style="width: 120px">
+            <el-option label="待审核" value="pending" />
+            <el-option label="审核通过" value="approved" />
+            <el-option label="退货中" value="shipping" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="已拒绝" value="rejected" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始"
+            end-placeholder="结束"
+            value-format="YYYY-MM-DD"
+            style="width: 220px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon> 搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon> 重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-            
-            <div class="return-pagination" id="returnPagination">
-                <span id="returnTotal">共 0 条记录</span>
-                <div class="pagination-btns">
-                    <button onclick="window.ReturnOrderModule.prevPage()"><i class="fas fa-chevron-left"></i></button>
-                    <span id="returnPageInfo">1/1</span>
-                    <button onclick="window.ReturnOrderModule.nextPage()"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
+    <!-- 数据表格 -->
+    <el-card class="table-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <div class="header-left">
+            <span>退货列表</span>
+            <el-tag size="small" type="info" v-if="selectedIds.length > 0">
+              已选 {{ selectedIds.length }} 项
+            </el-tag>
+          </div>
+          <div class="header-right">
+            <span class="total-info">共 {{ pagination.total }} 条记录</span>
+          </div>
         </div>
-    </div>
-</div>
+      </template>
 
-<style>
-    .return-container { max-width: 1200px; margin: 0 auto; }
-    
-    .return-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-    .return-stats .stat-card { background: white; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #e5e7eb; }
-    .return-stats .stat-card .stat-label { display: block; font-size: 13px; color: #6B7280; }
-    .return-stats .stat-card .stat-number { display: block; font-size: 28px; font-weight: 700; color: #1F2937; margin-top: 4px; }
-    .return-stats .stat-card:nth-child(1) .stat-number { color: #F59E0B; }
-    .return-stats .stat-card:nth-child(2) .stat-number { color: #3B82F6; }
-    .return-stats .stat-card:nth-child(3) .stat-number { color: #8B5CF6; }
-    .return-stats .stat-card:nth-child(4) .stat-number { color: #10B981; }
-    
-    .return-search { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .return-search input { flex: 1; padding: 8px 14px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; min-width: 200px; }
-    .return-search input:focus { outline: none; border-color: #4F46E5; }
-    .return-search select { padding: 8px 14px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; background: white; }
-    
-    .return-list { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
-    .return-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .return-table th { background: #F9FAFB; padding: 10px 14px; text-align: left; font-weight: 600; color: #6B7280; border-bottom: 1px solid #E5E7EB; }
-    .return-table td { padding: 10px 14px; border-bottom: 1px solid #F3F4F6; }
-    .return-table tr:hover { background: #F9FAFB; }
-    
-    .badge-return-pending { background: #FEF3C7; color: #92400E; }
-    .badge-return-approved { background: #DBEAFE; color: #1E40AF; }
-    .badge-return-shipping { background: #EDE9FE; color: #6D28D9; }
-    .badge-return-completed { background: #D1FAE5; color: #065F46; }
-    .badge-return-rejected { background: #FEE2E2; color: #991B1B; }
-    
-    .return-pagination { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-radius: 12px; margin-top: 16px; border: 1px solid #e5e7eb; }
-    .return-pagination .pagination-btns { display: flex; gap: 4px; align-items: center; }
-    .return-pagination button { padding: 4px 12px; border: 1px solid #D1D5DB; border-radius: 4px; background: white; cursor: pointer; }
-    .return-pagination button:hover { background: #F3F4F6; }
-    
-    .btn-sm-return { padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; }
-    .btn-sm-return-primary { background: #4F46E5; color: white; }
-    .btn-sm-return-primary:hover { background: #4338CA; }
-    .btn-sm-return-success { background: #10B981; color: white; }
-    .btn-sm-return-success:hover { background: #059669; }
-    .btn-sm-return-danger { background: #EF4444; color: white; }
-    .btn-sm-return-danger:hover { background: #DC2626; }
-    .btn-sm-return-warning { background: #F59E0B; color: white; }
-    .btn-sm-return-warning:hover { background: #D97706; }
-    
-    [data-theme="dark"] .return-stats .stat-card,
-    [data-theme="dark"] .return-list,
-    [data-theme="dark"] .return-pagination { background: #2C2C2E; border-color: #48484A; }
-    [data-theme="dark"] .return-stats .stat-card .stat-number { color: #F5F5F7; }
-    [data-theme="dark"] .return-table th { background: #3A3A3C; color: #9CA3AF; }
-    [data-theme="dark"] .return-table td { border-color: #3A3A3C; }
-    [data-theme="dark"] .return-table tr:hover { background: #3A3A3C; }
-    [data-theme="dark"] .return-search input,
-    [data-theme="dark"] .return-search select { background: #3A3A3C; border-color: #48484A; color: #F5F5F7; }
-    
-    @media (max-width: 768px) { .return-stats { grid-template-columns: repeat(2, 1fr); } .return-table { font-size: 12px; } }
-</style>
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        v-loading="loading"
+        stripe
+        border
+        @selection-change="handleSelectionChange"
+        row-key="id"
+      >
+        <el-table-column type="selection" width="45" align="center" />
+        <el-table-column prop="returnNo" label="退货单号" min-width="140">
+          <template #default="{ row }">
+            <el-link type="primary" @click="handleViewDetail(row.id)">
+              {{ row.returnNo }}
+            </el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderNo" label="原订单" width="140" />
+        <el-table-column prop="customer" label="客户名称" min-width="120" />
+        <el-table-column prop="amount" label="退货金额" width="140" align="right">
+          <template #default="{ row }">
+            <span style="font-weight: 600; color: #f56c6c;">
+              ¥{{ formatNumber(row.amount) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="product" label="退货商品" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="reason" label="退货原因" width="120" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTag(row.status)" effect="light" size="small">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createdAt" label="申请时间" width="160" sortable />
+        <el-table-column label="操作" width="260" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button size="small" type="primary" link @click="handleViewDetail(row.id)">
+              <el-icon><View /></el-icon>
+            </el-button>
+            <el-button
+              v-if="row.status === 'pending'"
+              size="small"
+              type="success"
+              link
+              @click="handleApprove(row)"
+            >
+              <el-icon><Select /></el-icon> 通过
+            </el-button>
+            <el-button
+              v-if="row.status === 'pending'"
+              size="small"
+              type="danger"
+              link
+              @click="handleReject(row)"
+            >
+              <el-icon><Close /></el-icon> 拒绝
+            </el-button>
+            <el-button
+              v-if="row.status === 'approved'"
+              size="small"
+              type="warning"
+              link
+              @click="handleStartShipping(row)"
+            >
+              <el-icon><Van /></el-icon> 发货
+            </el-button>
+            <el-button
+              v-if="row.status === 'shipping'"
+              size="small"
+              type="success"
+              link
+              @click="handleComplete(row)"
+            >
+              <el-icon><SuccessFilled /></el-icon> 完成
+            </el-button>
+            <el-button size="small" type="danger" link @click="handleDelete(row.id)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-<script>
-    (function() {
-        window.ReturnOrderModule = {
-            returns: [],
-            filteredReturns: [],
-            page: 1,
-            pageSize: 10,
-            selected: [],
-            
-            init: function() {
-                this.loadReturns();
-                this.render();
-            },
-            
-            loadReturns: function() {
-                const saved = localStorage.getItem('return_order_data');
-                if (saved) {
-                    try {
-                        this.returns = JSON.parse(saved);
-                    } catch (e) {
-                        this.returns = this.getMockReturns();
-                    }
-                } else {
-                    this.returns = this.getMockReturns();
-                    localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                }
-                this.filteredReturns = [...this.returns];
-            },
-            
-            getMockReturns: function() {
-                return [
-                    { id: 'RT-001', orderId: 'ORD-001', customer: '张伟', product: '标准洗车', amount: 68, status: 'pending', time: '2024-01-15 14:30' },
-                    { id: 'RT-002', orderId: 'ORD-003', customer: '李娜', product: '抛光打蜡', amount: 388, status: 'approved', time: '2024-01-16 09:20' },
-                    { id: 'RT-003', orderId: 'ORD-005', customer: '王强', product: '内饰清洗', amount: 328, status: 'shipping', time: '2024-01-17 16:45' },
-                    { id: 'RT-004', orderId: 'ORD-002', customer: '刘洋', product: '精致洗车', amount: 128, status: 'completed', time: '2024-01-18 11:00' },
-                    { id: 'RT-005', orderId: 'ORD-007', customer: '陈静', product: '漆面镀晶', amount: 688, status: 'rejected', time: '2024-01-19 13:15' }
-                ];
-            },
-            
-            render: function() {
-                const tbody = document.getElementById('returnTableBody');
-                const start = (this.page - 1) * this.pageSize;
-                const end = start + this.pageSize;
-                const pageData = this.filteredReturns.slice(start, end);
-                
-                if (pageData.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="9" style="text-align:center;padding:40px;color:#9CA3AF;">
-                                <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-                                暂无退货记录
-                            </td>
-                        </tr>
-                    `;
-                } else {
-                    const statusMap = {
-                        pending: '待审核',
-                        approved: '审核通过',
-                        shipping: '退货中',
-                        completed: '已完成',
-                        rejected: '已拒绝'
-                    };
-                    const statusClass = {
-                        pending: 'badge-return-pending',
-                        approved: 'badge-return-approved',
-                        shipping: 'badge-return-shipping',
-                        completed: 'badge-return-completed',
-                        rejected: 'badge-return-rejected'
-                    };
-                    
-                    tbody.innerHTML = pageData.map(r => `
-                        <tr>
-                            <td><input type="checkbox" class="return-checkbox" data-id="${r.id}" onchange="window.ReturnOrderModule.toggleSelect(this)" /></td>
-                            <td><strong>${r.id}</strong></td>
-                            <td>${r.orderId}</td>
-                            <td>${r.customer}</td>
-                            <td>${r.product}</td>
-                            <td><strong>¥${r.amount.toFixed(2)}</strong></td>
-                            <td><span class="badge ${statusClass[r.status] || 'badge-return-pending'}">${statusMap[r.status] || r.status}</span></td>
-                            <td style="font-size:13px;color:#6B7280;">${r.time}</td>
-                            <td>
-                                <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                                    <button class="btn-sm-return btn-sm-return-primary" onclick="window.ReturnOrderModule.viewReturn('${r.id}')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    ${r.status === 'pending' ? `
-                                        <button class="btn-sm-return btn-sm-return-success" onclick="window.ReturnOrderModule.approveReturn('${r.id}')">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button class="btn-sm-return btn-sm-return-danger" onclick="window.ReturnOrderModule.rejectReturn('${r.id}')">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    ` : ''}
-                                    ${r.status === 'approved' ? `
-                                        <button class="btn-sm-return btn-sm-return-warning" onclick="window.ReturnOrderModule.startShipping('${r.id}')">
-                                            <i class="fas fa-truck"></i>
-                                        </button>
-                                    ` : ''}
-                                    ${r.status === 'shipping' ? `
-                                        <button class="btn-sm-return btn-sm-return-success" onclick="window.ReturnOrderModule.completeReturn('${r.id}')">
-                                            <i class="fas fa-check-circle"></i>
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-                
-                this.updateStats();
-                this.renderPagination();
-            },
-            
-            updateStats: function() {
-                document.getElementById('pendingReturns').textContent = this.returns.filter(r => r.status === 'pending').length;
-                document.getElementById('approvedReturns').textContent = this.returns.filter(r => r.status === 'approved').length;
-                document.getElementById('shippingReturns').textContent = this.returns.filter(r => r.status === 'shipping').length;
-                document.getElementById('completedReturns').textContent = this.returns.filter(r => r.status === 'completed').length;
-            },
-            
-            renderPagination: function() {
-                const total = this.filteredReturns.length;
-                const totalPages = Math.ceil(total / this.pageSize) || 1;
-                document.getElementById('returnTotal').textContent = '共 ' + total + ' 条记录';
-                document.getElementById('returnPageInfo').textContent = this.page + '/' + totalPages;
-            },
-            
-            newReturn: function() {
-                const orderId = prompt('输入原订单号：');
-                if (!orderId) return;
-                const product = prompt('输入退货商品名称：');
-                if (!product) return;
-                const amount = parseFloat(prompt('输入退款金额：'));
-                if (isNaN(amount) || amount <= 0) return;
-                
-                const returnRecord = {
-                    id: 'RT-' + Date.now().toString().slice(-6),
-                    orderId: orderId,
-                    customer: '客户',
-                    product: product,
-                    amount: amount,
-                    status: 'pending',
-                    time: new Date().toLocaleString()
-                };
-                this.returns.push(returnRecord);
-                this.filteredReturns = [...this.returns];
-                localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                this.render();
-                alert('退货申请已创建: ' + returnRecord.id);
-            },
-            
-            processReturns: function() {
-                const pending = this.returns.filter(r => r.status === 'pending');
-                if (pending.length === 0) {
-                    alert('没有待处理的退货');
-                    return;
-                }
-                const confirm = confirm('批量审核通过 ' + pending.length + ' 条退货申请？');
-                if (confirm) {
-                    pending.forEach(r => r.status = 'approved');
-                    localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                    this.render();
-                    alert('已审核 ' + pending.length + ' 条退货申请');
-                }
-            },
-            
-            search: function(query) {
-                if (!query || query.length < 2) {
-                    this.filteredReturns = [...this.returns];
-                } else {
-                    this.filteredReturns = this.returns.filter(r => 
-                        r.id.includes(query) || 
-                        r.orderId.includes(query) || 
-                        r.customer.includes(query) ||
-                        r.product.includes(query)
-                    );
-                }
-                this.page = 1;
-                this.render();
-            },
-            
-            filterByStatus: function(status) {
-                if (!status) {
-                    this.filteredReturns = [...this.returns];
-                } else {
-                    this.filteredReturns = this.returns.filter(r => r.status === status);
-                }
-                this.page = 1;
-                this.render();
-            },
-            
-            searchReturns: function() {
-                const query = document.getElementById('returnSearch').value;
-                this.search(query);
-            },
-            
-            toggleSelect: function(checkbox) {
-                if (checkbox.checked) {
-                    this.selected.push(checkbox.dataset.id);
-                } else {
-                    this.selected = this.selected.filter(id => id !== checkbox.dataset.id);
-                }
-            },
-            
-            toggleAll: function(checked) {
-                document.querySelectorAll('.return-checkbox').forEach(cb => {
-                    cb.checked = checked;
-                    if (checked) {
-                        this.selected.push(cb.dataset.id);
-                    }
-                });
-                if (!checked) this.selected = [];
-            },
-            
-            viewReturn: function(id) {
-                const record = this.returns.find(r => r.id === id);
-                if (record) {
-                    alert('退货详情:\n' +
-                          '单号: ' + record.id + '\n' +
-                          '订单: ' + record.orderId + '\n' +
-                          '客户: ' + record.customer + '\n' +
-                          '商品: ' + record.product + '\n' +
-                          '金额: ¥' + record.amount.toFixed(2) + '\n' +
-                          '状态: ' + record.status + '\n' +
-                          '时间: ' + record.time);
-                }
-            },
-            
-            approveReturn: function(id) {
-                if (confirm('确认审核通过该退货？')) {
-                    const record = this.returns.find(r => r.id === id);
-                    if (record) {
-                        record.status = 'approved';
-                        localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                        this.render();
-                        alert('退货已审核通过');
-                    }
-                }
-            },
-            
-            rejectReturn: function(id) {
-                if (confirm('确认拒绝该退货？')) {
-                    const record = this.returns.find(r => r.id === id);
-                    if (record) {
-                        record.status = 'rejected';
-                        localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                        this.render();
-                        alert('退货已拒绝');
-                    }
-                }
-            },
-            
-            startShipping: function(id) {
-                const record = this.returns.find(r => r.id === id);
-                if (record) {
-                    record.status = 'shipping';
-                    localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                    this.render();
-                    alert('退货已进入物流环节');
-                }
-            },
-            
-            completeReturn: function(id) {
-                if (confirm('确认该退货已完成？')) {
-                    const record = this.returns.find(r => r.id === id);
-                    if (record) {
-                        record.status = 'completed';
-                        localStorage.setItem('return_order_data', JSON.stringify(this.returns));
-                        this.render();
-                        alert('退货已完成');
-                    }
-                }
-            },
-            
-            prevPage: function() {
-                if (this.page > 1) {
-                    this.page--;
-                    this.render();
-                }
-            },
-            
-            nextPage: function() {
-                const totalPages = Math.ceil(this.filteredReturns.length / this.pageSize);
-                if (this.page < totalPages) {
-                    this.page++;
-                    this.render();
-                }
-            }
-        };
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            window.ReturnOrderModule.init();
-        });
-    })();
-</script>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+
+    <!-- 新建退货对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      title="新建退货申请"
+      width="600px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form :model="dialogForm" :rules="dialogRules" ref="dialogFormRef" label-width="110px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="原订单号" prop="orderNo">
+              <el-input v-model="dialogForm.orderNo" placeholder="请输入原订单号" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="客户名称" prop="customer">
+              <el-input v-model="dialogForm.customer" placeholder="请输入客户名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="退货商品" prop="product">
+              <el-input v-model="dialogForm.product" placeholder="请输入退货商品名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="退货金额" prop="amount">
+              <el-input-number
+                v-model="dialogForm.amount"
+                :min="0.01"
+                :precision="2"
+                :max="999999.99"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="退货原因" prop="reason">
+              <el-select v-model="dialogForm.reason" placeholder="请选择退货原因" style="width: 100%">
+                <el-option label="产品质量问题" value="产品质量问题" />
+                <el-option label="发错商品" value="发错商品" />
+                <el-option label="运输损坏" value="运输损坏" />
+                <el-option label="客户不满意" value="客户不满意" />
+                <el-option label="其他原因" value="其他原因" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="退款方式" prop="method">
+              <el-select v-model="dialogForm.method" placeholder="请选择退款方式" style="width: 100%">
+                <el-option label="原路返回" value="原路返回" />
+                <el-option label="银行转账" value="银行转账" />
+                <el-option label="现金退款" value="现金退款" />
+                <el-option label="余额抵扣" value="余额抵扣" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="备注">
+              <el-input v-model="dialogForm.remark" type="textarea" :rows="3" placeholder="请输入备注" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="confirmDialogSubmit">
+          提交申请
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 拒绝原因对话框 -->
+    <el-dialog
+      v-model="rejectDialogVisible"
+      title="拒绝退货"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="rejectForm" ref="rejectFormRef" label-width="100px">
+        <el-form-item label="拒绝原因" prop="reason" required>
+          <el-input
+            v-model="rejectForm.reason"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入拒绝原因..."
+            maxlength="200"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item label="通知客户">
+          <el-switch v-model="rejectForm.notifyCustomer" />
+          <span style="margin-left: 8px; color: #909399; font-size: 13px;">发送通知邮件</span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="rejectDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="rejectLoading" @click="confirmReject">
+          确认拒绝
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 批量处理对话框 -->
+    <el-dialog
+      v-model="batchDialogVisible"
+      title="批量处理退货"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <div class="batch-info">
+        <p>将批量处理 <strong>{{ selectedIds.length }}</strong> 条退货申请</p>
+        <p class="batch-hint">批量操作将统一设置状态为"审核通过"</p>
+        <div class="selected-list" v-if="selectedIds.length <= 5">
+          <el-tag
+            v-for="id in selectedIds"
+            :key="id"
+            size="small"
+            style="margin: 2px 4px;"
+          >
+            {{ getReturnNoById(id) }}
+          </el-tag>
+        </div>
+        <div v-else class="selected-list">
+          <el-tag
+            v-for="id in selectedIds.slice(0, 3)"
+            :key="id"
+            size="small"
+            style="margin: 2px 4px;"
+          >
+            {{ getReturnNoById(id) }}
+          </el-tag>
+          <el-tag size="small" type="info">+{{ selectedIds.length - 3 }} 项</el-tag>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="batchDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="batchLoading" @click="confirmBatchProcess">
+          确认批量处理
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Returns',
-  data() {
-    return {}
-  },
-  mounted() {
-    // 从原 JS 迁移的初始化逻辑
-    /**
- * @file returns.js
- * @module returns
- * @description 退货管理 - 退货申请、处理和记录
- * 
- * @example
- * import { init } from './returns.js';
- * await init();
- * 
- * @author Carwash Pro Team
- * @version 1.0.0
- */
+<script setup lang="ts">
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import {
+  RefreshLeft,
+  Plus,
+  Check,
+  Download,
+  RefreshRight,
+  Clock,
+  Select,
+  Van,
+  SuccessFilled,
+  Search,
+  Refresh,
+  View,
+  Close,
+  Delete,
+  CircleClose,
+  Document
+} from '@element-plus/icons-vue'
 
-//  (已注释);
-//  (已注释);
-import { showToast } from '../js/core/init.js';
+const router = useRouter()
 
-/**
- * @typedef {Object} ReturnItem
- * @property {string} name - 商品名称
- * @property {number} price - 单价
- * @property {number} qty - 数量
- * @property {number} [subtotal] - 小计
- */
+// ========== 响应式数据 ==========
+const loading = ref(false)
+const dialogLoading = ref(false)
+const rejectLoading = ref(false)
+const batchLoading = ref(false)
+const dialogVisible = ref(false)
+const rejectDialogVisible = ref(false)
+const batchDialogVisible = ref(false)
+const dialogFormRef = ref<FormInstance>()
+const rejectFormRef = ref<FormInstance>()
+const currentRejectId = ref<number | null>(null)
+const selectedIds = ref<number[]>([])
 
-/**
- * @typedef {Object} ReturnRecord
- * @property {string} id - 退货单号
- * @property {string} orderId - 原订单号
- * @property {ReturnItem[]} items - 退货商品列表
- * @property {number} amount - 退货金额
- * @property {string} reason - 退货原因
- * @property {string} method - 退款方式
- * @property {string} note - 备注
- * @property {string} date - 日期
- * @property {string} status - 状态 (pending/processing/completed/rejected)
- * @property {string} [customer] - 客户名称
- * @property {string} [customerPhone] - 客户电话
- */
+// 统计数据
+const statistics = reactive({
+  pending: 0,
+  approved: 0,
+  shipping: 0,
+  completed: 0,
+  rejected: 0,
+  totalAmount: 0
+})
 
-/**
- * @typedef {Object} ReturnState
- * @property {ReturnRecord[]} returns - 退货记录
- * @property {Object|null} currentOrder - 当前订单
- * @property {ReturnItem[]} returnItems - 当前退货商品
- * @property {string} searchQuery - 搜索关键词
- * @property {Object} filters - 筛选条件
- * @property {boolean} loading - 加载状态
- */
+// 筛选表单
+const filterForm = reactive({
+  returnNo: '',
+  orderNo: '',
+  customer: '',
+  status: '',
+  dateRange: [] as string[]
+})
 
-/** @type {ReturnState} 状态 */
-const state = {
-    returns: [],
-    currentOrder: null,
-    returnItems: [],
-    searchQuery: '',
-    filters: {
-        status: 'all',
-        startDate: '',
-        endDate: ''
-    },
-    loading: false
-};
+// 分页
+const pagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0
+})
 
-/**
- * 状态标签和样式映射
- */
-const STATUS_MAP = {
-    'pending': { label: '待处理', color: '#F59E0B', bg: '#FEF3C7', icon: 'fa-clock' },
-    'processing': { label: '处理中', color: '#3B82F6', bg: '#DBEAFE', icon: 'fa-spinner' },
-    'completed': { label: '已完成', color: '#10B981', bg: '#D1FAE5', icon: 'fa-check-circle' },
-    'rejected': { label: '已拒绝', color: '#EF4444', bg: '#FEE2E2', icon: 'fa-times-circle' }
-};
+// 表格数据
+const tableData = ref<any[]>([])
+const allData = ref<any[]>([])
 
-/**
- * 退货原因选项
- */
-const REASON_OPTIONS = [
-    { value: 'quality', label: '商品质量问题' },
-    { value: 'wrong', label: '发错商品' },
-    { value: 'damaged', label: '运输损坏' },
-    { value: 'dissatisfied', label: '客户不满意' },
-    { value: 'other', label: '其他原因' }
-];
+// 对话框表单
+const dialogForm = reactive({
+  orderNo: '',
+  customer: '',
+  product: '',
+  amount: 0,
+  reason: '',
+  method: '原路返回',
+  remark: ''
+})
 
-/**
- * 退款方式选项
- */
-const METHOD_OPTIONS = [
-    { value: 'original', label: '原路返回' },
-    { value: 'cash', label: '现金退款' },
-    { value: 'bank', label: '银行转账' },
-    { value: 'credit', label: '余额抵扣' }
-];
+// 拒绝表单
+const rejectForm = reactive({
+  reason: '',
+  notifyCustomer: true
+})
 
-/**
- * @private
- * @param {number} amount - 金额
- * @returns {string} 格式化后的货币字符串
- */
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return '0.00';
-    return amount.toFixed(2);
+// ========== 表单验证规则 ==========
+const dialogRules: FormRules = {
+  orderNo: [{ required: true, message: '请输入原订单号', trigger: 'blur' }],
+  customer: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
+  product: [{ required: true, message: '请输入退货商品', trigger: 'blur' }],
+  amount: [
+    { required: true, message: '请输入退货金额', trigger: 'blur' },
+    { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }
+  ],
+  reason: [{ required: true, message: '请选择退货原因', trigger: 'change' }]
 }
 
-/**
- * @private
- * @param {string} date - 日期字符串
- * @returns {string} 格式化后的日期
- */
-function formatDate(date) {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+// ========== 计算属性 ==========
+const formatNumber = (num: number) => {
+  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-/**
- * @private
- * @param {string} id - 退货单号
- * @returns {ReturnRecord|null} 退货记录
- * @description 根据ID获取退货记录
- */
-function getReturnById(id) {
-    return state.returns.find(r => r.id === id) || null;
+const getStatusTag = (status: string) => {
+  const map: Record<string, string> = {
+    pending: 'warning',
+    approved: 'primary',
+    shipping: 'info',
+    completed: 'success',
+    rejected: 'danger'
+  }
+  return map[status] || 'info'
 }
 
-/**
- * @private
- * @returns {ReturnRecord[]} 待处理退货列表
- * @description 获取待处理退货
- */
-function getPendingReturns() {
-    return state.returns.filter(r => r.status === 'pending' || r.status === 'processing');
+const getStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    pending: '待审核',
+    approved: '审核通过',
+    shipping: '退货中',
+    completed: '已完成',
+    rejected: '已拒绝'
+  }
+  return map[status] || status
 }
 
-/**
- * @private
- * @returns {ReturnRecord[]} 模拟退货数据
- * @description 获取模拟退货数据
- */
-function getMockReturns() {
-    const customers = ['张伟', '李娜', '王强', '刘洋', '陈静'];
-    const reasons = ['质量问题', '发错商品', '客户不满意', '运输损坏', '其他原因'];
-    const methods = ['原路返回', '现金退款', '银行转账', '余额抵扣'];
-    const services = ['抛光打蜡', '内饰清洗', '深度清洁', '精致洗车', '标准洗车'];
-    const prices = [388, 328, 268, 128, 68];
-    
-    const returns = [];
-    const now = Date.now();
-    
-    for (let i = 0; i < 10; i++) {
-        const date = new Date(now - Math.random() * 20 * 24 * 60 * 60 * 1000);
-        const itemCount = Math.floor(Math.random() * 2) + 1;
-        const items = [];
-        let total = 0;
-        
-        for (let j = 0; j < itemCount; j++) {
-            const idx = Math.floor(Math.random() * services.length);
-            const qty = Math.floor(Math.random() * 2) + 1;
-            const subtotal = prices[idx] * qty;
-            items.push({
-                name: services[idx],
-                price: prices[idx],
-                qty: qty,
-                subtotal: subtotal
-            });
-            total += subtotal;
-        }
-        
-        const statuses = ['pending', 'processing', 'completed', 'completed', 'completed', 'rejected'];
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const customer = customers[Math.floor(Math.random() * customers.length)];
-        
-        returns.push({
-            id: 'RTN-' + String(100 + i).padStart(4, '0'),
-            orderId: 'ORD-' + String(1000 + i).padStart(4, '0'),
-            customer: customer,
-            customerPhone: '1380000' + String(Math.floor(Math.random() * 9000) + 1000),
-            items: items,
-            amount: total,
-            reason: reasons[Math.floor(Math.random() * reasons.length)],
-            method: methods[Math.floor(Math.random() * methods.length)],
-            note: Math.random() > 0.7 ? '客户急用，请尽快处理' : '',
-            date: date.toISOString(),
-            status: status
-        });
-    }
-    
-    returns.sort((a, b) => new Date(b.date) - new Date(a.date));
-    return returns;
+const getReturnNoById = (id: number) => {
+  const item = allData.value.find(d => d.id === id)
+  return item ? item.returnNo : `ID:${id}`
 }
 
-/**
- * @private
- * @description 加载退货数据
- */
-function loadReturns() {
-    try {
-        const saved = localStorage.getItem('return_history');
-        if (saved) {
-            state.returns = JSON.parse(saved);
-        } else {
-            state.returns = getMockReturns();
-            localStorage.setItem('return_history', JSON.stringify(state.returns));
-        }
-    } catch (e) {
-        console.warn('加载退货数据失败:', e);
-        state.returns = getMockReturns();
-    }
-    renderReturns();
-    updateStats();
+// ========== 模拟数据生成 ==========
+const generateMockData = () => {
+  const customers = ['张三', '李四', '王五', '赵六', '孙七', '周八', '吴九', '郑十']
+  const products = ['iPhone 15 Pro Max', 'AirPods Pro 2', 'MacBook Pro 16"', 'iPad Pro 12.9"', 'Apple Watch Ultra 2', '三星 S24 Ultra']
+  const reasons = ['产品质量问题', '发错商品', '运输损坏', '客户不满意', '其他原因']
+  const methods = ['原路返回', '银行转账', '现金退款', '余额抵扣']
+  const statuses = ['pending', 'approved', 'shipping', 'completed', 'rejected']
+
+  const data = []
+  const now = new Date()
+  const total = 50
+
+  for (let i = 1; i <= total; i++) {
+    const status = statuses[Math.floor(Math.random() * statuses.length)]
+    const date = new Date(now)
+    date.setDate(date.getDate() - Math.floor(Math.random() * 60))
+
+    data.push({
+      id: i,
+      returnNo: `RT-${String(i).padStart(6, '0')}`,
+      orderNo: `ORD-${String(Math.floor(Math.random() * 500) + 1).padStart(6, '0')}`,
+      customer: customers[Math.floor(Math.random() * customers.length)],
+      amount: Math.round((Math.random() * 2000 + 50) * 100) / 100,
+      product: products[Math.floor(Math.random() * products.length)],
+      reason: reasons[Math.floor(Math.random() * reasons.length)],
+      method: methods[Math.floor(Math.random() * methods.length)],
+      status: status,
+      createdAt: date.toISOString().replace('T', ' ').slice(0, 16),
+      remark: Math.random() > 0.7 ? '客户急用，请尽快处理' : ''
+    })
+  }
+
+  data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  return data
 }
 
-/**
- * @private
- * @description 保存退货数据到本地
- */
-function saveReturns() {
-    try {
-        localStorage.setItem('return_history', JSON.stringify(state.returns));
-    } catch (e) {
-        console.warn('保存退货数据失败:', e);
-    }
+// ========== 计算统计数据 ==========
+const calculateStats = (data: any[]) => {
+  statistics.pending = data.filter(item => item.status === 'pending').length
+  statistics.approved = data.filter(item => item.status === 'approved').length
+  statistics.shipping = data.filter(item => item.status === 'shipping').length
+  statistics.completed = data.filter(item => item.status === 'completed').length
+  statistics.rejected = data.filter(item => item.status === 'rejected').length
+  statistics.totalAmount = data.reduce((sum, item) => sum + item.amount, 0)
 }
 
-/**
- * @private
- * @description 渲染退货列表
- */
-function renderReturns() {
-    const container = document.getElementById('returnListBody') || document.getElementById('returnHistoryBody');
-    if (!container) return;
-    
-    // 应用筛选
-    let filtered = state.returns;
-    
-    if (state.filters.status !== 'all') {
-        filtered = filtered.filter(r => r.status === state.filters.status);
-    }
-    
-    if (state.filters.startDate) {
-        filtered = filtered.filter(r => r.date >= state.filters.startDate);
-    }
-    
-    if (state.filters.endDate) {
-        filtered = filtered.filter(r => r.date <= state.filters.endDate + 'T23:59:59');
-    }
-    
-    if (state.searchQuery) {
-        const query = state.searchQuery.toLowerCase();
-        filtered = filtered.filter(r => 
-            r.id.toLowerCase().includes(query) ||
-            r.orderId.toLowerCase().includes(query) ||
-            (r.customer && r.customer.includes(query))
-        );
-    }
-    
-    if (filtered.length === 0) {
-        container.innerHTML = `
-            <tr>
-                <td colspan="8" style="text-align:center;padding:40px;color:#9CA3AF;">
-                    <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-                    暂无退货记录
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    container.innerHTML = filtered.map(record => {
-        const status = STATUS_MAP[record.status] || STATUS_MAP.pending;
-        const itemsSummary = record.items.map(i => i.name).join('、');
-        
-        return `
-            <tr style="border-bottom:1px solid #F3F4F6;transition:background 0.2s;"
-                onmouseover="this.style.background='#F9FAFB'"
-                onmouseout="this.style.background=''">
-                <td style="padding:12px;font-family:monospace;font-weight:500;">${record.id}</td>
-                <td style="padding:12px;font-family:monospace;">${record.orderId}</td>
-                <td style="padding:12px;">${record.customer || '-'}</td>
-                <td style="padding:12px;text-align:right;font-weight:600;">¥${formatCurrency(record.amount)}</td>
-                <td style="padding:12px;font-size:13px;color:#6B7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                    ${itemsSummary}
-                </td>
-                <td style="padding:12px;">
-                    <span style="display:inline-block;padding:2px 12px;border-radius:9999px;font-size:12px;font-weight:500;background:${status.bg};color:${status.color};">
-                        <i class="fas ${status.icon}" style="margin-right:4px;"></i>
-                        ${status.label}
-                    </span>
-                </td>
-                <td style="padding:12px;font-size:13px;color:#6B7280;">${formatDate(record.date)}</td>
-                <td style="padding:12px;text-align:center;">
-                    <button class="btn btn-sm btn-outline" onclick="window.ReturnsModule.viewDetail('${record.id}')" title="查看详情">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    ${record.status === 'pending' ? `
-                        <button class="btn btn-sm btn-success" onclick="window.ReturnsModule.updateStatus('${record.id}', 'processing')" title="处理">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="window.ReturnsModule.updateStatus('${record.id}', 'rejected')" title="拒绝">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    ` : ''}
-                    ${record.status === 'processing' ? `
-                        <button class="btn btn-sm btn-success" onclick="window.ReturnsModule.updateStatus('${record.id}', 'completed')" title="完成">
-                            <i class="fas fa-check-circle"></i>
-                        </button>
-                    ` : ''}
-                </td>
-            </tr>
-        `;
-    }).join('');
+// ========== 初始化数据 ==========
+const initData = () => {
+  loading.value = true
+  setTimeout(() => {
+    allData.value = generateMockData()
+    calculateStats(allData.value)
+    filterData()
+    loading.value = false
+  }, 500)
 }
 
-/**
- * @private
- * @description 更新统计数据
- */
-function updateStats() {
-    const total = state.returns.length;
-    const pending = state.returns.filter(r => r.status === 'pending').length;
-    const processing = state.returns.filter(r => r.status === 'processing').length;
-    const completed = state.returns.filter(r => r.status === 'completed').length;
-    const rejected = state.returns.filter(r => r.status === 'rejected').length;
-    const totalAmount = state.returns.reduce((sum, r) => sum + r.amount, 0);
-    
-    const elements = {
-        'statTotal': total,
-        'statPending': pending,
-        'statProcessing': processing,
-        'statCompleted': completed,
-        'statRejected': rejected,
-        'statTotalAmount': '¥' + formatCurrency(totalAmount)
-    };
-    
-    Object.keys(elements).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = elements[id];
-    });
+// ========== 筛选数据 ==========
+const filterData = () => {
+  let data = [...allData.value]
+
+  if (filterForm.returnNo) {
+    data = data.filter(item => item.returnNo.includes(filterForm.returnNo))
+  }
+  if (filterForm.orderNo) {
+    data = data.filter(item => item.orderNo.includes(filterForm.orderNo))
+  }
+  if (filterForm.customer) {
+    data = data.filter(item => item.customer.includes(filterForm.customer))
+  }
+  if (filterForm.status) {
+    data = data.filter(item => item.status === filterForm.status)
+  }
+  if (filterForm.dateRange && filterForm.dateRange.length === 2) {
+    const [start, end] = filterForm.dateRange
+    data = data.filter(item => item.createdAt >= start && item.createdAt <= end)
+  }
+
+  pagination.total = data.length
+  const start = (pagination.current - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = data.slice(start, end)
 }
 
-/**
- * @private
- * @param {string} id - 退货单号
- * @description 查看退货详情
- */
-function viewDetail(id) {
-    const record = getReturnById(id);
-    if (!record) {
-        showToast('退货记录不存在', 'error');
-        return;
-    }
-    
-    const status = STATUS_MAP[record.status] || STATUS_MAP.pending;
-    
-    // 如果有详情弹窗，使用弹窗
-    const modal = document.getElementById('returnDetailModal');
-    if (modal) {
-        const content = document.getElementById('returnDetailContent');
-        if (content) {
-            content.innerHTML = `
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div><span style="color:#6B7280;">退货单号</span><br><strong>${record.id}</strong></div>
-                    <div><span style="color:#6B7280;">原订单</span><br><strong>${record.orderId}</strong></div>
-                    <div><span style="color:#6B7280;">客户</span><br><strong>${record.customer || '-'}</strong></div>
-                    <div><span style="color:#6B7280;">电话</span><br><strong>${record.customerPhone || '-'}</strong></div>
-                    <div><span style="color:#6B7280;">退货金额</span><br><strong style="color:#EF4444;">¥${formatCurrency(record.amount)}</strong></div>
-                    <div><span style="color:#6B7280;">状态</span><br><span style="display:inline-block;padding:2px 12px;border-radius:9999px;font-size:12px;font-weight:500;background:${status.bg};color:${status.color};">${status.label}</span></div>
-                    <div><span style="color:#6B7280;">原因</span><br><strong>${record.reason}</strong></div>
-                    <div><span style="color:#6B7280;">退款方式</span><br><strong>${record.method}</strong></div>
-                    <div style="grid-column:span 2;"><span style="color:#6B7280;">日期</span><br><strong>${formatDate(record.date)}</strong></div>
-                    <div style="grid-column:span 2;"><span style="color:#6B7280;">备注</span><br><strong>${record.note || '无'}</strong></div>
-                    <div style="grid-column:span 2;">
-                        <span style="color:#6B7280;">商品明细</span><br>
-                        ${record.items.map(i => 
-                            `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #F3F4F6;font-size:13px;">
-                                <span>${i.name} × ${i.qty}</span>
-                                <span>¥${formatCurrency(i.subtotal || i.price * i.qty)}</span>
-                            </div>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        modal.style.display = 'flex';
-        return;
-    }
-    
-    // 降级方案：使用alert
-    const itemsSummary = record.items.map(i => `${i.name} × ${i.qty} ¥${formatCurrency(i.subtotal || i.price * i.qty)}`).join('\n');
-    alert(`退货详情：
-退货单号: ${record.id}
-原订单: ${record.orderId}
-客户: ${record.customer || '-'}
-日期: ${formatDate(record.date)}
-状态: ${status.label}
-退货金额: ¥${formatCurrency(record.amount)}
-原因: ${record.reason}
-退款方式: ${record.method}
-备注: ${record.note || '无'}
-
-商品明细:
-${itemsSummary}`);
+// ========== 事件处理 ==========
+const handleSearch = () => {
+  pagination.current = 1
+  filterData()
 }
 
-/**
- * @private
- * @param {string} id - 退货单号
- * @param {string} status - 新状态
- * @description 更新退货状态
- */
-async function updateStatus(id, status) {
-    const record = getReturnById(id);
-    if (!record) {
-        showToast('退货记录不存在', 'error');
-        return;
-    }
-    
-    try {
-        // 尝试调用API
-        const response = await apiClient.put(`/returns/${id}/status`, { status });
-        if (response && response.success) {
-            record.status = status;
-            saveReturns();
-            renderReturns();
-            updateStats();
-            showToast('退货状态已更新为: ' + (STATUS_MAP[status]?.label || status), 'success');
-        } else {
-            // 如果API失败，直接更新本地
-            record.status = status;
-            saveReturns();
-            renderReturns();
-            updateStats();
-            showToast('退货状态已更新为: ' + (STATUS_MAP[status]?.label || status), 'success');
-        }
-    } catch (error) {
-        console.warn('API更新失败，使用本地更新:', error);
-        record.status = status;
-        saveReturns();
-        renderReturns();
-        updateStats();
-        showToast('退货状态已更新为: ' + (STATUS_MAP[status]?.label || status), 'success');
-    }
+const handleReset = () => {
+  filterForm.returnNo = ''
+  filterForm.orderNo = ''
+  filterForm.customer = ''
+  filterForm.status = ''
+  filterForm.dateRange = []
+  pagination.current = 1
+  filterData()
 }
 
-/**
- * @private
- * @description 创建新退货
- */
-function newReturn() {
-    const orderId = prompt('输入原订单号：', 'ORD-2024-001');
-    if (!orderId) return;
-    
-    const reason = prompt('输入退货原因（1-质量问题 2-发错商品 3-运输损坏 4-客户不满意 5-其他）：', '1');
-    const reasonMap = {
-        '1': '质量问题',
-        '2': '发错商品', 
-        '3': '运输损坏',
-        '4': '客户不满意',
-        '5': '其他原因'
-    };
-    const reasonText = reasonMap[reason] || reason || '其他原因';
-    
-    const amount = parseFloat(prompt('输入退货金额：', '100'));
-    if (isNaN(amount) || amount <= 0) {
-        showToast('请输入有效金额', 'error');
-        return;
-    }
-    
-    const customer = prompt('输入客户名称：', '客户') || '客户';
-    
-    const record = {
-        id: 'RTN-' + Date.now().toString().slice(-8),
-        orderId: orderId,
-        customer: customer,
-        customerPhone: '',
-        items: [{ name: '退货商品', price: amount, qty: 1, subtotal: amount }],
-        amount: amount,
-        reason: reasonText,
-        method: '原路返回',
-        note: '手动创建',
-        date: new Date().toISOString(),
-        status: 'pending'
-    };
-    
-    state.returns.push(record);
-    saveReturns();
-    renderReturns();
-    updateStats();
-    showToast('退货已创建: ' + record.id, 'success');
+const filterByStatus = (status: string) => {
+  filterForm.status = status
+  pagination.current = 1
+  filterData()
 }
 
-/**
- * @private
- * @description 搜索退货
- */
-function searchReturns(query) {
-    state.searchQuery = query;
-    renderReturns();
+const handleCreate = () => {
+  dialogForm.orderNo = ''
+  dialogForm.customer = ''
+  dialogForm.product = ''
+  dialogForm.amount = 0
+  dialogForm.reason = ''
+  dialogForm.method = '原路返回'
+  dialogForm.remark = ''
+  dialogVisible.value = true
 }
 
-/**
- * @private
- * @description 应用筛选
- */
-function applyFilters() {
-    const statusFilter = document.getElementById('statusFilter');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    
-    state.filters.status = statusFilter ? statusFilter.value : 'all';
-    state.filters.startDate = startDate ? startDate.value : '';
-    state.filters.endDate = endDate ? endDate.value : '';
-    
-    renderReturns();
+const handleViewDetail = (id: number) => {
+  router.push(`/orders/returns/detail/${id}`)
 }
 
-/**
- * @private
- * @description 重置筛选
- */
-function resetFilters() {
-    const statusFilter = document.getElementById('statusFilter');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (statusFilter) statusFilter.value = 'all';
-    if (startDate) startDate.value = '';
-    if (endDate) endDate.value = '';
-    if (searchInput) searchInput.value = '';
-    
-    state.filters = { status: 'all', startDate: '', endDate: '' };
-    state.searchQuery = '';
-    renderReturns();
+const handleSelectionChange = (selection: any[]) => {
+  selectedIds.value = selection.map(item => item.id)
 }
 
-/**
- * @private
- * @description 关闭详情弹窗
- */
-function closeDetail() {
-    const modal = document.getElementById('returnDetailModal');
-    if (modal) modal.style.display = 'none';
+const handleBatchProcess = () => {
+  if (selectedIds.value.length === 0) {
+    ElMessage.warning('请至少选择一条记录')
+    return
+  }
+  batchDialogVisible.value = true
 }
 
-/**
- * @private
- * @description 刷新数据
- */
-function refresh() {
-    loadReturns();
-    showToast('数据已刷新', 'success');
+const confirmBatchProcess = async () => {
+  batchLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    let processedCount = 0
+    selectedIds.value.forEach(id => {
+      const item = allData.value.find(d => d.id === id)
+      if (item && item.status === 'pending') {
+        item.status = 'approved'
+        processedCount++
+      }
+    })
+    calculateStats(allData.value)
+    filterData()
+    ElMessage.success(`成功处理 ${processedCount} 条退货申请`)
+    batchDialogVisible.value = false
+    selectedIds.value = []
+  } finally {
+    batchLoading.value = false
+  }
 }
 
-/**
- * @private
- * @description 导出退货数据
- */
-function exportData() {
-    if (state.returns.length === 0) {
-        showToast('暂无数据可导出', 'warning');
-        return;
+const handleApprove = (row: any) => {
+  ElMessageBox.confirm(`确定要通过退货 ${row.returnNo} 的审核吗？`, '审核确认', {
+    confirmButtonText: '通过',
+    cancelButtonText: '取消',
+    type: 'success'
+  }).then(() => {
+    const item = allData.value.find(d => d.id === row.id)
+    if (item) {
+      item.status = 'approved'
+      calculateStats(allData.value)
+      filterData()
+      ElMessage.success(`退货 ${row.returnNo} 审核通过`)
     }
-    
-    const headers = ['退货单号', '原订单', '客户', '金额', '原因', '方式', '状态', '日期', '备注'];
-    const rows = state.returns.map(r => [
-        r.id,
-        r.orderId,
-        r.customer || '',
-        r.amount.toFixed(2),
-        r.reason,
-        r.method,
-        STATUS_MAP[r.status]?.label || r.status,
-        formatDate(r.date),
-        r.note || ''
-    ]);
-    
-    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = '退货记录_' + new Date().toISOString().split('T')[0] + '.csv';
-    link.click();
-    showToast('数据已导出', 'success');
+  }).catch(() => {})
 }
 
-/**
- * @private
- * @description 绑定事件
- */
-function bindEvents() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        let timeoutId;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                searchReturns(this.value);
-            }, 300);
-        });
-    }
-    
-    const statusFilter = document.getElementById('statusFilter');
-    if (statusFilter) {
-        statusFilter.addEventListener('change', applyFilters);
-    }
-    
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    if (startDate) startDate.addEventListener('change', applyFilters);
-    if (endDate) endDate.addEventListener('change', applyFilters);
-    
-    const resetBtn = document.getElementById('resetFilters');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetFilters);
-    }
-    
-    const refreshBtn = document.getElementById('refreshReturns');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', refresh);
-    }
-    
-    const newBtn = document.getElementById('newReturn');
-    if (newBtn) {
-        newBtn.addEventListener('click', newReturn);
-    }
-    
-    const exportBtn = document.getElementById('exportReturns');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', exportData);
-    }
-    
-    // 点击弹窗外关闭
-    const modal = document.getElementById('returnDetailModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDetail();
-            }
-        });
-    }
-    
-    // ESC关闭弹窗
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeDetail();
-        }
-    });
+const handleReject = (row: any) => {
+  currentRejectId.value = row.id
+  rejectForm.reason = ''
+  rejectForm.notifyCustomer = true
+  rejectDialogVisible.value = true
 }
 
-/**
- * @public
- * @param {Object} options - 初始化选项
- * @param {ReturnRecord[]} options.data - 初始数据
- * @returns {Promise<void>}
- * @description 初始化退货管理
- */
-export async function init(options) {
-    console.log('↩️ 退货管理 初始化...');
-    
-    // 如果传入了数据，使用传入数据
-    if (options?.data) {
-        state.returns = options.data;
-        saveReturns();
-    } else {
-        loadReturns();
+const confirmReject = async () => {
+  if (!rejectForm.reason || rejectForm.reason.trim() === '') {
+    ElMessage.warning('请输入拒绝原因')
+    return
+  }
+
+  rejectLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 600))
+    const item = allData.value.find(d => d.id === currentRejectId.value)
+    if (item) {
+      item.status = 'rejected'
+      item.remark = `拒绝原因：${rejectForm.reason}`
+      calculateStats(allData.value)
+      filterData()
+      ElMessage.warning(`退货 ${item.returnNo} 已拒绝`)
+      if (rejectForm.notifyCustomer) {
+        ElMessage.info('已发送通知邮件给客户')
+      }
     }
-    
-    // 渲染统计
-    updateStats();
-    
-    // 绑定事件
-    bindEvents();
-    
-    // 暴露全局方法
-    window.ReturnsModule = {
-        state,
-        loadReturns,
-        renderReturns,
-        updateStats,
-        viewDetail,
-        updateStatus,
-        newReturn,
-        searchReturns,
-        applyFilters,
-        resetFilters,
-        closeDetail,
-        refresh,
-        exportData,
-        getReturnById,
-        getPendingReturns,
-        saveReturns
-    };
-    
-    console.log('✅ 退货管理 初始化完成');
+    rejectDialogVisible.value = false
+  } finally {
+    rejectLoading.value = false
+    currentRejectId.value = null
+  }
 }
 
-// 自动初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+const handleStartShipping = (row: any) => {
+  ElMessageBox.confirm(`确定要开始退货 ${row.returnNo} 的物流流程吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  }).then(() => {
+    const item = allData.value.find(d => d.id === row.id)
+    if (item) {
+      item.status = 'shipping'
+      calculateStats(allData.value)
+      filterData()
+      ElMessage.success(`退货 ${row.returnNo} 已进入物流流程`)
+    }
+  }).catch(() => {})
 }
 
-export default {
-    init,
-    loadReturns,
-    renderReturns,
-    viewDetail,
-    updateStatus,
-    newReturn,
-    searchReturns,
-    applyFilters,
-    resetFilters,
-    refresh,
-    exportData,
-    getReturnById,
-    getPendingReturns,
-    saveReturns
-};
-  },
-  methods: {}
+const handleComplete = (row: any) => {
+  ElMessageBox.confirm(`确定要完成退货 ${row.returnNo} 吗？`, '确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'success'
+  }).then(() => {
+    const item = allData.value.find(d => d.id === row.id)
+    if (item) {
+      item.status = 'completed'
+      calculateStats(allData.value)
+      filterData()
+      ElMessage.success(`退货 ${row.returnNo} 已完成`)
+    }
+  }).catch(() => {})
 }
+
+const handleDelete = (id: number) => {
+  const item = allData.value.find(d => d.id === id)
+  ElMessageBox.confirm(`确定要删除退货 ${item?.returnNo} 吗？`, '删除确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    allData.value = allData.value.filter(d => d.id !== id)
+    calculateStats(allData.value)
+    filterData()
+    ElMessage.success('删除成功')
+  }).catch(() => {})
+}
+
+const confirmDialogSubmit = async () => {
+  if (!dialogFormRef.value) return
+  try {
+    await dialogFormRef.value.validate()
+  } catch {
+    return
+  }
+
+  dialogLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 800))
+    const newItem = {
+      id: allData.value.length + 1,
+      returnNo: `RT-${String(allData.value.length + 1).padStart(6, '0')}`,
+      orderNo: dialogForm.orderNo,
+      customer: dialogForm.customer,
+      amount: dialogForm.amount,
+      product: dialogForm.product,
+      reason: dialogForm.reason,
+      method: dialogForm.method,
+      status: 'pending',
+      createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      remark: dialogForm.remark
+    }
+    allData.value.unshift(newItem)
+    calculateStats(allData.value)
+    filterData()
+    ElMessage.success(`退货申请 ${newItem.returnNo} 已提交`)
+    dialogVisible.value = false
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+const handleExport = () => {
+  ElMessage.success('导出任务已提交，文件将发送到您的邮箱')
+}
+
+const handleRefresh = () => {
+  initData()
+}
+
+const handleSizeChange = (val: number) => {
+  pagination.pageSize = val
+  pagination.current = 1
+  filterData()
+}
+
+const handleCurrentChange = (val: number) => {
+  pagination.current = val
+  filterData()
+}
+
+// ========== 生命周期 ==========
+onMounted(() => {
+  initData()
+})
 </script>
 
 <style scoped>
+.returns-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtitle {
+  color: #909399;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stat-cards {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+  flex-shrink: 0;
+  margin-right: 14px;
+}
+
+.stat-icon.pending {
+  background: linear-gradient(135deg, #e6a23c, #f0c78a);
+}
+.stat-icon.approved {
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+}
+.stat-icon.shipping {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+.stat-icon.completed {
+  background: linear-gradient(135deg, #67c23a, #85ce61);
+}
+.stat-icon.rejected {
+  background: linear-gradient(135deg, #f56c6c, #f78989);
+}
+.stat-icon.total {
+  background: linear-gradient(135deg, #909399, #c0c4cc);
+}
+
+.stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.3;
+}
+
+.stat-change {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.stat-change.positive {
+  color: #67c23a;
+}
+.stat-change.negative {
+  color: #f56c6c;
+}
+.stat-change.warning {
+  color: #e6a23c;
+}
+.stat-change.info {
+  color: #409eff;
+}
+.stat-change.primary {
+  color: #8b5cf6;
+}
+
+.filter-card {
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+
+.table-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.total-info {
+  font-size: 13px;
+  font-weight: 400;
+  color: #909399;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+  margin-top: 16px;
+}
+
+.batch-info {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.batch-info p {
+  margin: 8px 0;
+  font-size: 15px;
+  color: #606266;
+}
+
+.batch-info .batch-hint {
+  font-size: 13px;
+  color: #909399;
+}
+
+.selected-list {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .returns-page {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-button {
+    flex: 1;
+  }
+
+  .stat-cards .el-col {
+    margin-bottom: 12px;
+  }
+
+  .stat-cards .el-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-form :deep(.el-form-item) {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .filter-form :deep(.el-form-item:last-child) {
+    margin-bottom: 0;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .header-actions .el-button {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-cards .el-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+}
 </style>
-

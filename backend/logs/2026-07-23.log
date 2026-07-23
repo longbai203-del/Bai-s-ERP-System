@@ -1,0 +1,98 @@
+{"timestamp":"2026-07-23T10:38:29.402Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:38:29.429Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"28ms"}}
+{"timestamp":"2026-07-23T10:38:44.310Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:38:44.313Z","level":"info","message":"Response: GET /api/projects 401","data":{"statusCode":401,"duration":"3ms"}}
+{"timestamp":"2026-07-23T10:38:44.505Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:38:44.507Z","level":"info","message":"Response: GET /api/projects/stats 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T10:38:47.014Z","level":"info","message":"Request: GET /api-docs","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.047Z","level":"info","message":"Response: GET /api-docs 301","data":{"statusCode":301,"duration":"33ms"}}
+{"timestamp":"2026-07-23T10:38:47.060Z","level":"info","message":"Request: GET /api-docs/","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.065Z","level":"info","message":"Response: GET /api-docs/ 200","data":{"statusCode":200,"duration":"5ms"}}
+{"timestamp":"2026-07-23T10:38:47.122Z","level":"info","message":"Request: GET /api-docs/swagger-ui.css","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.127Z","level":"info","message":"Request: GET /api-docs/swagger-ui-bundle.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.130Z","level":"info","message":"Request: GET /api-docs/swagger-ui-standalone-preset.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.132Z","level":"info","message":"Request: GET /api-docs/swagger-ui-init.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-23T10:38:47.137Z","level":"info","message":"Response: GET /api-docs/swagger-ui-init.js 200","data":{"statusCode":200,"duration":"5ms"}}
+{"timestamp":"2026-07-23T10:38:47.154Z","level":"info","message":"Response: GET /api-docs/swagger-ui.css 200","data":{"statusCode":200,"duration":"32ms"}}
+{"timestamp":"2026-07-23T10:38:47.304Z","level":"info","message":"Response: GET /api-docs/swagger-ui-standalone-preset.js 200","data":{"statusCode":200,"duration":"174ms"}}
+{"timestamp":"2026-07-23T10:38:47.423Z","level":"info","message":"Response: GET /api-docs/swagger-ui-bundle.js 200","data":{"statusCode":200,"duration":"296ms"}}
+{"timestamp":"2026-07-23T10:44:35.601Z","level":"info","message":"Request: POST /api/auth/login","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:44:36.140Z","level":"info","message":"Response: POST /api/auth/login 200","data":{"statusCode":200,"duration":"539ms"}}
+{"timestamp":"2026-07-23T10:44:36.297Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:44:36.313Z","level":"info","message":"Response: GET /api/projects 500","data":{"statusCode":500,"duration":"17ms","userId":1}}
+{"timestamp":"2026-07-23T10:44:36.416Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:44:36.422Z","level":"info","message":"Response: GET /api/projects/stats 500","data":{"statusCode":500,"duration":"6ms","userId":1}}
+{"timestamp":"2026-07-23T10:44:36.568Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:44:36.576Z","level":"info","message":"Response: POST /api/projects 500","data":{"statusCode":500,"duration":"8ms","userId":1}}
+{"timestamp":"2026-07-23T10:51:24.387Z","level":"info","message":"Request: POST /api/auth/login","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:51:24.439Z","level":"info","message":"Response: POST /api/auth/login 200","data":{"statusCode":200,"duration":"52ms"}}
+{"timestamp":"2026-07-23T10:51:24.556Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:51:25.242Z","level":"info","message":"Response: GET /api/projects 500","data":{"statusCode":500,"duration":"686ms","userId":1}}
+{"timestamp":"2026-07-23T10:51:25.364Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:51:25.543Z","level":"info","message":"Response: GET /api/projects/stats 500","data":{"statusCode":500,"duration":"179ms","userId":1}}
+{"timestamp":"2026-07-23T10:51:25.674Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:51:26.079Z","level":"info","message":"Response: POST /api/projects 500","data":{"statusCode":500,"duration":"405ms","userId":1}}
+{"timestamp":"2026-07-23T10:53:18.311Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:53:19.265Z","level":"info","message":"Response: POST /api/projects 201","data":{"statusCode":201,"duration":"954ms","userId":1}}
+{"timestamp":"2026-07-23T10:53:19.273Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:53:19.614Z","level":"info","message":"Response: POST /api/projects 201","data":{"statusCode":201,"duration":"341ms","userId":1}}
+{"timestamp":"2026-07-23T10:53:19.626Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:53:19.964Z","level":"info","message":"Response: POST /api/projects 201","data":{"statusCode":201,"duration":"338ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:08.743Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:09.060Z","level":"info","message":"Response: GET /api/projects 200","data":{"statusCode":200,"duration":"316ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:09.152Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:09.301Z","level":"info","message":"Response: GET /api/projects/stats 200","data":{"statusCode":200,"duration":"149ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:09.386Z","level":"info","message":"Request: GET /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:09.812Z","level":"info","message":"Response: GET /api/projects/1 200","data":{"statusCode":200,"duration":"426ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:09.941Z","level":"info","message":"Request: PUT /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:09.944Z","level":"info","message":"Response: PUT /api/projects/1 400","data":{"statusCode":400,"duration":"3ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:10.058Z","level":"info","message":"Request: POST /api/projects/6/start","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:10.186Z","level":"info","message":"Response: POST /api/projects/6/start 400","data":{"statusCode":400,"duration":"128ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:10.302Z","level":"info","message":"Request: GET /api/projects/search?keyword=STC","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:10.439Z","level":"info","message":"Response: GET /api/projects/search?keyword=STC 200","data":{"statusCode":200,"duration":"137ms","userId":1}}
+{"timestamp":"2026-07-23T10:54:21.195Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.198Z","level":"info","message":"Response: GET /api/projects 401","data":{"statusCode":401,"duration":"3ms"}}
+{"timestamp":"2026-07-23T10:54:21.293Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.296Z","level":"info","message":"Response: GET /api/projects/stats 401","data":{"statusCode":401,"duration":"3ms"}}
+{"timestamp":"2026-07-23T10:54:21.366Z","level":"info","message":"Request: GET /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.368Z","level":"info","message":"Response: GET /api/projects/1 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T10:54:21.471Z","level":"info","message":"Request: PUT /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.473Z","level":"info","message":"Response: PUT /api/projects/1 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T10:54:21.529Z","level":"info","message":"Request: POST /api/projects/6/start","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.531Z","level":"info","message":"Response: POST /api/projects/6/start 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T10:54:21.616Z","level":"info","message":"Request: GET /api/projects/search?keyword=STC","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:21.619Z","level":"info","message":"Response: GET /api/projects/search?keyword=STC 401","data":{"statusCode":401,"duration":"3ms"}}
+{"timestamp":"2026-07-23T10:54:58.875Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:54:58.876Z","level":"info","message":"Response: GET /api/projects 401","data":{"statusCode":401,"duration":"1ms"}}
+{"timestamp":"2026-07-23T10:55:09.549Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:09.551Z","level":"info","message":"Response: GET /api/projects 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T10:55:33.670Z","level":"info","message":"Request: POST /api/auth/login","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:33.675Z","level":"info","message":"Response: POST /api/auth/login 200","data":{"statusCode":200,"duration":"6ms"}}
+{"timestamp":"2026-07-23T10:55:56.786Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:57.301Z","level":"info","message":"Response: GET /api/projects 200","data":{"statusCode":200,"duration":"515ms","userId":1}}
+{"timestamp":"2026-07-23T10:55:57.363Z","level":"info","message":"Request: GET /api/projects/stats","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:57.548Z","level":"info","message":"Response: GET /api/projects/stats 200","data":{"statusCode":200,"duration":"185ms","userId":1}}
+{"timestamp":"2026-07-23T10:55:57.616Z","level":"info","message":"Request: GET /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:58.103Z","level":"info","message":"Response: GET /api/projects/1 200","data":{"statusCode":200,"duration":"487ms","userId":1}}
+{"timestamp":"2026-07-23T10:55:58.215Z","level":"info","message":"Request: POST /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:58.711Z","level":"info","message":"Response: POST /api/projects 201","data":{"statusCode":201,"duration":"496ms","userId":1}}
+{"timestamp":"2026-07-23T10:55:58.839Z","level":"info","message":"Request: PUT /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:58.842Z","level":"info","message":"Response: PUT /api/projects/1 400","data":{"statusCode":400,"duration":"3ms","userId":1}}
+{"timestamp":"2026-07-23T10:55:58.916Z","level":"info","message":"Request: GET /api/projects/search?keyword=STC","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:55:59.104Z","level":"info","message":"Response: GET /api/projects/search?keyword=STC 200","data":{"statusCode":200,"duration":"188ms","userId":1}}
+{"timestamp":"2026-07-23T10:57:19.023Z","level":"info","message":"Request: PUT /api/projects/1","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:57:19.583Z","level":"info","message":"Response: PUT /api/projects/1 200","data":{"statusCode":200,"duration":"560ms","userId":1}}
+{"timestamp":"2026-07-23T10:57:41.601Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T10:57:41.979Z","level":"info","message":"Response: GET /api/projects 200","data":{"statusCode":200,"duration":"378ms","userId":1}}
+{"timestamp":"2026-07-23T11:33:39.005Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T11:33:39.017Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"12ms"}}
+{"timestamp":"2026-07-23T11:34:53.962Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T11:34:53.965Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"3ms"}}
+{"timestamp":"2026-07-23T11:34:54.016Z","level":"info","message":"Request: GET /api/projects","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T11:34:54.018Z","level":"info","message":"Response: GET /api/projects 401","data":{"statusCode":401,"duration":"2ms"}}
+{"timestamp":"2026-07-23T12:24:07.189Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T12:24:07.199Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"10ms"}}
+{"timestamp":"2026-07-23T12:34:14.960Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T12:34:14.967Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"7ms"}}
+{"timestamp":"2026-07-23T12:55:10.639Z","level":"info","message":"Request: GET /api/health","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.26100.8875"}}
+{"timestamp":"2026-07-23T12:55:10.645Z","level":"info","message":"Response: GET /api/health 200","data":{"statusCode":200,"duration":"6ms"}}

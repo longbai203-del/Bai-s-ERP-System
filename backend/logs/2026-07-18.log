@@ -1,0 +1,18 @@
+{"timestamp":"2026-07-18T19:16:49.599Z","level":"info","message":"Request: GET /api","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:16:49.611Z","level":"info","message":"Response: GET /api 404","data":{"statusCode":404,"duration":"12ms"}}
+{"timestamp":"2026-07-18T19:16:49.645Z","level":"info","message":"Request: GET /favicon.ico","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:16:49.648Z","level":"info","message":"Response: GET /favicon.ico 404","data":{"statusCode":404,"duration":"3ms"}}
+{"timestamp":"2026-07-18T19:17:17.825Z","level":"info","message":"Request: GET /api-docs","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.832Z","level":"info","message":"Response: GET /api-docs 301","data":{"statusCode":301,"duration":"7ms"}}
+{"timestamp":"2026-07-18T19:17:17.837Z","level":"info","message":"Request: GET /api-docs/","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.844Z","level":"info","message":"Response: GET /api-docs/ 200","data":{"statusCode":200,"duration":"7ms"}}
+{"timestamp":"2026-07-18T19:17:17.871Z","level":"info","message":"Request: GET /api-docs/swagger-ui.css","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.876Z","level":"info","message":"Request: GET /api-docs/swagger-ui-init.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.881Z","level":"info","message":"Response: GET /api-docs/swagger-ui-init.js 200","data":{"statusCode":200,"duration":"5ms"}}
+{"timestamp":"2026-07-18T19:17:17.882Z","level":"info","message":"Request: GET /api-docs/swagger-ui-bundle.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.884Z","level":"info","message":"Request: GET /api-docs/swagger-ui-standalone-preset.js","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:17.898Z","level":"info","message":"Response: GET /api-docs/swagger-ui.css 200","data":{"statusCode":200,"duration":"27ms"}}
+{"timestamp":"2026-07-18T19:17:18.057Z","level":"info","message":"Response: GET /api-docs/swagger-ui-standalone-preset.js 200","data":{"statusCode":200,"duration":"173ms"}}
+{"timestamp":"2026-07-18T19:17:18.265Z","level":"info","message":"Response: GET /api-docs/swagger-ui-bundle.js 200","data":{"statusCode":200,"duration":"383ms"}}
+{"timestamp":"2026-07-18T19:17:18.462Z","level":"info","message":"Request: GET /api-docs/favicon-32x32.png","data":{"ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"}}
+{"timestamp":"2026-07-18T19:17:18.481Z","level":"info","message":"Response: GET /api-docs/favicon-32x32.png 200","data":{"statusCode":200,"duration":"19ms"}}

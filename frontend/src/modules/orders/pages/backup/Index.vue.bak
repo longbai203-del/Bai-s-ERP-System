@@ -1,0 +1,927 @@
+﻿<template>
+  <div class="orders-index">
+    <!-- 统计卡片 -->
+    <el-row :gutter="20" class="stat-cards">
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon total">
+              <el-icon><Document /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">总订单</div>
+              <div class="stat-value">{{ formatNumber(totalOrders) }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                12.5% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon pending">
+              <el-icon><Clock /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">待处理</div>
+              <div class="stat-value">{{ pendingOrders }}</div>
+              <div class="stat-change warning">
+                <el-icon><Warning /></el-icon>
+                3项待审
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon processing">
+              <el-icon><Loading /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">处理中</div>
+              <div class="stat-value">{{ processingOrders }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                5.2% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12" :lg="6">
+        <el-card class="stat-card" shadow="hover">
+          <div class="stat-content">
+            <div class="stat-icon completed">
+              <el-icon><Select /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">已完成</div>
+              <div class="stat-value">{{ completedOrders }}</div>
+              <div class="stat-change positive">
+                <el-icon><Top /></el-icon>
+                8.7% ↑
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 图表区域 -->
+    <el-row :gutter="20" class="chart-row">
+      <el-col :xs="24" :lg="16">
+        <el-card class="chart-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <span>订单趋势</span>
+              <el-radio-group v-model="trendPeriod" size="small">
+                <el-radio-button label="week">本周</el-radio-button>
+                <el-radio-button label="month">本月</el-radio-button>
+                <el-radio-button label="quarter">本季度</el-radio-button>
+                <el-radio-button label="year">本年</el-radio-button>
+              </el-radio-group>
+            </div>
+          </template>
+          <div ref="trendChartRef" class="chart-container"></div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :lg="8">
+        <el-card class="chart-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <span>订单状态分布</span>
+            </div>
+          </template>
+          <div ref="pieChartRef" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 搜索和筛选 -->
+    <el-card class="filter-card" shadow="hover">
+      <el-form :model="filterForm" inline class="filter-form">
+        <el-form-item label="订单编号">
+          <el-input v-model="filterForm.orderNo" placeholder="输入订单编号" clearable style="width: 160px" />
+        </el-form-item>
+        <el-form-item label="客户名称">
+          <el-input v-model="filterForm.customer" placeholder="输入客户名称" clearable style="width: 160px" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="filterForm.status" placeholder="全部状态" clearable style="width: 140px">
+            <el-option label="待处理" value="pending" />
+            <el-option label="处理中" value="processing" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="已取消" value="cancelled" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 240px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon> 搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon> 重置
+          </el-button>
+          <el-button type="success" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建订单
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 数据表格 -->
+    <el-card class="table-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>订单列表</span>
+          <div class="header-actions">
+            <el-button size="small" @click="handleExport">
+              <el-icon><Download /></el-icon> 导出
+            </el-button>
+            <el-button size="small" @click="handleRefresh">
+              <el-icon><RefreshRight /></el-icon> 刷新
+            </el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        v-loading="loading"
+        stripe
+        border
+        @sort-change="handleSortChange"
+      >
+        <el-table-column prop="id" label="ID" width="70" align="center" />
+        <el-table-column prop="orderNo" label="订单编号" min-width="140" sortable>
+          <template #default="{ row }">
+            <el-link type="primary" @click="handleViewDetail(row.id)">
+              {{ row.orderNo }}
+            </el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="customer" label="客户名称" min-width="120" sortable />
+        <el-table-column prop="amount" label="订单金额" width="140" align="right" sortable>
+          <template #default="{ row }">
+            <span style="font-weight: 600; color: #409eff;">
+              ¥{{ formatNumber(row.amount) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTag(row.status)" effect="light" size="small">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="paymentMethod" label="支付方式" width="120" align="center" />
+        <el-table-column prop="orderDate" label="下单日期" width="160" sortable />
+        <el-table-column prop="description" label="备注" min-width="150" show-overflow-tooltip />
+        <el-table-column label="操作" width="220" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button size="small" type="primary" link @click="handleViewDetail(row.id)">
+              <el-icon><View /></el-icon> 查看
+            </el-button>
+            <el-button size="small" type="warning" link @click="handleEdit(row.id)">
+              <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button size="small" type="danger" link @click="handleDelete(row.id)">
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+
+    <!-- 删除确认对话框 -->
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <div class="delete-confirm">
+        <el-icon color="#f56c6c" size="56"><WarningFilled /></el-icon>
+        <p>确定要删除该订单吗？</p>
+        <p class="delete-hint">订单编号：<strong>{{ deleteOrderNo }}</strong></p>
+        <p class="delete-hint">此操作不可恢复，请谨慎操作！</p>
+      </div>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="deleteLoading" @click="confirmDelete">
+          确定删除
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import * as echarts from 'echarts'
+import {
+  Document,
+  Clock,
+  Loading,
+  Select,
+  Top,
+  Warning,
+  Search,
+  Refresh,
+  Plus,
+  Download,
+  RefreshRight,
+  View,
+  Edit,
+  Delete,
+  WarningFilled,
+  ArrowDown,
+  ArrowUp
+} from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+// ========== 响应式数据 ==========
+const loading = ref(false)
+const deleteLoading = ref(false)
+const deleteDialogVisible = ref(false)
+const deleteId = ref<number | null>(null)
+const deleteOrderNo = ref('')
+const trendPeriod = ref('month')
+
+const trendChartRef = ref<HTMLDivElement | null>(null)
+const pieChartRef = ref<HTMLDivElement | null>(null)
+let trendChart: echarts.ECharts | null = null
+let pieChart: echarts.ECharts | null = null
+
+// 统计数据
+const totalOrders = ref(0)
+const pendingOrders = ref(0)
+const processingOrders = ref(0)
+const completedOrders = ref(0)
+
+// 筛选表单
+const filterForm = reactive({
+  orderNo: '',
+  customer: '',
+  status: '',
+  dateRange: [] as string[]
+})
+
+// 分页
+const pagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 表格数据
+const tableData = ref<any[]>([])
+const allData = ref<any[]>([])
+
+// ========== 计算属性 ==========
+const formatNumber = (num: number) => {
+  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const getStatusTag = (status: string) => {
+  const map: Record<string, string> = {
+    pending: 'warning',
+    processing: 'primary',
+    completed: 'success',
+    cancelled: 'danger'
+  }
+  return map[status] || 'info'
+}
+
+const getStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    pending: '待处理',
+    processing: '处理中',
+    completed: '已完成',
+    cancelled: '已取消'
+  }
+  return map[status] || status
+}
+
+// ========== 模拟数据生成 ==========
+const generateMockData = () => {
+  const customers = ['张三', '李四', '王五', '赵六', '孙七', '周八', '吴九', '郑十', '钱十一', '冯十二']
+  const statuses = ['pending', 'processing', 'completed', 'cancelled']
+  const paymentMethods = ['微信支付', '支付宝', '银行转账', '现金', '信用卡']
+  const descriptions = [
+    '月度会员服务', '洗车套餐', '汽车美容服务', '保养服务', '维修服务',
+    '保险续费', '年检服务', '配件更换', '内饰清洁', '抛光打蜡'
+  ]
+
+  const data = []
+  const now = new Date()
+  const total = 120
+
+  for (let i = 1; i <= total; i++) {
+    const status = statuses[Math.floor(Math.random() * statuses.length)]
+    const amount = Math.round((Math.random() * 5000 + 100) * 100) / 100
+    const date = new Date(now)
+    date.setDate(date.getDate() - Math.floor(Math.random() * 90))
+
+    data.push({
+      id: i,
+      orderNo: `ORD-${String(i).padStart(6, '0')}`,
+      customer: customers[Math.floor(Math.random() * customers.length)],
+      amount: amount,
+      status: status,
+      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+      orderDate: date.toISOString().split('T')[0],
+      description: descriptions[Math.floor(Math.random() * descriptions.length)] + ` #${i}`
+    })
+  }
+
+  data.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+  return data
+}
+
+// ========== 计算统计数据 ==========
+const calculateStats = (data: any[]) => {
+  let total = 0
+  let pending = 0
+  let processing = 0
+  let completed = 0
+
+  data.forEach(item => {
+    total += 1
+    if (item.status === 'pending') pending++
+    if (item.status === 'processing') processing++
+    if (item.status === 'completed') completed++
+  })
+
+  totalOrders.value = total
+  pendingOrders.value = pending
+  processingOrders.value = processing
+  completedOrders.value = completed
+}
+
+// ========== 初始化数据 ==========
+const initData = () => {
+  loading.value = true
+  setTimeout(() => {
+    allData.value = generateMockData()
+    calculateStats(allData.value)
+    filterData()
+    loading.value = false
+  }, 500)
+}
+
+// ========== 筛选数据 ==========
+const filterData = () => {
+  let data = [...allData.value]
+
+  if (filterForm.orderNo) {
+    data = data.filter(item => item.orderNo.includes(filterForm.orderNo))
+  }
+
+  if (filterForm.customer) {
+    data = data.filter(item => item.customer.includes(filterForm.customer))
+  }
+
+  if (filterForm.status) {
+    data = data.filter(item => item.status === filterForm.status)
+  }
+
+  if (filterForm.dateRange && filterForm.dateRange.length === 2) {
+    const [start, end] = filterForm.dateRange
+    data = data.filter(item => item.orderDate >= start && item.orderDate <= end)
+  }
+
+  pagination.total = data.length
+
+  const start = (pagination.current - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = data.slice(start, end)
+
+  nextTick(() => {
+    updateCharts(data)
+  })
+}
+
+// ========== 图表初始化 ==========
+const initCharts = () => {
+  if (trendChartRef.value) {
+    trendChart = echarts.init(trendChartRef.value)
+  }
+  if (pieChartRef.value) {
+    pieChart = echarts.init(pieChartRef.value)
+  }
+  window.addEventListener('resize', handleResize)
+}
+
+const handleResize = () => {
+  trendChart?.resize()
+  pieChart?.resize()
+}
+
+const updateCharts = (data: any[]) => {
+  if (!trendChart || !pieChart) return
+
+  // 趋势图
+  const groupedData: Record<string, { count: number; amount: number }> = {}
+  data.forEach(item => {
+    if (!groupedData[item.orderDate]) {
+      groupedData[item.orderDate] = { count: 0, amount: 0 }
+    }
+    groupedData[item.orderDate].count += 1
+    groupedData[item.orderDate].amount += item.amount
+  })
+
+  const dates = Object.keys(groupedData).sort()
+  const countData = dates.map(d => groupedData[d].count)
+  const amountData = dates.map(d => groupedData[d].amount)
+
+  trendChart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any) => {
+        let html = `<div style="font-weight:bold;">${params[0].axisValue}</div>`
+        params.forEach((p: any) => {
+          html += `<div>${p.marker} ${p.seriesName}: ${p.seriesName === '订单数' ? p.value + '单' : '¥' + p.value.toFixed(2)}</div>`
+        })
+        return html
+      }
+    },
+    legend: {
+      data: ['订单数', '订单金额'],
+      bottom: 0
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '20%',
+      top: '5%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLabel: {
+        rotate: dates.length > 15 ? 45 : 0,
+        fontSize: 11
+      }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '订单数',
+        splitLine: { lineStyle: { color: '#f0f0f0' } }
+      },
+      {
+        type: 'value',
+        name: '金额 (¥)',
+        splitLine: { show: false }
+      }
+    ],
+    series: [
+      {
+        name: '订单数',
+        type: 'bar',
+        data: countData,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#409eff' },
+            { offset: 1, color: '#66b1ff' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
+        }
+      },
+      {
+        name: '订单金额',
+        type: 'line',
+        yAxisIndex: 1,
+        data: amountData,
+        smooth: true,
+        lineStyle: { color: '#67c23a', width: 3 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
+            { offset: 1, color: 'rgba(103, 194, 58, 0.05)' }
+          ])
+        },
+        symbol: 'circle',
+        symbolSize: 6
+      }
+    ]
+  })
+
+  // 饼图
+  const statusData: Record<string, number> = {}
+  data.forEach(item => {
+    statusData[getStatusLabel(item.status)] = (statusData[getStatusLabel(item.status)] || 0) + 1
+  })
+
+  const pieData = Object.keys(statusData).map(key => ({
+    name: key,
+    value: statusData[key]
+  }))
+
+  const colors = ['#e6a23c', '#409eff', '#67c23a', '#f56c6c']
+
+  pieChart.setOption({
+    tooltip: {
+      trigger: 'item',
+      formatter: (params: any) => {
+        return `${params.name}<br/>订单数: ${params.value}单<br/>占比: ${params.percent}%`
+      }
+    },
+    legend: {
+      orient: 'vertical',
+      right: '5%',
+      top: 'center',
+      itemWidth: 12,
+      itemHeight: 12
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['40%', '50%'],
+        avoidLabelOverlap: true,
+        itemStyle: {
+          borderRadius: 8,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+          formatter: (params: any) => {
+            return `${params.name}\n${params.percent}%`
+          },
+          fontSize: 11
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 14,
+            fontWeight: 'bold'
+          }
+        },
+        data: pieData.length ? pieData : [{ name: '暂无数据', value: 1 }],
+        color: colors
+      }
+    ]
+  })
+}
+
+// ========== 事件处理 ==========
+const handleSearch = () => {
+  pagination.current = 1
+  filterData()
+}
+
+const handleReset = () => {
+  filterForm.orderNo = ''
+  filterForm.customer = ''
+  filterForm.status = ''
+  filterForm.dateRange = []
+  pagination.current = 1
+  filterData()
+}
+
+const handleCreate = () => {
+  router.push('/orders/create')
+}
+
+const handleViewDetail = (id: number) => {
+  router.push(`/orders/detail/${id}`)
+}
+
+const handleEdit = (id: number) => {
+  router.push(`/orders/edit/${id}`)
+}
+
+const handleDelete = (id: number) => {
+  const order = allData.value.find(item => item.id === id)
+  if (order) {
+    deleteOrderNo.value = order.orderNo
+  }
+  deleteId.value = id
+  deleteDialogVisible.value = true
+}
+
+const confirmDelete = async () => {
+  if (!deleteId.value) return
+  deleteLoading.value = true
+  try {
+    await new Promise(resolve => setTimeout(resolve, 800))
+    allData.value = allData.value.filter(item => item.id !== deleteId.value)
+    calculateStats(allData.value)
+    filterData()
+    ElMessage.success('删除成功！')
+    deleteDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error('删除失败，请重试！')
+  } finally {
+    deleteLoading.value = false
+    deleteId.value = null
+    deleteOrderNo.value = ''
+  }
+}
+
+const handleSortChange = ({ prop, order }: any) => {
+  if (!prop) return
+  const sorted = [...allData.value]
+  sorted.sort((a, b) => {
+    let valA = a[prop]
+    let valB = b[prop]
+    if (prop === 'amount' || prop === 'id') {
+      valA = Number(valA)
+      valB = Number(valB)
+    } else if (prop === 'orderDate') {
+      valA = new Date(valA).getTime()
+      valB = new Date(valB).getTime()
+    }
+    if (order === 'ascending') {
+      return valA > valB ? 1 : -1
+    } else {
+      return valA < valB ? 1 : -1
+    }
+  })
+  allData.value = sorted
+  filterData()
+}
+
+const handleExport = () => {
+  ElMessage.success('导出任务已提交，文件将发送到您的邮箱')
+}
+
+const handleRefresh = () => {
+  initData()
+}
+
+const handleSizeChange = (val: number) => {
+  pagination.pageSize = val
+  pagination.current = 1
+  filterData()
+}
+
+const handleCurrentChange = (val: number) => {
+  pagination.current = val
+  filterData()
+}
+
+// ========== 生命周期 ==========
+onMounted(() => {
+  initData()
+  nextTick(() => {
+    initCharts()
+    setTimeout(() => {
+      if (trendChartRef.value && pieChartRef.value) {
+        updateCharts(allData.value)
+      }
+    }, 300)
+  })
+})
+
+watch(trendPeriod, () => {
+  updateCharts(allData.value)
+})
+
+window.addEventListener('resize', handleResize)
+</script>
+
+<style scoped>
+.orders-index {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.stat-cards {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+.stat-icon.total {
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+}
+.stat-icon.pending {
+  background: linear-gradient(135deg, #e6a23c, #f0c78a);
+}
+.stat-icon.processing {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+.stat-icon.completed {
+  background: linear-gradient(135deg, #67c23a, #85ce61);
+}
+
+.stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.3;
+}
+
+.stat-change {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.stat-change.positive {
+  color: #67c23a;
+}
+.stat-change.negative {
+  color: #f56c6c;
+}
+.stat-change.warning {
+  color: #e6a23c;
+}
+
+.chart-row {
+  margin-bottom: 20px;
+}
+
+.chart-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.chart-container {
+  width: 100%;
+  height: 320px;
+}
+
+.filter-card {
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+
+.filter-form :deep(.el-form-item:last-child) {
+  margin-right: 0;
+}
+
+.table-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+  margin-top: 16px;
+}
+
+.delete-confirm {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.delete-confirm p {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: #606266;
+}
+
+.delete-confirm .delete-hint {
+  font-size: 13px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .orders-index {
+    padding: 12px;
+  }
+
+  .stat-cards .el-col {
+    margin-bottom: 12px;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-form :deep(.el-form-item) {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .filter-form :deep(.el-form-item:last-child) {
+    margin-bottom: 0;
+  }
+
+  .chart-container {
+    height: 240px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+}
+</style>

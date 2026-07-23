@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/customers/pages/CustomerProfile.vue
   功能: 客户画像 - 客户360度全景视图
 -->
@@ -86,7 +86,21 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UserFilled, Phone, Message, Location, Edit, Bell } from '@element-plus/icons-vue'
+import {
+  User,
+  Edit,
+  Download,
+  Delete,
+  ArrowLeft,
+  InfoFilled,
+  Phone,
+  Message,
+  WarningFilled
+} from '@element-plus/icons-vue'
+// ============================================================
+// API 导入
+// ============================================================
+import { getCustomerDetail, deleteCustomer } from '@/api/modules/customers'
 import { ElMessage } from 'element-plus'
 
 const customerName = ref('沙特电信公司')
