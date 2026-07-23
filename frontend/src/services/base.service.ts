@@ -29,7 +29,7 @@ export class BaseService {
         }
         
         // 显示加载
-        if (config.showLoading !== false) {
+        if ((config as any).showLoading !== false) {
           if (requestCount === 0) {
             loadingInstance = ElLoading.service({
               fullscreen: true,
@@ -52,7 +52,6 @@ export class BaseService {
         
         const { data } = response;
         
-        // 根据后端返回格式处理
         if (data.code === 200 || data.code === 0) {
           return data.data || data;
         } else if (data.code === 401) {

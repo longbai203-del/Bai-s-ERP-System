@@ -48,112 +48,79 @@ export interface Leave {
   updatedAt: string;
 }
 
-export interface EmployeeQuery {
-  page?: number;
-  limit?: number;
-  keyword?: string;
-  department?: string;
-  status?: string;
-}
-
 export class EmployeeService extends BaseService {
-  constructor() {
-    super();
-  }
-  
-  // 获取员工列表
-  async getList(params: EmployeeQuery) {
+  async getList(params?: any) {
     return this.get('/hr/employees', { params });
   }
   
-  // 获取员工详情
   async getById(id: string) {
     return this.get(`/hr/employees/${id}`);
   }
   
-  // 根据工号获取
   async getByNo(no: string) {
     return this.get(`/hr/employees/no/${no}`);
   }
   
-  // 根据部门获取
   async getByDepartment(department: string) {
     return this.get(`/hr/employees/department/${department}`);
   }
   
-  // 搜索员工
   async search(keyword: string) {
     return this.get('/hr/employees/search', { params: { keyword } });
   }
   
-  // 获取部门统计
   async getDepartmentStats() {
     return this.get('/hr/employees/department-stats');
   }
   
-  // 创建员工
   async create(data: Partial<Employee>) {
     return this.post('/hr/employees', data);
   }
   
-  // 更新员工
   async update(id: string, data: Partial<Employee>) {
     return this.put(`/hr/employees/${id}`, data);
   }
   
-  // 删除员工
+  async toggleStatus(id: string) {
+    return this.patch(`/hr/employees/${id}/toggle-status`);
+  }
+  
   async delete(id: string) {
     return this.delete(`/hr/employees/${id}`);
   }
 }
 
 export class AttendanceService extends BaseService {
-  constructor() {
-    super();
-  }
-  
-  // 打卡签到
   async checkIn(employeeId: string) {
     return this.post('/hr/attendance/check-in', { employeeId });
   }
   
-  // 打卡签退
   async checkOut(id: string) {
     return this.patch(`/hr/attendance/${id}/check-out`);
   }
   
-  // 获取月度汇总
   async getMonthlySummary(employeeId: string, year: number, month: number) {
     return this.get(`/hr/attendance/${employeeId}/${year}/${month}`);
   }
 }
 
 export class LeaveService extends BaseService {
-  constructor() {
-    super();
-  }
-  
-  // 获取待审批请假
   async getPendingLeaves() {
     return this.get('/hr/leaves/pending');
   }
   
-  // 获取员工请假记录
   async getEmployeeLeaves(employeeId: string) {
     return this.get(`/hr/leaves/employee/${employeeId}`);
   }
   
-  // 申请请假
   async requestLeave(data: Partial<Leave>) {
     return this.post('/hr/leaves', data);
   }
   
-  // 审批请假
   async approveLeave(id: string, approvedBy: string) {
     return this.patch(`/hr/leaves/${id}/approve`, { approvedBy });
   }
   
-  // 拒绝请假
   async rejectLeave(id: string, notes: string) {
     return this.patch(`/hr/leaves/${id}/reject`, { notes });
   }

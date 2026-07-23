@@ -42,11 +42,6 @@ export function getPasswordStrength(password: string): 'weak' | 'medium' | 'stro
   return 'strong';
 }
 
-// 验证是否为中文
-export function isValidChinese(text: string): boolean {
-  return /^[\u4e00-\u9fa5]+$/.test(text);
-}
-
 // 验证是否为数字
 export function isValidNumber(value: any): boolean {
   return !isNaN(parseFloat(value)) && isFinite(value);
@@ -60,4 +55,9 @@ export function isValidInteger(value: any): boolean {
 // 验证是否为正数
 export function isValidPositive(value: any): boolean {
   return isValidNumber(value) && Number(value) > 0;
+}
+
+// 验证是否为中文
+export function isValidChinese(text: string): boolean {
+  return /^[\u4e00-\u9fa5]+$/.test(text);
 }

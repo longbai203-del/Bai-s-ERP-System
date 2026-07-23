@@ -68,3 +68,10 @@ export function timeAgo(date: Date | string): string {
   if (months < 12) return `${months}个月前`;
   return `${years}年前`;
 }
+
+// 截断文本
+export function truncate(text: string, length: number = 50, suffix: string = '...'): string {
+  if (!text) return '';
+  if (text.length <= length) return text;
+  return text.substring(0, length) + suffix;
+}
