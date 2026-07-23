@@ -1,11 +1,12 @@
 ﻿import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { setupGuards } from './guards'
 
-// 基础路由
+// ===== 基础路由 =====
 const baseRoutes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/dashboard'
   },
   {
     path: '/login',
@@ -14,10 +15,10 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: { title: '登录', hidden: true }
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/modules/dashboard/pages/Index.vue'),
-    meta: { title: '仪表盘' }
+    path: '/403',
+    name: 'Forbidden',
+    component: () => import('@/modules/system/pages/error/403.vue'),
+    meta: { title: '403', hidden: true }
   },
   {
     path: '/404',
@@ -32,7 +33,7 @@ const baseRoutes: RouteRecordRaw[] = [
   }
 ]
 
-// 自动导入所有模块路由
+// ===== 自动导入所有模块路由 =====
 const modules = import.meta.glob('../modules/*/router/*.ts', { eager: true })
 const moduleRoutes: RouteRecordRaw[] = []
 
@@ -48,6 +49,7 @@ Object.keys(modules).forEach((key) => {
   }
 })
 
+// ===== 创建路由实例 =====
 const router = createRouter({
   history: createWebHistory(),
   routes: [...baseRoutes, ...moduleRoutes],
@@ -57,35 +59,7 @@ const router = createRouter({
   }
 })
 
-// 路由守卫
-router.beforeEach((to, _from, next) => {
-  const token = localStorage.getItem('token')
-  
-  if (to.path === '/login') {
-    if (token) {
-      next('/dashboard')
-    } else {
-      next()
-    }
-    return
-  }
-  
-  if (to.path === '/dashboard' && !token) {
-    next('/login')
-    return
-  }
-  
-  if (to.path === '/404') {
-    next()
-    return
-  }
-  
-  if (!token && !to.meta?.hidden) {
-    next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
-    return
-  }
-  
-  next()
-})
+// ===== 设置路由守卫 =====
+setupGuards(router)
 
 export default router
