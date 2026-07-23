@@ -1,126 +1,139 @@
-﻿/**
- * @file constants/index.ts
- * @description 全局常量定义
- */
+﻿// ===== HTTP 状态码 =====
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503
+} as const;
 
-// API 常量
-export const API = {
-  BASE_URL: import.meta.env.VITE_API_URL || '/api',
-  TIMEOUT: 30000,
-  RETRY_COUNT: 3,
-  RETRY_DELAY: 1000
-}
+// ===== 分页默认值 =====
+export const PAGINATION = {
+  DEFAULT_PAGE: 1,
+  DEFAULT_LIMIT: 10,
+  PAGE_SIZES: [10, 20, 50, 100],
+  MAX_LIMIT: 100
+} as const;
 
-// 应用常量
-export const APP = {
-  NAME: import.meta.env.VITE_APP_NAME || 'Bai\'s ERP',
-  VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
-  ENV: import.meta.env.VITE_APP_ENV || 'development'
-}
+// ===== 角色常量 =====
+export const ROLES = {
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  USER: 'user',
+  GUEST: 'guest'
+} as const;
 
-// 状态常量
-export const STATUS = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  PENDING: 'pending',
-  PROCESSING: 'processing',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
-  DELETED: 'deleted'
-}
+// ===== 权限常量 =====
+export const PERMISSIONS = {
+  // 用户管理
+  USER_VIEW: 'user:view',
+  USER_CREATE: 'user:create',
+  USER_UPDATE: 'user:update',
+  USER_DELETE: 'user:delete',
 
-// 订单状态
+  // 角色管理
+  ROLE_VIEW: 'role:view',
+  ROLE_CREATE: 'role:create',
+  ROLE_UPDATE: 'role:update',
+  ROLE_DELETE: 'role:delete',
+
+  // 订单管理
+  ORDER_VIEW: 'order:view',
+  ORDER_CREATE: 'order:create',
+  ORDER_UPDATE: 'order:update',
+  ORDER_DELETE: 'order:delete',
+
+  // 库存管理
+  INVENTORY_VIEW: 'inventory:view',
+  INVENTORY_CREATE: 'inventory:create',
+  INVENTORY_UPDATE: 'inventory:update',
+  INVENTORY_DELETE: 'inventory:delete',
+
+  // 财务管理
+  FINANCE_VIEW: 'finance:view',
+  FINANCE_CREATE: 'finance:create',
+  FINANCE_UPDATE: 'finance:update',
+  FINANCE_DELETE: 'finance:delete'
+} as const;
+
+// ===== 订单状态 =====
 export const ORDER_STATUS = {
   PENDING: 'pending',
   PROCESSING: 'processing',
   SHIPPED: 'shipped',
-  DELIVERED: 'delivered',
+  COMPLETED: 'completed',
   CANCELLED: 'cancelled'
-} as const
+} as const;
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  pending: '待处理',
-  processing: '处理中',
-  shipped: '已发货',
-  delivered: '已完成',
-  cancelled: '已取消'
-}
+  [ORDER_STATUS.PENDING]: '待处理',
+  [ORDER_STATUS.PROCESSING]: '处理中',
+  [ORDER_STATUS.SHIPPED]: '已发货',
+  [ORDER_STATUS.COMPLETED]: '已完成',
+  [ORDER_STATUS.CANCELLED]: '已取消'
+};
 
 export const ORDER_STATUS_TYPES: Record<string, string> = {
-  pending: 'warning',
-  processing: 'info',
-  shipped: 'primary',
-  delivered: 'success',
-  cancelled: 'danger'
-}
+  [ORDER_STATUS.PENDING]: 'warning',
+  [ORDER_STATUS.PROCESSING]: 'info',
+  [ORDER_STATUS.SHIPPED]: 'primary',
+  [ORDER_STATUS.COMPLETED]: 'success',
+  [ORDER_STATUS.CANCELLED]: 'danger'
+};
 
-// 用户角色
-export const ROLES = {
-  ADMIN: 'admin',
-  MANAGER: 'manager',
-  USER: 'user'
-} as const
+// ===== 库存状态 =====
+export const INVENTORY_STATUS = {
+  IN_STOCK: 'in_stock',
+  LOW_STOCK: 'low_stock',
+  OUT_OF_STOCK: 'out_of_stock'
+} as const;
 
-export const ROLE_LABELS: Record<string, string> = {
-  admin: '管理员',
-  manager: '经理',
-  user: '普通用户'
-}
+export const INVENTORY_STATUS_LABELS: Record<string, string> = {
+  [INVENTORY_STATUS.IN_STOCK]: '有货',
+  [INVENTORY_STATUS.LOW_STOCK]: '低库存',
+  [INVENTORY_STATUS.OUT_OF_STOCK]: '缺货'
+};
 
-// 支付方式
-export const PAYMENT_METHODS = {
-  CASH: 'cash',
-  CARD: 'card',
-  TRANSFER: 'transfer',
-  WECHAT: 'wechat',
-  ALIPAY: 'alipay'
-} as const
+export const INVENTORY_STATUS_TYPES: Record<string, string> = {
+  [INVENTORY_STATUS.IN_STOCK]: 'success',
+  [INVENTORY_STATUS.LOW_STOCK]: 'warning',
+  [INVENTORY_STATUS.OUT_OF_STOCK]: 'danger'
+};
 
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  cash: '现金',
-  card: '银行卡',
-  transfer: '转账',
-  wechat: '微信支付',
-  alipay: '支付宝'
-}
+// ===== 支付状态 =====
+export const PAYMENT_STATUS = {
+  UNPAID: 'unpaid',
+  PAID: 'paid',
+  REFUNDED: 'refunded'
+} as const;
 
-// 本地存储键
-export const STORAGE_KEYS = {
-  TOKEN: 'token',
-  USER: 'user',
-  THEME: 'theme',
-  SIDEBAR_COLLAPSED: 'sidebarCollapsed',
-  LANGUAGE: 'language'
-}
+export const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  [PAYMENT_STATUS.UNPAID]: '未支付',
+  [PAYMENT_STATUS.PAID]: '已支付',
+  [PAYMENT_STATUS.REFUNDED]: '已退款'
+};
 
-// 错误码
-export const ERROR_CODES = {
-  SUCCESS: 0,
-  VALIDATION_ERROR: 1001,
-  UNAUTHORIZED: 1002,
-  FORBIDDEN: 1003,
-  NOT_FOUND: 1004,
-  CONFLICT: 1005,
-  INTERNAL_ERROR: 5000,
-  DATABASE_ERROR: 5001,
-  NETWORK_ERROR: 5002
-}
+// ===== 日期格式 =====
+export const DATE_FORMAT = {
+  DATE: 'YYYY-MM-DD',
+  TIME: 'HH:mm:ss',
+  DATETIME: 'YYYY-MM-DD HH:mm:ss',
+  DATE_SHORT: 'YYYY/MM/DD',
+  DATETIME_SHORT: 'YYYY/MM/DD HH:mm'
+} as const;
 
-export const ERROR_MESSAGES: Record<number, string> = {
-  [ERROR_CODES.SUCCESS]: '操作成功',
-  [ERROR_CODES.VALIDATION_ERROR]: '数据验证失败',
-  [ERROR_CODES.UNAUTHORIZED]: '未授权，请重新登录',
-  [ERROR_CODES.FORBIDDEN]: '权限不足',
-  [ERROR_CODES.NOT_FOUND]: '资源不存在',
-  [ERROR_CODES.CONFLICT]: '资源冲突',
-  [ERROR_CODES.INTERNAL_ERROR]: '服务器内部错误',
-  [ERROR_CODES.DATABASE_ERROR]: '数据库错误',
-  [ERROR_CODES.NETWORK_ERROR]: '网络错误'
-}
+// ===== 文件大小限制 =====
+export const FILE_SIZE = {
+  MAX_SIZE: 10 * 1024 * 1024, // 10MB
+  ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
+} as const;
 
-// 分页默认值
-export const PAGINATION = {
-  DEFAULT_PAGE: 1,
-  DEFAULT_PAGE_SIZE: 10,
-  PAGE_SIZES: [10, 20, 50, 100]
-}
+// ===== 缓存时间 =====
+export const CACHE_TIME = {
+  SHORT: 5 * 60 * 1000,   // 5分钟
+  MEDIUM: 30 * 60 * 1000,  // 30分钟
+  LONG: 24 * 60 * 60 * 1000 // 24小时
+} as const;
