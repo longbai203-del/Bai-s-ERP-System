@@ -7,45 +7,56 @@ node_modules/
 *.log
 logs/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # ===== 环境变量 =====
 .env
 .env.local
 .env.*.local
+*.env
 
 # ===== 构建产物 =====
 dist/
 dist-ssr/
 *.local
+build/
+out/
 
 # ===== IDE =====
 .vscode/
 .idea/
 *.swp
 *.swo
+*.swn
 
 # ===== 系统文件 =====
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # ===== 临时文件 =====
 *.tmp
 *.temp
 *.bak
 *.bkp
+*.backup
 
-# ===== 备份 =====
+# ===== 备份目录 =====
 backup_*/
 **/backup_*/
 
 # ===== 测试 =====
 coverage/
 .nyc_output/
+*.lcov
+
+# ===== Vite =====
+.vite/
+.cache/
 
 # ===== 项目特定 =====
 token.txt
 file-tree.txt
 folders.txt
-
-# ===== Vite =====
-.vite/
+*.log
