@@ -1,49 +1,64 @@
-﻿import { BaseService } from '../services/BaseService';
+﻿import { BaseService } from './BaseService';
 import { CustomerRepository } from '../repositories/Customer.repository';
-import { ICustomer } from '../models/Customer.model';
 import { generateCode } from '../utils';
 
-export class CustomerService extends BaseService<ICustomer> {
+export class CustomerService extends BaseService<any> {
   private customerRepository: CustomerRepository;
   
   constructor() {
     super(new CustomerRepository());
     this.customerRepository = new CustomerRepository();
   }
-  
-  async createCustomer(data: Partial<ICustomer>): Promise<ICustomer> {
+
+  async createCustomer(data: any): Promise<any> {
     data.customerCode = generateCode('CUS');
-    return this.repository.create(data);
+    return this.create(data);
   }
-  
-  async findByEmail(email: string): Promise<ICustomer | null> {
+
+  async findByEmail(email: string): Promise<any | null> {
+    if (!email) return null;
     return this.customerRepository.findByEmail(email);
   }
-  
-  async findByCode(code: string): Promise<ICustomer | null> {
+
+  async findByCode(code: string): Promise<any | null> {
+    if (!code) return null;
     return this.customerRepository.findByCode(code);
   }
-  
-  async search(keyword: string): Promise<ICustomer[]> {
+
+  async findByPhone(phone: string): Promise<any | null> {
+    if (!phone) return null;
+    return this.customerRepository.findByPhone(phone);
+  }
+
+  async search(keyword: string): Promise<any[]> {
+    if (!keyword) return [];
     return this.customerRepository.search(keyword);
   }
-  
-  async updateBalance(id: string, amount: number): Promise<ICustomer | null> {
+
+  async findByStatus(status: string): Promise<any[]> {
+    if (!status) return [];
+    return this.customerRepository.findByStatus(status);
+  }
+
+  async updateBalance(id: string, amount: number): Promise<any | null> {
+    this.validateId(id);
     return this.customerRepository.updateBalance(id, amount);
   }
-  
-  async toggleStatus(id: string): Promise<ICustomer | null> {
-    const customer = await this.repository.findById(id);
+
+  async getStatistics(): Promise<any> {
+    return this.customerRepository.getStatistics();
+  }
+
+  async toggleStatus(id: string): Promise<any | null> {
+    this.validateId(id);
+    const customer = await this.findById(id);
     if (!customer) return null;
     
-    const statusMap = {
+    const statusMap: any = {
       'active': 'inactive',
       'inactive': 'active',
       'blocked': 'active'
     };
-    return this.repository.update(id, { 
-      status: statusMap[customer.status] as any,
-      updatedAt: new Date()
-    });
+    return this.update(id, { status: statusMap[customer.status] });
   }
 }
