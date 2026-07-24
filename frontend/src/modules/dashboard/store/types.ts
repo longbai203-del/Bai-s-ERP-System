@@ -1,18 +1,22 @@
-﻿// dashboard Store 类型定义
-export interface DashboardState {
-    loading: boolean
-    error: string | null
-    data: any[]
-    total: number
-    currentPage: number
-    pageSize: number
+﻿export interface dashboardItem {
+  id: string;
+  name: string;
+  // 添加更多字段
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const dashboardMutations = {
-    SET_LOADING: 'SET_LOADING',
-    SET_ERROR: 'SET_ERROR',
-    SET_DATA: 'SET_DATA',
-    SET_TOTAL: 'SET_TOTAL',
-    SET_PAGE: 'SET_PAGE',
-    RESET_STATE: 'RESET_STATE'
-} as const
+export interface dashboardPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface dashboardState {
+  items: dashboardItem[];
+  currentItem: dashboardItem | null;
+  loading: boolean;
+  error: string | null;
+  pagination: dashboardPagination;
+}

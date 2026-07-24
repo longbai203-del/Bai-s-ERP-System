@@ -1,18 +1,22 @@
-﻿// saas Store 类型定义
-export interface SaasState {
-    loading: boolean
-    error: string | null
-    data: any[]
-    total: number
-    currentPage: number
-    pageSize: number
+﻿export interface saasItem {
+  id: string;
+  name: string;
+  // 添加更多字段
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const saasMutations = {
-    SET_LOADING: 'SET_LOADING',
-    SET_ERROR: 'SET_ERROR',
-    SET_DATA: 'SET_DATA',
-    SET_TOTAL: 'SET_TOTAL',
-    SET_PAGE: 'SET_PAGE',
-    RESET_STATE: 'RESET_STATE'
-} as const
+export interface saasPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface saasState {
+  items: saasItem[];
+  currentItem: saasItem | null;
+  loading: boolean;
+  error: string | null;
+  pagination: saasPagination;
+}

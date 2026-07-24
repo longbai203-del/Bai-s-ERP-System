@@ -1,18 +1,22 @@
-﻿// marketing Store 类型定义
-export interface MarketingState {
-    loading: boolean
-    error: string | null
-    data: any[]
-    total: number
-    currentPage: number
-    pageSize: number
+﻿export interface marketingItem {
+  id: string;
+  name: string;
+  // 添加更多字段
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const marketingMutations = {
-    SET_LOADING: 'SET_LOADING',
-    SET_ERROR: 'SET_ERROR',
-    SET_DATA: 'SET_DATA',
-    SET_TOTAL: 'SET_TOTAL',
-    SET_PAGE: 'SET_PAGE',
-    RESET_STATE: 'RESET_STATE'
-} as const
+export interface marketingPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface marketingState {
+  items: marketingItem[];
+  currentItem: marketingItem | null;
+  loading: boolean;
+  error: string | null;
+  pagination: marketingPagination;
+}

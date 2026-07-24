@@ -1,13 +1,9 @@
-﻿import { GetterTree } from 'vuex'
-import { AiState } from './types'
+﻿import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 
-export const getters: GetterTree<AiState, any> = {
-    isLoading: (state) => state.loading,
-    hasError: (state) => state.error !== null,
-    errorMessage: (state) => state.error,
-    getData: (state) => state.data,
-    getTotal: (state) => state.total,
-    getCurrentPage: (state) => state.currentPage,
-    getPageSize: (state) => state.pageSize,
-    getDataCount: (state) => state.data.length
-}
+export const useaiGetters = () => {
+  // 这里可以定义模块的 getters
+  // 示例:
+  // const getTotalItems = computed(() => items.value.length);
+  // return { getTotalItems };
+};

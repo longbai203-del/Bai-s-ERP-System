@@ -1,18 +1,22 @@
-﻿// orders Store 类型定义
-export interface OrdersState {
-    loading: boolean
-    error: string | null
-    data: any[]
-    total: number
-    currentPage: number
-    pageSize: number
+﻿export interface ordersItem {
+  id: string;
+  name: string;
+  // 添加更多字段
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const ordersMutations = {
-    SET_LOADING: 'SET_LOADING',
-    SET_ERROR: 'SET_ERROR',
-    SET_DATA: 'SET_DATA',
-    SET_TOTAL: 'SET_TOTAL',
-    SET_PAGE: 'SET_PAGE',
-    RESET_STATE: 'RESET_STATE'
-} as const
+export interface ordersPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ordersState {
+  items: ordersItem[];
+  currentItem: ordersItem | null;
+  loading: boolean;
+  error: string | null;
+  pagination: ordersPagination;
+}

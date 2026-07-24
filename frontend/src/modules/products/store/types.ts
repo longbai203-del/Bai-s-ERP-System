@@ -1,18 +1,22 @@
-﻿// products Store 类型定义
-export interface ProductsState {
-    loading: boolean
-    error: string | null
-    data: any[]
-    total: number
-    currentPage: number
-    pageSize: number
+﻿export interface productsItem {
+  id: string;
+  name: string;
+  // 添加更多字段
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const productsMutations = {
-    SET_LOADING: 'SET_LOADING',
-    SET_ERROR: 'SET_ERROR',
-    SET_DATA: 'SET_DATA',
-    SET_TOTAL: 'SET_TOTAL',
-    SET_PAGE: 'SET_PAGE',
-    RESET_STATE: 'RESET_STATE'
-} as const
+export interface productsPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface productsState {
+  items: productsItem[];
+  currentItem: productsItem | null;
+  loading: boolean;
+  error: string | null;
+  pagination: productsPagination;
+}
