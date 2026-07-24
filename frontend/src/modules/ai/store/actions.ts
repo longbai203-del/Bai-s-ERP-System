@@ -7,8 +7,7 @@ export const actions: ActionTree<AiState, any> = {
         commit(aiMutations.SET_LOADING, true)
         commit(aiMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getAiList(params)
+                        // const response = await getAiList(params)
             // commit(aiMutations.SET_DATA, response.data)
             // commit(aiMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<AiState, any> = {
         commit(aiMutations.RESET_STATE)
     }
 }
+

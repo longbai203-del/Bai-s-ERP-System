@@ -7,8 +7,7 @@ export const actions: ActionTree<InventoryState, any> = {
         commit(inventoryMutations.SET_LOADING, true)
         commit(inventoryMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getInventoryList(params)
+                        // const response = await getInventoryList(params)
             // commit(inventoryMutations.SET_DATA, response.data)
             // commit(inventoryMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<InventoryState, any> = {
         commit(inventoryMutations.RESET_STATE)
     }
 }
+

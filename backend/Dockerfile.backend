@@ -1,0 +1,28 @@
+﻿# Dockerfile.backend
+FROM node:20-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制依赖文件
+COPY package*.json ./
+COPY backend/package*.json ./backend/ 2>/dev/null || true
+
+# 安装依赖
+RUN npm ci --only=production --legacy-peer-deps
+
+# 复制源码
+COPY . .
+
+# 构建 TypeScript
+RUN npm run build 2>/dev/null || echo "No build script found"
+
+# 暴露端口
+EXPOSE 3000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})" || exit 1
+
+# 启动应用
+CMD ["node", "dist/index.js"]

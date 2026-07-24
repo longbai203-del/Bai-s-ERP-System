@@ -7,8 +7,7 @@ export const actions: ActionTree<ApprovalState, any> = {
         commit(approvalMutations.SET_LOADING, true)
         commit(approvalMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getApprovalList(params)
+                        // const response = await getApprovalList(params)
             // commit(approvalMutations.SET_DATA, response.data)
             // commit(approvalMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<ApprovalState, any> = {
         commit(approvalMutations.RESET_STATE)
     }
 }
+

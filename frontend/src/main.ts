@@ -8,7 +8,7 @@ import pinia from './store'
 
 const app = createApp(App)
 
-// 注册Element Plus图标
+// 注册 Element Plus 图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }

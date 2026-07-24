@@ -1,0 +1,13 @@
+﻿{
+  "errors": {
+    "notFound": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "validationFailed": "Validation failed",
+    "internalError": "Internal server error"
+  },
+  "success": {
+    "created": "Resource created successfully",
+    "updated": "Resource updated successfully",
+    "deleted": "Resource deleted successfully"
+  }
+}

@@ -7,8 +7,7 @@ export const actions: ActionTree<SystemState, any> = {
         commit(systemMutations.SET_LOADING, true)
         commit(systemMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getSystemList(params)
+                        // const response = await getSystemList(params)
             // commit(systemMutations.SET_DATA, response.data)
             // commit(systemMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<SystemState, any> = {
         commit(systemMutations.RESET_STATE)
     }
 }
+

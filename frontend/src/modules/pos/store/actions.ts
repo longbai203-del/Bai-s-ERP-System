@@ -7,8 +7,7 @@ export const actions: ActionTree<PosState, any> = {
         commit(posMutations.SET_LOADING, true)
         commit(posMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getPosList(params)
+                        // const response = await getPosList(params)
             // commit(posMutations.SET_DATA, response.data)
             // commit(posMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<PosState, any> = {
         commit(posMutations.RESET_STATE)
     }
 }
+

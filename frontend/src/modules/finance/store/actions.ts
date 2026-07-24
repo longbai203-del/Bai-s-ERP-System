@@ -7,8 +7,7 @@ export const actions: ActionTree<FinanceState, any> = {
         commit(financeMutations.SET_LOADING, true)
         commit(financeMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getFinanceList(params)
+                        // const response = await getFinanceList(params)
             // commit(financeMutations.SET_DATA, response.data)
             // commit(financeMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<FinanceState, any> = {
         commit(financeMutations.RESET_STATE)
     }
 }
+

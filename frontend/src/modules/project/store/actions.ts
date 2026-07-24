@@ -7,8 +7,7 @@ export const actions: ActionTree<ProjectState, any> = {
         commit(projectMutations.SET_LOADING, true)
         commit(projectMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getProjectList(params)
+                        // const response = await getProjectList(params)
             // commit(projectMutations.SET_DATA, response.data)
             // commit(projectMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<ProjectState, any> = {
         commit(projectMutations.RESET_STATE)
     }
 }
+

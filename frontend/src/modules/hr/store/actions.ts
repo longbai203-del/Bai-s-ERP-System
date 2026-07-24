@@ -7,8 +7,7 @@ export const actions: ActionTree<HrState, any> = {
         commit(hrMutations.SET_LOADING, true)
         commit(hrMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getHrList(params)
+                        // const response = await getHrList(params)
             // commit(hrMutations.SET_DATA, response.data)
             // commit(hrMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<HrState, any> = {
         commit(hrMutations.RESET_STATE)
     }
 }
+

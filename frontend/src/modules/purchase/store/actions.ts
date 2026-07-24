@@ -7,8 +7,7 @@ export const actions: ActionTree<PurchaseState, any> = {
         commit(purchaseMutations.SET_LOADING, true)
         commit(purchaseMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getPurchaseList(params)
+                        // const response = await getPurchaseList(params)
             // commit(purchaseMutations.SET_DATA, response.data)
             // commit(purchaseMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<PurchaseState, any> = {
         commit(purchaseMutations.RESET_STATE)
     }
 }
+

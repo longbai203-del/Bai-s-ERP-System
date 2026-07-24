@@ -5,3 +5,11 @@ const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
 export default pinia
+
+// 导出所有 Store
+export * from './modules/user'
+export * from './modules/app'
+export * from './modules/permission'
+export * from './modules/inventory'
+export * from './modules/order'
+export * from './modules/customer'

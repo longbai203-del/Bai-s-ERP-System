@@ -1,4 +1,4 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/project/pages/ProjectDetail.vue
   功能: 项目详情
 -->
@@ -79,11 +79,7 @@
         <el-table-column prop="status" label="状态" align="center" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'done' ? 'success' : row.status === 'doing' ? 'warning' : 'info'">
-              {{ row.status === 'todo' ? '待办' : row.status === 'doing' ? '进行中' : '已完成' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="deadline" label="截止日期" width="120" />
+              {{ row.status === '"deadline" label="截止日期" width="120" />
         <el-table-column label="操作" align="center" width="150">
           <el-button type="primary" size="small">查看</el-button>
         </el-table-column>
@@ -126,29 +122,4 @@ const tasks = ref([
   { taskNo: 'TSK-001', name: '需求分析', assignee: 'Ahmed Al-Fahd', status: 'done', deadline: '2024-08-15' },
   { taskNo: 'TSK-002', name: '系统设计', assignee: 'Mohammed Al-Qahtani', status: 'done', deadline: '2024-09-15' },
   { taskNo: 'TSK-003', name: '开发实施', assignee: 'Saud Al-Otaibi', status: 'doing', deadline: '2024-11-15' },
-  { taskNo: 'TSK-004', name: '测试部署', assignee: 'Faisal Al-Dossary', status: 'todo', deadline: '2024-12-10' },
-])
-
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
-
-const handleEdit = () => { router.push('/project/edit/1') }
-const handleComplete = () => {
-  ElMessageBox.confirm(`确认完成项目 ${project.value.name}？`, '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' })
-    .then(() => { project.value.status = 'completed'; project.value.progress = 100; ElMessage.success('项目已完成') }).catch(() => {})
-}
-const handleBack = () => { router.push('/project/list') }
-const handleAddTask = () => { ElMessage.info('添加任务') }
-</script>
-
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.header-card { border-radius: 12px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.subtitle { color: #909399; margin: 4px 0 0 0; }
-.team-member { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.team-member:last-child { border-bottom: none; }
-.member-info { flex: 1; }
-.member-name { font-weight: 500; font-size: 14px; }
-.member-role { color: #909399; font-size: 12px; }
-</style>
+  { taskNo: 'TSK-004', name: '测试部署', assignee: 'Faisal Al-Dossary', status: '

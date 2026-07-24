@@ -7,8 +7,7 @@ export const actions: ActionTree<SettingsState, any> = {
         commit(settingsMutations.SET_LOADING, true)
         commit(settingsMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getSettingsList(params)
+                        // const response = await getSettingsList(params)
             // commit(settingsMutations.SET_DATA, response.data)
             // commit(settingsMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<SettingsState, any> = {
         commit(settingsMutations.RESET_STATE)
     }
 }
+

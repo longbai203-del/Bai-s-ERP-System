@@ -1,76 +1,77 @@
-﻿import { Request, Response } from 'express';
-import { BaseController } from '../controllers/BaseController';
+﻿/**
+ * 客户控制器
+ * @module Controllers/CustomerController
+ * @description 客户管理控制器
+ */
+
+import { Request, Response, NextFunction } from 'express';
+import { BaseController } from './BaseController';
 import { CustomerService } from '../services/Customer.service';
+import { successResponse } from '../utils/response';
+import { AppError } from '../middlewares/validator';
+import { logger } from '../utils/logger';
+
+const customerService = new CustomerService();
 
 export class CustomerController extends BaseController<any> {
-  private customerService: CustomerService;
-  
   constructor() {
-    super(new CustomerService());
-    this.customerService = new CustomerService();
+    super(customerService);
   }
-  
-  async search(req: Request, res: Response) {
+
+  /**
+   * 搜索客户
+   */
+  search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { keyword } = req.query;
-      if (!keyword) {
-        return this.getAll(req, res);
-      }
-      const data = await this.customerService.search(keyword as string);
-      res.json({ code: 200, data, message: 'success' });
-    } catch (error: any) {
-      res.status(500).json({ code: 500, message: error.message });
+      const { keyword, ...filter } = req.query;
+      const result = await customerService.search(keyword as string, filter);
+      successResponse(res, result);
+    } catch (error) {
+      next(error);
     }
-  }
-  
-  async getByEmail(req: Request, res: Response) {
-    try {
-      const data = await this.customerService.findByEmail(req.params.email);
-      if (!data) {
-        return res.json({ code: 404, message: 'Customer not found' });
-      }
-      res.json({ code: 200, data, message: 'success' });
-    } catch (error: any) {
-      res.status(500).json({ code: 500, message: error.message });
-    }
-  }
-  
-  async getByCode(req: Request, res: Response) {
-    try {
-      const data = await this.customerService.findByCode(req.params.code);
-      if (!data) {
-        return res.json({ code: 404, message: 'Customer not found' });
-      }
-      res.json({ code: 200, data, message: 'success' });
-    } catch (error: any) {
-      res.status(500).json({ code: 500, message: error.message });
-    }
-  }
-  
-  async updateBalance(req: Request, res: Response) {
+  };
+
+  /**
+   * 更新客户状态
+   */
+  updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const { amount } = req.body;
-      const data = await this.customerService.updateBalance(id, amount);
-      if (!data) {
-        return res.json({ code: 404, message: 'Customer not found' });
+      const { status } = req.body;
+
+      const result = await customerService.updateStatus(id, status);
+      if (!result) {
+        throw new AppError('客户不存在', 404, 'NOT_FOUND');
       }
-      res.json({ code: 200, data, message: 'Balance updated successfully' });
-    } catch (error: any) {
-      res.status(500).json({ code: 500, message: error.message });
+
+      successResponse(res, result, '状态更新成功');
+    } catch (error) {
+      next(error);
     }
-  }
-  
-  async toggleStatus(req: Request, res: Response) {
+  };
+
+  /**
+   * 获取客户的订单
+   */
+  getOrders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const data = await this.customerService.toggleStatus(id);
-      if (!data) {
-        return res.json({ code: 404, message: 'Customer not found' });
-      }
-      res.json({ code: 200, data, message: 'Status toggled successfully' });
-    } catch (error: any) {
-      res.status(500).json({ code: 500, message: error.message });
+      const result = await customerService.getOrders(id);
+      successResponse(res, result);
+    } catch (error) {
+      next(error);
     }
-  }
+  };
+
+  /**
+   * 获取客户统计
+   */
+  getStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await customerService.getStats();
+      successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

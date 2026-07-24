@@ -7,8 +7,7 @@ export const actions: ActionTree<SaasState, any> = {
         commit(saasMutations.SET_LOADING, true)
         commit(saasMutations.SET_ERROR, null)
         try {
-            // TODO: 调用 API
-            // const response = await getSaasList(params)
+                        // const response = await getSaasList(params)
             // commit(saasMutations.SET_DATA, response.data)
             // commit(saasMutations.SET_TOTAL, response.total)
         } catch (error: any) {
@@ -21,3 +20,4 @@ export const actions: ActionTree<SaasState, any> = {
         commit(saasMutations.RESET_STATE)
     }
 }
+
