@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/finance.routes.ts
- * 财务管理路由 - 发票、账务、报表
+ * 财务管理路由 - 发票、账务、报表、对账、导出
+ * 完整实现：补全所有财务相关接口，报表统计、对账、导出接口，RBAC权限控制
  */
 
 import { Router } from 'express';
@@ -34,24 +35,6 @@ const createInvoiceSchema = Joi.object({
   status: Joi.string().valid('draft', 'sent', 'paid', 'overdue', 'cancelled').default('draft'),
 });
 
-const updateInvoiceSchema = Joi.object({
-  customerId: Joi.number().integer().positive().optional(),
-  invoiceNumber: Joi.string().max(50).optional(),
-  issueDate: Joi.date().optional(),
-  dueDate: Joi.date().greater(Joi.ref('issueDate')).optional(),
-  items: Joi.array().items(
-    Joi.object({
-      description: Joi.string().max(200).required(),
-      quantity: Joi.number().positive().required(),
-      unitPrice: Joi.number().positive().required(),
-      taxRate: Joi.number().min(0).max(100).default(0),
-      discount: Joi.number().min(0).default(0),
-    })
-  ).min(1).optional(),
-  notes: Joi.string().max(500).optional(),
-  status: Joi.string().valid('draft', 'sent', 'paid', 'overdue', 'cancelled').optional(),
-});
-
 const listQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
@@ -75,6 +58,7 @@ const reportQuerySchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).optional(),
   dateFrom: Joi.date().optional(),
   dateTo: Joi.date().optional(),
+  type: Joi.string().valid('income', 'expense', 'all').default('all'),
 });
 
 // ============================================
@@ -84,7 +68,6 @@ const reportQuerySchema = Joi.object({
 /**
  * 创建发票
  * POST /api/v1/finance/invoices
- * 权限: finance:invoice:create
  */
 router.post(
   '/invoices',
@@ -104,7 +87,6 @@ router.post(
 /**
  * 获取发票列表
  * GET /api/v1/finance/invoices
- * 权限: finance:invoice:list
  */
 router.get(
   '/invoices',
@@ -136,7 +118,6 @@ router.get(
 /**
  * 获取发票详情
  * GET /api/v1/finance/invoices/:id
- * 权限: finance:invoice:view
  */
 router.get(
   '/invoices/:id',
@@ -156,13 +137,12 @@ router.get(
 /**
  * 更新发票
  * PUT /api/v1/finance/invoices/:id
- * 权限: finance:invoice:update
  */
 router.put(
   '/invoices/:id',
   authMiddleware({ required: true, permissions: ['finance:invoice:update'] }),
   validate(idParamSchema, 'params'),
-  validate(updateInvoiceSchema, 'body'),
+  validate(createInvoiceSchema.optional(), 'body'),
   asyncHandler(async (req, res) => {
     const id = req.validatedParams.id;
     const result = await financeController.updateInvoice(id, req.validatedBody);
@@ -178,7 +158,6 @@ router.put(
 /**
  * 删除发票
  * DELETE /api/v1/finance/invoices/:id
- * 权限: finance:invoice:delete
  */
 router.delete(
   '/invoices/:id',
@@ -198,7 +177,6 @@ router.delete(
 /**
  * 标记发票为已支付
  * POST /api/v1/finance/invoices/:id/pay
- * 权限: finance:invoice:pay
  */
 router.post(
   '/invoices/:id/pay',
@@ -219,7 +197,6 @@ router.post(
 /**
  * 获取财务统计概览
  * GET /api/v1/finance/stats
- * 权限: finance:stats
  */
 router.get(
   '/stats/overview',
@@ -237,7 +214,6 @@ router.get(
 /**
  * 获取月度收入趋势
  * GET /api/v1/finance/stats/revenue
- * 权限: finance:stats
  */
 router.get(
   '/stats/revenue',
@@ -257,7 +233,6 @@ router.get(
 /**
  * 获取客户应收账款
  * GET /api/v1/finance/customers/:customerId/receivables
- * 权限: finance:view
  */
 router.get(
   '/customers/:customerId/receivables',
@@ -277,7 +252,6 @@ router.get(
 /**
  * 导出财务报表
  * GET /api/v1/finance/reports/export
- * 权限: finance:reports
  */
 router.get(
   '/reports/export',
@@ -294,7 +268,6 @@ router.get(
 /**
  * 生成财务报表
  * GET /api/v1/finance/reports
- * 权限: finance:reports
  */
 router.get(
   '/reports',
@@ -305,6 +278,24 @@ router.get(
     res.json({
       success: true,
       data: result,
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
+ * 对账接口
+ * POST /api/v1/finance/reconciliation
+ */
+router.post(
+  '/reconciliation',
+  authMiddleware({ required: true, permissions: ['finance:reconciliation'] }),
+  asyncHandler(async (req, res) => {
+    const result = await financeController.reconcileAccounts(req.body);
+    res.json({
+      success: true,
+      data: result,
+      message: '对账完成',
       timestamp: new Date().toISOString(),
     });
   })

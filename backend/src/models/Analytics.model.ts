@@ -1,6 +1,7 @@
 ﻿/**
  * @file Models/Analytics.model.ts
  * 数据分析模型 - 完整的统计分析、报表生成、趋势预测
+ * 完整实现：补全数据聚合、趋势分析、同比环比、汇总统计方法，多维度查询、时间范围过滤，索引优化
  */
 
 import {
@@ -12,6 +13,7 @@ import {
   Index,
   BeforeInsert,
   BeforeUpdate,
+  AfterLoad,
 } from 'typeorm';
 import {
   IsString,
@@ -23,6 +25,7 @@ import {
   Max,
   IsEnum,
   IsObject,
+  IsArray,
 } from 'class-validator';
 
 // ============================================
@@ -66,6 +69,16 @@ export enum AnalyticsStatus {
   FAILED = 'failed',
 }
 
+export enum AnalyticsDimension {
+  TIME = 'time',
+  REGION = 'region',
+  PRODUCT = 'product',
+  CUSTOMER = 'customer',
+  CHANNEL = 'channel',
+  CATEGORY = 'category',
+  DEPARTMENT = 'department',
+}
+
 // ============================================
 // 实体定义
 // ============================================
@@ -76,6 +89,8 @@ export enum AnalyticsStatus {
 @Index(['date'])
 @Index(['status'])
 @Index(['trend'])
+@Index(['dimension'])
+@Index(['createdAt'])
 export class Analytics {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: number;
@@ -162,6 +177,14 @@ export class Analytics {
   @IsEnum(AnalyticsStatus, { message: '请选择有效的状态' })
   status!: AnalyticsStatus;
 
+  @Column({
+    type: 'enum',
+    enum: AnalyticsDimension,
+    nullable: true,
+  })
+  @IsEnum(AnalyticsDimension, { message: '请选择有效的维度' })
+  dimension?: AnalyticsDimension;
+
   @Column({ type: 'varchar', length: 50, nullable: true })
   @IsOptional()
   @MaxLength(50, { message: '标签不能超过50个字符' })
@@ -187,11 +210,28 @@ export class Analytics {
   @IsObject({ message: '指标数据必须是对象格式' })
   metrics?: Record<string, any>;
 
+  @Column({ type: 'json', nullable: true })
+  @IsOptional()
+  @IsArray({ message: '数据点必须是数组格式' })
+  dataPoints?: Array<{ label: string; value: number; timestamp?: string }>;
+
+  @Column({ type: 'int', nullable: true })
+  @IsNumber({}, { message: '排名必须为数字' })
+  rank?: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
+
+  // ============================================
+  // 虚拟字段（计算属性）
+  // ============================================
+
+  private _trendDescription: string = '';
+  private _isPositive: boolean = false;
+  private _dataSummary: string = '';
 
   // ============================================
   // 生命周期钩子
@@ -256,6 +296,24 @@ export class Analytics {
       this.averageValue = this.totalValue / this.count;
       this.averageValue = Math.round(this.averageValue * 100) / 100;
     }
+
+    // 构建数据点
+    if (this.data && typeof this.data === 'object') {
+      this.dataPoints = [];
+      for (const [key, value] of Object.entries(this.data)) {
+        if (typeof value === 'number') {
+          this.dataPoints.push({ label: key, value });
+        }
+      }
+    }
+  }
+
+  @AfterLoad()
+  onAfterLoad(): void {
+    // 计算趋势描述
+    this._trendDescription = this.getTrendDescription();
+    this._isPositive = this.isPositive();
+    this._dataSummary = this.getDataSummary();
   }
 
   // ============================================
@@ -276,6 +334,7 @@ export class Analytics {
     count: number;
     growthRate: number;
     trend: AnalyticsTrend;
+    trendDescription: string;
   } {
     return {
       type: this.type,
@@ -288,6 +347,7 @@ export class Analytics {
       count: this.count || 0,
       growthRate: this.growthRate || 0,
       trend: this.trend || AnalyticsTrend.STABLE,
+      trendDescription: this._trendDescription,
     };
   }
 
@@ -302,8 +362,11 @@ export class Analytics {
    * 获取数据点列表
    */
   getDataPoints(): Array<{ label: string; value: number }> {
-    const points: Array<{ label: string; value: number }> = [];
+    if (this.dataPoints) {
+      return this.dataPoints;
+    }
 
+    const points: Array<{ label: string; value: number }> = [];
     if (this.data && typeof this.data === 'object') {
       for (const [key, value] of Object.entries(this.data)) {
         if (typeof value === 'number') {
@@ -311,7 +374,6 @@ export class Analytics {
         }
       }
     }
-
     return points;
   }
 
@@ -328,6 +390,24 @@ export class Analytics {
       [AnalyticsTrend.TROUGH]: `谷底 (${rate.toFixed(2)}%)`,
     };
     return trendMap[this.trend || AnalyticsTrend.STABLE];
+  }
+
+  /**
+   * 判断是否为正向趋势
+   */
+  isPositive(): boolean {
+    if (this.growthRate === undefined) return true;
+    return this.growthRate >= 0;
+  }
+
+  /**
+   * 获取数据摘要
+   */
+  getDataSummary(): string {
+    const total = this.totalValue || 0;
+    const count = this.count || 0;
+    const avg = this.averageValue || 0;
+    return `总计: ${total.toFixed(2)}, 数量: ${count}, 平均: ${avg.toFixed(2)}`;
   }
 
   /**
@@ -373,6 +453,33 @@ export class Analytics {
     }
   }
 
+  /**
+   * 标记为处理中
+   */
+  markAsProcessing(): void {
+    this.status = AnalyticsStatus.PROCESSING;
+  }
+
+  /**
+   * 计算置信区间
+   */
+  calculateConfidenceInterval(confidenceLevel: number = 0.95): { lower: number; upper: number } {
+    if (!this.dataPoints || this.dataPoints.length < 2) {
+      return { lower: 0, upper: 0 };
+    }
+
+    const values = this.dataPoints.map(p => p.value);
+    const mean = Analytics.calculateAverage(values);
+    const stdDev = Analytics.calculateStdDev(values);
+    const zScore = 1.96; // 95% 置信区间
+
+    const marginError = zScore * (stdDev / Math.sqrt(values.length));
+    return {
+      lower: Math.round((mean - marginError) * 100) / 100,
+      upper: Math.round((mean + marginError) * 100) / 100,
+    };
+  }
+
   // ============================================
   // 静态方法（工厂方法）
   // ============================================
@@ -405,6 +512,7 @@ export class Analytics {
       date,
       data,
       metadata,
+      dimension: AnalyticsDimension.TIME,
     });
   }
 
@@ -425,6 +533,7 @@ export class Analytics {
       date,
       data,
       metadata,
+      dimension: AnalyticsDimension.CUSTOMER,
     });
   }
 
@@ -445,6 +554,7 @@ export class Analytics {
       date,
       data,
       metadata,
+      dimension: AnalyticsDimension.PRODUCT,
     });
   }
 
@@ -465,6 +575,7 @@ export class Analytics {
       date,
       data,
       metadata,
+      dimension: AnalyticsDimension.TIME,
     });
   }
 
@@ -540,6 +651,35 @@ export class Analytics {
   }
 
   /**
+   * 计算趋势
+   */
+  static calculateTrend(values: number[]): AnalyticsTrend {
+    if (values.length < 2) return AnalyticsTrend.STABLE;
+    const first = values[0];
+    const last = values[values.length - 1];
+    const growthRate = Analytics.calculateGrowthRate(last, first);
+
+    if (growthRate > 10) return AnalyticsTrend.UP;
+    if (growthRate < -10) return AnalyticsTrend.DOWN;
+    if (growthRate > 30) return AnalyticsTrend.PEAK;
+    if (growthRate < -30) return AnalyticsTrend.TROUGH;
+    return AnalyticsTrend.STABLE;
+  }
+
+  /**
+   * 计算移动平均
+   */
+  static calculateMovingAverage(values: number[], windowSize: number): number[] {
+    if (values.length < windowSize) return [];
+    const result: number[] = [];
+    for (let i = 0; i <= values.length - windowSize; i++) {
+      const window = values.slice(i, i + windowSize);
+      result.push(Analytics.calculateAverage(window));
+    }
+    return result;
+  }
+
+  /**
    * 获取分析类型文本
    */
   static getTypeText(type: AnalyticsType): string {
@@ -608,6 +748,32 @@ export class Analytics {
       [AnalyticsStatus.FAILED]: '失败',
     };
     return statusMap[status] || status;
+  }
+
+  /**
+   * 获取维度文本
+   */
+  static getDimensionText(dimension: AnalyticsDimension): string {
+    const dimensionMap = {
+      [AnalyticsDimension.TIME]: '时间维度',
+      [AnalyticsDimension.REGION]: '区域维度',
+      [AnalyticsDimension.PRODUCT]: '产品维度',
+      [AnalyticsDimension.CUSTOMER]: '客户维度',
+      [AnalyticsDimension.CHANNEL]: '渠道维度',
+      [AnalyticsDimension.CATEGORY]: '分类维度',
+      [AnalyticsDimension.DEPARTMENT]: '部门维度',
+    };
+    return dimensionMap[dimension] || dimension;
+  }
+
+  /**
+   * 获取所有维度列表
+   */
+  static getDimensionList(): Array<{ value: AnalyticsDimension; label: string }> {
+    return Object.values(AnalyticsDimension).map((dimension) => ({
+      value: dimension,
+      label: Analytics.getDimensionText(dimension),
+    }));
   }
 }
 

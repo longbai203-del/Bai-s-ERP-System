@@ -1,24 +1,27 @@
 ﻿/**
  * @file Repositories/index.ts
  * 仓储统一导出 - 所有仓储实例的单例管理
+ * 完整实现：统一导入所有 Repository 实例，以单例模式统一导出
  */
 
 import { dataSource } from '../Config/database';
 
 // ============================================
+// 导入基础类
+// ============================================
+
+import { BaseRepository } from './BaseRepository';
+import type { PaginationOptions, PaginatedResult } from './BaseRepository';
+
+// ============================================
 // 导入所有仓储
 // ============================================
 
-import { BaseRepository, PaginationOptions, PaginatedResult } from './BaseRepository';
 import { CustomerRepository, customerRepository } from './Customer.repository';
 import { FinanceRepository, financeRepository } from './Finance.repository';
 import { OrderRepository, orderRepository } from './Order.repository';
 import { ProductRepository, productRepository } from './Product.repository';
 import { SettingsRepository, settingsRepository } from './Settings.repository';
-
-// HR 和 Inventory 仓储（假设存在）
-// import { HRRepository, hrRepository } from './HR.repository';
-// import { InventoryRepository, inventoryRepository } from './Inventory.repository';
 
 // ============================================
 // 导出基础类和类型
@@ -39,9 +42,6 @@ export {
   settingsRepository,
 };
 
-// 如果 HR 和 Inventory 存在，取消注释
-// export { hrRepository, inventoryRepository };
-
 // ============================================
 // 统一仓储对象
 // ============================================
@@ -52,12 +52,10 @@ export const repositories = {
   order: orderRepository,
   product: productRepository,
   settings: settingsRepository,
-  // hr: hrRepository,
-  // inventory: inventoryRepository,
 };
 
 // ============================================
-// 仓储工厂 - 统一管理仓储实例
+// 仓储工厂
 // ============================================
 
 export class RepositoryFactory {
@@ -65,14 +63,11 @@ export class RepositoryFactory {
   private repositoryMap: Map<string, any> = new Map();
 
   private constructor() {
-    // 注册所有仓储
     this.repositoryMap.set('customer', customerRepository);
     this.repositoryMap.set('finance', financeRepository);
     this.repositoryMap.set('order', orderRepository);
     this.repositoryMap.set('product', productRepository);
     this.repositoryMap.set('settings', settingsRepository);
-    // this.repositoryMap.set('hr', hrRepository);
-    // this.repositoryMap.set('inventory', inventoryRepository);
   }
 
   static getInstance(): RepositoryFactory {
@@ -82,9 +77,6 @@ export class RepositoryFactory {
     return RepositoryFactory.instance;
   }
 
-  /**
-   * 获取仓储实例
-   */
   getRepository<T>(name: string): T {
     const repo = this.repositoryMap.get(name);
     if (!repo) {
@@ -93,28 +85,32 @@ export class RepositoryFactory {
     return repo as T;
   }
 
-  /**
-   * 获取所有已注册的仓储名称
-   */
   getRepositoryNames(): string[] {
     return Array.from(this.repositoryMap.keys());
   }
 
-  /**
-   * 检查仓储是否已注册
-   */
   hasRepository(name: string): boolean {
     return this.repositoryMap.has(name);
   }
 
-  /**
-   * 注册新仓储
-   */
   registerRepository(name: string, repository: any): void {
     if (this.repositoryMap.has(name)) {
       throw new Error(`仓储 "${name}" 已存在`);
     }
     this.repositoryMap.set(name, repository);
+  }
+
+  getAllRepositories(): Map<string, any> {
+    return new Map(this.repositoryMap);
+  }
+
+  reset(): void {
+    this.repositoryMap.clear();
+    this.repositoryMap.set('customer', customerRepository);
+    this.repositoryMap.set('finance', financeRepository);
+    this.repositoryMap.set('order', orderRepository);
+    this.repositoryMap.set('product', productRepository);
+    this.repositoryMap.set('settings', settingsRepository);
   }
 }
 
@@ -134,7 +130,5 @@ export default {
   order: orderRepository,
   product: productRepository,
   settings: settingsRepository,
-  // hr: hrRepository,
-  // inventory: inventoryRepository,
   factory: repositoryFactory,
 };

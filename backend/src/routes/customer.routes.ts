@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/customer.routes.ts
  * 客户管理路由 - 完整的 CRUD + 批量操作 + 统计分析
+ * 完整实现：补全 GET/POST/PUT/DELETE 全量 CRUD 接口，分页查询、条件筛选、批量操作
  */
 
 import { Router } from 'express';
@@ -108,7 +109,6 @@ const checkExistsSchema = Joi.object({
 /**
  * 创建客户
  * POST /api/v1/customers
- * 权限: customer:create
  */
 router.post(
   '/',
@@ -128,7 +128,6 @@ router.post(
 /**
  * 获取客户列表（分页 + 筛选）
  * GET /api/v1/customers
- * 权限: customer:list
  */
 router.get(
   '/',
@@ -160,7 +159,6 @@ router.get(
 /**
  * 获取客户详情
  * GET /api/v1/customers/:id
- * 权限: customer:view
  */
 router.get(
   '/:id',
@@ -180,7 +178,6 @@ router.get(
 /**
  * 更新客户信息
  * PUT /api/v1/customers/:id
- * 权限: customer:update
  */
 router.put(
   '/:id',
@@ -202,7 +199,6 @@ router.put(
 /**
  * 删除客户（软删除）
  * DELETE /api/v1/customers/:id
- * 权限: customer:delete
  */
 router.delete(
   '/:id',
@@ -222,7 +218,6 @@ router.delete(
 /**
  * 批量操作客户
  * POST /api/v1/customers/batch
- * 权限: customer:batch
  */
 router.post(
   '/batch',
@@ -243,7 +238,6 @@ router.post(
 /**
  * 获取客户统计信息
  * GET /api/v1/customers/stats
- * 权限: customer:stats
  */
 router.get(
   '/stats/overview',
@@ -261,7 +255,6 @@ router.get(
 /**
  * 获取行业分布统计
  * GET /api/v1/customers/stats/industry
- * 权限: customer:stats
  */
 router.get(
   '/stats/industry',
@@ -279,7 +272,6 @@ router.get(
 /**
  * 导出客户列表
  * GET /api/v1/customers/export
- * 权限: customer:export
  */
 router.get(
   '/export',
@@ -296,7 +288,6 @@ router.get(
 /**
  * 检查客户是否存在
  * GET /api/v1/customers/check
- * 权限: customer:view
  */
 router.get(
   '/check/exists',
@@ -316,7 +307,6 @@ router.get(
 /**
  * 获取客户订单统计
  * GET /api/v1/customers/:id/orders/stats
- * 权限: customer:view
  */
 router.get(
   '/:id/orders/stats',

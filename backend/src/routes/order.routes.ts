@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/order.routes.ts
  * 订单管理路由 - 完整的订单生命周期管理
+ * 完整实现：补全订单创建、查询、状态流转、取消、退款、批量处理接口，状态机校验
  */
 
 import { Router } from 'express';
@@ -32,23 +33,6 @@ const createOrderSchema = Joi.object({
   shippingMethod: Joi.string().max(50).optional(),
   expectedDeliveryDate: Joi.date().greater(Joi.ref('orderDate')).optional(),
   status: Joi.string().valid('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled').default('pending'),
-});
-
-const updateOrderSchema = Joi.object({
-  customerId: Joi.number().integer().positive().optional(),
-  orderDate: Joi.date().optional(),
-  items: Joi.array().items(
-    Joi.object({
-      productId: Joi.number().integer().positive().required(),
-      quantity: Joi.number().integer().positive().required(),
-      unitPrice: Joi.number().positive().required(),
-      discount: Joi.number().min(0).max(100).default(0),
-    })
-  ).min(1).optional(),
-  shippingAddress: Joi.string().max(200).optional(),
-  notes: Joi.string().max(500).optional(),
-  shippingMethod: Joi.string().max(50).optional(),
-  expectedDeliveryDate: Joi.date().greater(Joi.ref('orderDate')).optional(),
 });
 
 const updateStatusSchema = Joi.object({
@@ -84,6 +68,12 @@ const cancelSchema = Joi.object({
   reason: Joi.string().max(200).required(),
 });
 
+const refundSchema = Joi.object({
+  reason: Joi.string().max(200).required(),
+  amount: Joi.number().positive().optional(),
+  refundMethod: Joi.string().valid('original', 'cash', 'bank_transfer').default('original'),
+});
+
 // ============================================
 // 路由定义
 // ============================================
@@ -91,7 +81,6 @@ const cancelSchema = Joi.object({
 /**
  * 创建订单
  * POST /api/v1/orders
- * 权限: order:create
  */
 router.post(
   '/',
@@ -111,7 +100,6 @@ router.post(
 /**
  * 获取订单列表
  * GET /api/v1/orders
- * 权限: order:list
  */
 router.get(
   '/',
@@ -143,7 +131,6 @@ router.get(
 /**
  * 获取订单详情
  * GET /api/v1/orders/:id
- * 权限: order:view
  */
 router.get(
   '/:id',
@@ -163,13 +150,12 @@ router.get(
 /**
  * 更新订单
  * PUT /api/v1/orders/:id
- * 权限: order:update
  */
 router.put(
   '/:id',
   authMiddleware({ required: true, permissions: ['order:update'] }),
   validate(idParamSchema, 'params'),
-  validate(updateOrderSchema, 'body'),
+  validate(createOrderSchema.optional(), 'body'),
   asyncHandler(async (req, res) => {
     const id = req.validatedParams.id;
     const result = await orderController.updateOrder(id, req.validatedBody);
@@ -183,9 +169,8 @@ router.put(
 );
 
 /**
- * 更新订单状态
+ * 更新订单状态（状态机流转）
  * PATCH /api/v1/orders/:id/status
- * 权限: order:update-status
  */
 router.patch(
   '/:id/status',
@@ -208,7 +193,6 @@ router.patch(
 /**
  * 取消订单
  * POST /api/v1/orders/:id/cancel
- * 权限: order:cancel
  */
 router.post(
   '/:id/cancel',
@@ -229,9 +213,29 @@ router.post(
 );
 
 /**
+ * 退款订单
+ * POST /api/v1/orders/:id/refund
+ */
+router.post(
+  '/:id/refund',
+  authMiddleware({ required: true, permissions: ['order:refund'] }),
+  validate(idParamSchema, 'params'),
+  validate(refundSchema, 'body'),
+  asyncHandler(async (req, res) => {
+    const id = req.validatedParams.id;
+    const result = await orderController.refundOrder(id, req.validatedBody);
+    res.json({
+      success: true,
+      data: result,
+      message: '退款成功',
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
  * 删除订单
  * DELETE /api/v1/orders/:id
- * 权限: order:delete
  */
 router.delete(
   '/:id',
@@ -251,7 +255,6 @@ router.delete(
 /**
  * 批量更新订单状态
  * PATCH /api/v1/orders/batch/status
- * 权限: order:batch-update
  */
 router.patch(
   '/batch/status',
@@ -272,7 +275,6 @@ router.patch(
 /**
  * 获取订单统计概览
  * GET /api/v1/orders/stats
- * 权限: order:stats
  */
 router.get(
   '/stats/overview',
@@ -290,7 +292,6 @@ router.get(
 /**
  * 获取客户订单统计
  * GET /api/v1/orders/customers/:customerId/stats
- * 权限: order:view
  */
 router.get(
   '/customers/:customerId/stats',

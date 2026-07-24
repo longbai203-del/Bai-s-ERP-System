@@ -1,6 +1,7 @@
 ﻿/**
  * @file Controllers/index.ts
  * 控制器统一导出 - 所有控制器实例的单例管理
+ * 完整实现：统一导入所有 Controller 实例，完整导出所有控制器，补充路由注册关联配置
  */
 
 // ============================================
@@ -77,15 +78,21 @@ export const controllers = {
 };
 
 // ============================================
-// 控制器工厂 - 统一管理控制器实例
+// 控制器工厂
 // ============================================
 
 export class ControllerFactory {
   private static instance: ControllerFactory;
   private controllerMap: Map<string, any> = new Map();
+  private initialized: boolean = false;
 
   private constructor() {
-    // 注册所有控制器
+    this.initialize();
+  }
+
+  private initialize(): void {
+    if (this.initialized) return;
+
     this.controllerMap.set('customer', customerController);
     this.controllerMap.set('finance', financeController);
     this.controllerMap.set('hr', hrController);
@@ -93,6 +100,8 @@ export class ControllerFactory {
     this.controllerMap.set('order', orderController);
     this.controllerMap.set('product', productController);
     this.controllerMap.set('settings', settingsController);
+
+    this.initialized = true;
   }
 
   static getInstance(): ControllerFactory {
@@ -106,24 +115,27 @@ export class ControllerFactory {
    * 获取控制器实例
    */
   getController<T>(name: string): T {
+    this.ensureInitialized();
     const controller = this.controllerMap.get(name);
     if (!controller) {
-      throw new Error(`控制器 "${name}" 未注册`);
+      throw new Error(`控制器 "${name}" 未注册。已注册的控制器: ${this.getControllerNames().join(', ')}`);
     }
     return controller as T;
   }
 
   /**
-   * 获取所有已注册的控制器名称
+   * 获取所有控制器名称
    */
   getControllerNames(): string[] {
+    this.ensureInitialized();
     return Array.from(this.controllerMap.keys());
   }
 
   /**
-   * 检查控制器是否已注册
+   * 检查控制器是否存在
    */
   hasController(name: string): boolean {
+    this.ensureInitialized();
     return this.controllerMap.has(name);
   }
 
@@ -131,6 +143,7 @@ export class ControllerFactory {
    * 注册新控制器
    */
   registerController(name: string, controller: any): void {
+    this.ensureInitialized();
     if (this.controllerMap.has(name)) {
       throw new Error(`控制器 "${name}" 已存在`);
     }
@@ -141,22 +154,35 @@ export class ControllerFactory {
    * 获取所有控制器
    */
   getAllControllers(): Map<string, any> {
+    this.ensureInitialized();
     return new Map(this.controllerMap);
   }
 
   /**
-   * 重置所有控制器（用于测试）
+   * 获取控制器路由绑定配置
+   */
+  getControllerRouteConfig(): Record<string, string> {
+    this.ensureInitialized();
+    const config: Record<string, string> = {};
+    for (const [name] of this.controllerMap) {
+      config[name] = `/api/v1/${name}s`;
+    }
+    return config;
+  }
+
+  /**
+   * 重置（用于测试）
    */
   reset(): void {
     this.controllerMap.clear();
-    // 重新注册
-    this.controllerMap.set('customer', customerController);
-    this.controllerMap.set('finance', financeController);
-    this.controllerMap.set('hr', hrController);
-    this.controllerMap.set('inventory', inventoryController);
-    this.controllerMap.set('order', orderController);
-    this.controllerMap.set('product', productController);
-    this.controllerMap.set('settings', settingsController);
+    this.initialized = false;
+    this.initialize();
+  }
+
+  private ensureInitialized(): void {
+    if (!this.initialized) {
+      this.initialize();
+    }
   }
 }
 

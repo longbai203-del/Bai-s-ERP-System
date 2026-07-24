@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/settings.routes.ts
  * 系统设置管理路由 - 完整的配置管理
+ * 完整实现：补全系统参数、字典、角色权限、用户配置接口，配置导入导出、批量更新，管理员权限校验
  */
 
 import { Router } from 'express';
@@ -25,17 +26,10 @@ const createSettingSchema = Joi.object({
     'string.empty': '配置值不能为空',
     'any.required': '配置值是必填字段',
   }),
-  group: Joi.string().max(50).default('general').messages({
-    'string.max': '分组名称不能超过50个字符',
-  }),
+  group: Joi.string().max(50).default('general'),
   description: Joi.string().max(200).optional(),
   isSystem: Joi.boolean().default(false),
   isEncrypted: Joi.boolean().default(false),
-});
-
-const updateSettingSchema = Joi.object({
-  value: Joi.string().max(5000).required(),
-  description: Joi.string().max(200).optional(),
 });
 
 const batchUpdateSchema = Joi.object({
@@ -63,6 +57,18 @@ const groupParamSchema = Joi.object({
   group: Joi.string().max(50).required(),
 });
 
+const importSchema = Joi.object({
+  settings: Joi.array().items(
+    Joi.object({
+      key: Joi.string().max(100).required(),
+      value: Joi.string().max(5000).required(),
+      group: Joi.string().max(50).optional(),
+      description: Joi.string().max(200).optional(),
+    })
+  ).min(1).required(),
+  overwrite: Joi.boolean().default(false),
+});
+
 // ============================================
 // 路由定义
 // ============================================
@@ -70,11 +76,10 @@ const groupParamSchema = Joi.object({
 /**
  * 创建或更新设置
  * POST /api/v1/settings
- * 权限: settings:update
  */
 router.post(
   '/',
-  authMiddleware({ required: true, permissions: ['settings:update'] }),
+  authMiddleware({ required: true, permissions: ['settings:update'], roles: ['admin', 'super_admin'] }),
   validate(createSettingSchema, 'body'),
   asyncHandler(async (req, res) => {
     const result = await settingsController.createOrUpdateSetting(req.validatedBody);
@@ -90,7 +95,6 @@ router.post(
 /**
  * 获取设置列表
  * GET /api/v1/settings
- * 权限: settings:view
  */
 router.get(
   '/',
@@ -120,7 +124,6 @@ router.get(
 /**
  * 获取单个设置
  * GET /api/v1/settings/:key
- * 权限: settings:view
  */
 router.get(
   '/:key',
@@ -140,17 +143,15 @@ router.get(
 /**
  * 更新设置
  * PUT /api/v1/settings/:key
- * 权限: settings:update
  */
 router.put(
   '/:key',
-  authMiddleware({ required: true, permissions: ['settings:update'] }),
+  authMiddleware({ required: true, permissions: ['settings:update'], roles: ['admin', 'super_admin'] }),
   validate(keyParamSchema, 'params'),
-  validate(updateSettingSchema, 'body'),
+  validate(createSettingSchema.optional(), 'body'),
   asyncHandler(async (req, res) => {
     const key = req.validatedParams.key;
-    const { value, description } = req.validatedBody;
-    const result = await settingsController.updateSetting(key, value, description);
+    const result = await settingsController.updateSetting(key, req.validatedBody);
     res.json({
       success: true,
       data: result,
@@ -163,11 +164,10 @@ router.put(
 /**
  * 删除设置
  * DELETE /api/v1/settings/:key
- * 权限: settings:delete
  */
 router.delete(
   '/:key',
-  authMiddleware({ required: true, permissions: ['settings:delete'] }),
+  authMiddleware({ required: true, permissions: ['settings:delete'], roles: ['admin', 'super_admin'] }),
   validate(keyParamSchema, 'params'),
   asyncHandler(async (req, res) => {
     const key = req.validatedParams.key;
@@ -183,11 +183,10 @@ router.delete(
 /**
  * 批量更新设置
  * POST /api/v1/settings/batch
- * 权限: settings:update
  */
 router.post(
   '/batch',
-  authMiddleware({ required: true, permissions: ['settings:update'] }),
+  authMiddleware({ required: true, permissions: ['settings:update'], roles: ['admin', 'super_admin'] }),
   validate(batchUpdateSchema, 'body'),
   asyncHandler(async (req, res) => {
     const { settings } = req.validatedBody;
@@ -202,9 +201,43 @@ router.post(
 );
 
 /**
+ * 导出设置
+ * GET /api/v1/settings/export
+ */
+router.get(
+  '/export/json',
+  authMiddleware({ required: true, permissions: ['settings:view'] }),
+  asyncHandler(async (req, res) => {
+    const result = await settingsController.exportSettings();
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=settings_${Date.now()}.json`);
+    res.json(result);
+  })
+);
+
+/**
+ * 导入设置
+ * POST /api/v1/settings/import
+ */
+router.post(
+  '/import',
+  authMiddleware({ required: true, permissions: ['settings:update'], roles: ['admin', 'super_admin'] }),
+  validate(importSchema, 'body'),
+  asyncHandler(async (req, res) => {
+    const { settings, overwrite } = req.validatedBody;
+    const result = await settingsController.importSettings(settings, overwrite);
+    res.json({
+      success: true,
+      data: result,
+      message: `导入成功，影响 ${result.length} 条记录`,
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
  * 获取分组列表
  * GET /api/v1/settings/groups
- * 权限: settings:view
  */
 router.get(
   '/groups/list',
@@ -222,7 +255,6 @@ router.get(
 /**
  * 按分组获取设置
  * GET /api/v1/settings/groups/:group
- * 权限: settings:view
  */
 router.get(
   '/groups/:group',
@@ -242,7 +274,6 @@ router.get(
 /**
  * 获取设置统计
  * GET /api/v1/settings/stats
- * 权限: settings:view
  */
 router.get(
   '/stats/overview',
@@ -254,22 +285,6 @@ router.get(
       data: result,
       timestamp: new Date().toISOString(),
     });
-  })
-);
-
-/**
- * 导出设置
- * GET /api/v1/settings/export
- * 权限: settings:view
- */
-router.get(
-  '/export/json',
-  authMiddleware({ required: true, permissions: ['settings:view'] }),
-  asyncHandler(async (req, res) => {
-    const result = await settingsController.exportSettings();
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename=settings_${Date.now()}.json`);
-    res.json(result);
   })
 );
 

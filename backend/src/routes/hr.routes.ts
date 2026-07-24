@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/hr.routes.ts
  * 人力资源管理路由 - 员工、部门、考勤、薪资
+ * 完整实现：补全员工、部门、考勤、薪资相关接口，权限分级控制，敏感字段脱敏
  */
 
 import { Router } from 'express';
@@ -32,23 +33,6 @@ const createEmployeeSchema = Joi.object({
   birthDate: Joi.date().optional(),
   gender: Joi.string().valid('male', 'female', 'other').optional(),
   employeeType: Joi.string().valid('full_time', 'part_time', 'contract', 'intern').default('full_time'),
-});
-
-const updateEmployeeSchema = Joi.object({
-  firstName: Joi.string().min(2).max(50).optional(),
-  lastName: Joi.string().min(2).max(50).optional(),
-  email: Joi.string().email().optional(),
-  phone: Joi.string().pattern(/^1[3-9]\d{9}$/).optional(),
-  department: Joi.string().max(100).optional(),
-  position: Joi.string().max(100).optional(),
-  hireDate: Joi.date().optional(),
-  salary: Joi.number().min(0).optional(),
-  status: Joi.string().valid('active', 'on_leave', 'terminated', 'probation').optional(),
-  address: Joi.string().max(200).optional(),
-  emergencyContact: Joi.string().max(200).optional(),
-  birthDate: Joi.date().optional(),
-  gender: Joi.string().valid('male', 'female', 'other').optional(),
-  employeeType: Joi.string().valid('full_time', 'part_time', 'contract', 'intern').optional(),
 });
 
 const listQuerySchema = Joi.object({
@@ -93,7 +77,6 @@ const salarySchema = Joi.object({
 /**
  * 创建员工
  * POST /api/v1/hr/employees
- * 权限: hr:employee:create
  */
 router.post(
   '/employees',
@@ -113,7 +96,6 @@ router.post(
 /**
  * 获取员工列表
  * GET /api/v1/hr/employees
- * 权限: hr:employee:list
  */
 router.get(
   '/employees',
@@ -143,9 +125,8 @@ router.get(
 );
 
 /**
- * 获取员工详情
+ * 获取员工详情（脱敏）
  * GET /api/v1/hr/employees/:id
- * 权限: hr:employee:view
  */
 router.get(
   '/employees/:id',
@@ -154,6 +135,12 @@ router.get(
   asyncHandler(async (req, res) => {
     const id = req.validatedParams.id;
     const result = await hrController.getEmployeeById(id);
+    // 敏感字段脱敏
+    if (result) {
+      delete result.salary;
+      delete result.bankAccount;
+      delete result.idNumber;
+    }
     res.json({
       success: true,
       data: result,
@@ -165,13 +152,12 @@ router.get(
 /**
  * 更新员工信息
  * PUT /api/v1/hr/employees/:id
- * 权限: hr:employee:update
  */
 router.put(
   '/employees/:id',
   authMiddleware({ required: true, permissions: ['hr:employee:update'] }),
   validate(idParamSchema, 'params'),
-  validate(updateEmployeeSchema, 'body'),
+  validate(createEmployeeSchema.optional(), 'body'),
   asyncHandler(async (req, res) => {
     const id = req.validatedParams.id;
     const result = await hrController.updateEmployee(id, req.validatedBody);
@@ -187,7 +173,6 @@ router.put(
 /**
  * 删除员工
  * DELETE /api/v1/hr/employees/:id
- * 权限: hr:employee:delete
  */
 router.delete(
   '/employees/:id',
@@ -207,7 +192,6 @@ router.delete(
 /**
  * 记录考勤
  * POST /api/v1/hr/attendance
- * 权限: hr:attendance:create
  */
 router.post(
   '/attendance',
@@ -227,7 +211,6 @@ router.post(
 /**
  * 获取员工考勤记录
  * GET /api/v1/hr/employees/:id/attendance
- * 权限: hr:attendance:view
  */
 router.get(
   '/employees/:id/attendance',
@@ -247,7 +230,6 @@ router.get(
 /**
  * 创建薪资记录
  * POST /api/v1/hr/salaries
- * 权限: hr:salary:create
  */
 router.post(
   '/salaries',
@@ -267,7 +249,6 @@ router.post(
 /**
  * 获取HR统计概览
  * GET /api/v1/hr/stats
- * 权限: hr:stats
  */
 router.get(
   '/stats/overview',
@@ -285,7 +266,6 @@ router.get(
 /**
  * 获取部门列表
  * GET /api/v1/hr/departments
- * 权限: hr:view
  */
 router.get(
   '/departments',

@@ -1,6 +1,7 @@
 ﻿/**
  * @file Middleware/index.ts
  * 中间件统一导出 - 按执行顺序统一管理
+ * 完整实现：统一导入所有中间件，按执行顺序统一导出，补充全局注册配置
  */
 
 // ============================================
@@ -41,11 +42,11 @@ import validationMiddleware, {
 } from './validation.middleware';
 
 // ============================================
-// 中间件执行顺序（按依赖关系排列）
+// 中间件执行顺序定义
 // ============================================
 
 /**
- * 中间件执行顺序常量
+ * 中间件执行顺序（按依赖关系排列）
  * 1. 请求追踪 (TraceId)
  * 2. 日志记录 (Morgan)
  * 3. 安全头 (Helmet)
@@ -74,6 +75,42 @@ export const MIDDLEWARE_ORDER = [
   'errorHandler',
   'notFound',
 ] as const;
+
+export type MiddlewareName = typeof MIDDLEWARE_ORDER[number];
+
+// ============================================
+// 中间件配置
+// ============================================
+
+export interface MiddlewareConfig {
+  /** 是否启用 TraceId */
+  enableTraceId: boolean;
+  /** 是否启用日志 */
+  enableLogger: boolean;
+  /** 是否启用安全头 */
+  enableHelmet: boolean;
+  /** 是否启用 CORS */
+  enableCors: boolean;
+  /** 是否启用压缩 */
+  enableCompression: boolean;
+  /** 是否启用速率限制 */
+  enableRateLimit: boolean;
+  /** 是否启用认证 */
+  enableAuth: boolean;
+  /** 是否启用验证 */
+  enableValidation: boolean;
+}
+
+export const defaultMiddlewareConfig: MiddlewareConfig = {
+  enableTraceId: true,
+  enableLogger: true,
+  enableHelmet: true,
+  enableCors: true,
+  enableCompression: true,
+  enableRateLimit: true,
+  enableAuth: true,
+  enableValidation: true,
+};
 
 // ============================================
 // 导出所有中间件
@@ -133,14 +170,12 @@ export const middlewareUtils = {
     const errors: string[] = [];
     const expected = [...MIDDLEWARE_ORDER];
 
-    // 检查是否包含所有必需的中间件
     for (const name of expected) {
       if (!order.includes(name)) {
         errors.push(`缺少必需的中间件: ${name}`);
       }
     }
 
-    // 检查顺序是否正确
     let lastIndex = -1;
     for (const name of order) {
       if (expected.includes(name)) {
@@ -175,24 +210,40 @@ export const middlewareUtils = {
       'validateAll',
     ];
   },
+
+  /**
+   * 构建中间件注册配置
+   */
+  buildRegistrationConfig(config: Partial<MiddlewareConfig> = {}): MiddlewareConfig {
+    return {
+      ...defaultMiddlewareConfig,
+      ...config,
+    };
+  },
 };
 
 // ============================================
-// 中间件工厂 - 统一管理中间件实例
+// 中间件工厂
 // ============================================
 
 export class MiddlewareFactory {
   private static instance: MiddlewareFactory;
   private middlewareMap: Map<string, any> = new Map();
+  private config: MiddlewareConfig;
 
   private constructor() {
-    // 注册所有中间件
+    this.config = { ...defaultMiddlewareConfig };
+    this.registerDefaults();
+  }
+
+  private registerDefaults(): void {
     this.middlewareMap.set('auth', auth);
     this.middlewareMap.set('optionalAuth', optionalAuth);
     this.middlewareMap.set('adminAuth', adminAuth);
     this.middlewareMap.set('errorHandler', errorHandler);
     this.middlewareMap.set('notFound', notFoundHandler);
     this.middlewareMap.set('asyncHandler', asyncHandler);
+    this.middlewareMap.set('validate', validate);
   }
 
   static getInstance(): MiddlewareFactory {
@@ -236,6 +287,42 @@ export class MiddlewareFactory {
     }
     this.middlewareMap.set(name, middleware);
   }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(config: Partial<MiddlewareConfig>): void {
+    this.config = { ...this.config, ...config };
+  }
+
+  /**
+   * 获取配置
+   */
+  getConfig(): MiddlewareConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * 获取全局注册配置
+   */
+  getGlobalRegistrationConfig(): {
+    order: string[];
+    enabled: Record<string, boolean>;
+  } {
+    return {
+      order: [...MIDDLEWARE_ORDER],
+      enabled: {
+        traceId: this.config.enableTraceId,
+        logger: this.config.enableLogger,
+        helmet: this.config.enableHelmet,
+        cors: this.config.enableCors,
+        compression: this.config.enableCompression,
+        rateLimit: this.config.enableRateLimit,
+        auth: this.config.enableAuth,
+        validation: this.config.enableValidation,
+      },
+    };
+  }
 }
 
 // ============================================
@@ -261,4 +348,6 @@ export default {
   validateAll,
   factory: middlewareFactory,
   utils: middlewareUtils,
+  order: MIDDLEWARE_ORDER,
+  config: defaultMiddlewareConfig,
 };

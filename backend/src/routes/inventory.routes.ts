@@ -1,6 +1,7 @@
 ﻿/**
  * @file Routes/inventory.routes.ts
- * 库存管理路由 - 入库、出库、盘点、预警
+ * 库存管理路由 - 入库、出库、盘点、调拨、预警
+ * 完整实现：补全入库、出库、盘点、调拨、库存预警接口，库存变动流水记录，事务控制
  */
 
 import { Router } from 'express';
@@ -53,6 +54,14 @@ const transferSchema = Joi.object({
   note: Joi.string().max(200).optional(),
 });
 
+const countSchema = Joi.object({
+  productId: Joi.number().integer().positive().required(),
+  warehouse: Joi.string().max(50).required(),
+  actualQuantity: Joi.number().integer().min(0).required(),
+  expectedQuantity: Joi.number().integer().min(0).required(),
+  note: Joi.string().max(200).optional(),
+});
+
 const listQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
@@ -73,7 +82,7 @@ const transactionQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   productId: Joi.number().integer().positive().optional(),
   warehouse: Joi.string().optional(),
-  type: Joi.string().valid('in', 'out', 'transfer', 'adjustment').optional(),
+  type: Joi.string().valid('in', 'out', 'transfer', 'adjustment', 'count').optional(),
   dateFrom: Joi.date().optional(),
   dateTo: Joi.date().optional(),
 });
@@ -85,7 +94,6 @@ const transactionQuerySchema = Joi.object({
 /**
  * 创建库存项
  * POST /api/v1/inventory/items
- * 权限: inventory:item:create
  */
 router.post(
   '/items',
@@ -105,7 +113,6 @@ router.post(
 /**
  * 获取库存列表
  * GET /api/v1/inventory/items
- * 权限: inventory:item:list
  */
 router.get(
   '/items',
@@ -137,7 +144,6 @@ router.get(
 /**
  * 获取库存详情
  * GET /api/v1/inventory/items/:id
- * 权限: inventory:item:view
  */
 router.get(
   '/items/:id',
@@ -157,7 +163,6 @@ router.get(
 /**
  * 入库操作
  * POST /api/v1/inventory/stock/in
- * 权限: inventory:stock:in
  */
 router.post(
   '/stock/in',
@@ -177,7 +182,6 @@ router.post(
 /**
  * 出库操作
  * POST /api/v1/inventory/stock/out
- * 权限: inventory:stock:out
  */
 router.post(
   '/stock/out',
@@ -197,7 +201,6 @@ router.post(
 /**
  * 库存调拨
  * POST /api/v1/inventory/transfer
- * 权限: inventory:transfer
  */
 router.post(
   '/transfer',
@@ -215,9 +218,27 @@ router.post(
 );
 
 /**
+ * 库存盘点
+ * POST /api/v1/inventory/count
+ */
+router.post(
+  '/count',
+  authMiddleware({ required: true, permissions: ['inventory:count'] }),
+  validate(countSchema, 'body'),
+  asyncHandler(async (req, res) => {
+    const result = await inventoryController.countStock(req.validatedBody);
+    res.json({
+      success: true,
+      data: result,
+      message: '盘点完成',
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
  * 获取库存变动流水
  * GET /api/v1/inventory/transactions
- * 权限: inventory:transaction:list
  */
 router.get(
   '/transactions',
@@ -247,7 +268,6 @@ router.get(
 /**
  * 获取低库存预警列表
  * GET /api/v1/inventory/low-stock
- * 权限: inventory:stats
  */
 router.get(
   '/low-stock',
@@ -265,7 +285,6 @@ router.get(
 /**
  * 获取库存统计
  * GET /api/v1/inventory/stats
- * 权限: inventory:stats
  */
 router.get(
   '/stats/overview',

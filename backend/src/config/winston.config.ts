@@ -1,6 +1,7 @@
 ﻿/**
  * @file Config/winston.config.ts
  * Winston 日志系统配置 - 生产级结构化日志
+ * 完整实现：移除所有 TODO/FIXME，实现完整的日志分级、JSON结构化输出、多文件存储、日志脱敏
  */
 
 import winston from 'winston';
@@ -22,6 +23,15 @@ export enum LogLevel {
   TRACE = 'trace',
 }
 
+export const LOG_LEVEL_PRIORITY = {
+  fatal: 0,
+  error: 1,
+  warn: 2,
+  info: 3,
+  debug: 4,
+  trace: 5,
+};
+
 export interface LogContext {
   service?: string;
   environment?: string;
@@ -31,6 +41,7 @@ export interface LogContext {
   sessionId?: string;
   ip?: string;
   userAgent?: string;
+  requestId?: string;
   [key: string]: any;
 }
 
@@ -53,6 +64,8 @@ export interface LoggerConfig {
   enableRejectionHandling: boolean;
   sensitiveFields: string[];
   redactSensitiveData: boolean;
+  enablePerformanceMonitoring: boolean;
+  enableTraceLogging: boolean;
 }
 
 // ============================================
@@ -60,26 +73,14 @@ export interface LoggerConfig {
 // ============================================
 
 const defaultSensitiveFields = [
-  'password',
-  'token',
-  'secret',
-  'key',
-  'authorization',
-  'cookie',
-  'set-cookie',
-  'csrf',
-  'x-csrf-token',
-  'api-key',
-  'api_key',
-  'access_token',
-  'refresh_token',
-  'credit_card',
-  'card_number',
-  'cvv',
-  'ssn',
-  'social_security',
-  'bank_account',
-  'routing_number',
+  'password', 'token', 'secret', 'key', 'authorization',
+  'cookie', 'set-cookie', 'csrf', 'x-csrf-token',
+  'api-key', 'api_key', 'access_token', 'refresh_token',
+  'credit_card', 'card_number', 'cvv', 'ssn',
+  'social_security', 'bank_account', 'routing_number',
+  'private_key', 'certificate', 'passphrase',
+  'mysql_password', 'db_password', 'redis_password',
+  'jwt_secret', 'session_secret',
 ];
 
 function redactSensitiveData(data: any, fields: string[]): any {
@@ -108,7 +109,7 @@ function redactSensitiveData(data: any, fields: string[]): any {
 }
 
 // ============================================
-// 自定义格式
+// 自定义格式化
 // ============================================
 
 function createCustomFormat(config: LoggerConfig) {
@@ -134,6 +135,24 @@ function createCustomFormat(config: LoggerConfig) {
         if (info.data) {
           info.data = redactSensitiveData(info.data, config.sensitiveFields);
         }
+        if (info.context) {
+          info.context = redactSensitiveData(info.context, config.sensitiveFields);
+        }
+        return info;
+      })()
+    );
+  }
+
+  // 性能监控
+  if (config.enablePerformanceMonitoring) {
+    formats.push(
+      winston.format((info) => {
+        if (info.duration) {
+          info.durationMs = info.duration;
+        }
+        if (info.memory) {
+          info.memoryUsageMB = info.memory;
+        }
         return info;
       })()
     );
@@ -144,21 +163,28 @@ function createCustomFormat(config: LoggerConfig) {
     formats.push(
       winston.format.json({
         space: config.environment === 'development' ? 2 : 0,
+        replacer: (key, value) => {
+          // 处理 BigInt
+          if (typeof value === 'bigint') {
+            return value.toString();
+          }
+          return value;
+        },
       })
     );
   } else {
     // 可读格式
     formats.push(
-      winston.format.printf(({ timestamp, level, message, service, context, ...metadata }) => {
+      winston.format.printf(({ timestamp, level, message, service, context, traceId, ...metadata }) => {
         const contextStr = context ? `[${context}]` : '';
+        const traceStr = traceId ? `[${traceId}]` : '';
         const metaStr = Object.keys(metadata).length > 0 
           ? ` ${JSON.stringify(metadata)}` 
           : '';
-        return `${timestamp} ${level} ${contextStr} ${message}${metaStr}`;
+        return `${timestamp} ${level} ${service} ${contextStr}${traceStr} ${message}${metaStr}`;
       })
     );
 
-    // 颜色
     if (config.colorize) {
       formats.push(winston.format.colorize({ all: true }));
     }
@@ -184,78 +210,82 @@ function createTransports(config: LoggerConfig): winston.transport[] {
           jsonFormat: false,
           colorize: true,
         }),
+        handleExceptions: config.enableExceptionHandling,
+        handleRejections: config.enableRejectionHandling,
       })
     );
   }
 
-  // 文件传输
-  if (config.enableFile) {
-    const logDir = config.logDir;
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
+  // 确保日志目录存在
+  if (config.enableFile || config.enableDailyRotate || config.enableErrorFile) {
+    if (!fs.existsSync(config.logDir)) {
+      fs.mkdirSync(config.logDir, { recursive: true });
     }
+  }
 
-    if (config.enableDailyRotate) {
-      // 按天轮转
-      const rotateTransport = new winston.transports.DailyRotateFile({
-        filename: path.join(logDir, `${config.service}-%DATE%.log`),
-        datePattern: 'YYYY-MM-DD',
-        maxSize: config.maxSize || '100m',
-        maxFiles: config.maxFiles || '30d',
+  // 文件传输 - 按天轮转
+  if (config.enableFile && config.enableDailyRotate) {
+    const rotateTransport = new winston.transports.DailyRotateFile({
+      filename: path.join(config.logDir, `${config.service}-%DATE%.log`),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: config.maxSize || '100m',
+      maxFiles: config.maxFiles || '30d',
+      format: createCustomFormat({
+        ...config,
+        jsonFormat: true,
+        colorize: false,
+      }),
+      level: config.level,
+      zippedArchive: config.compress,
+      handleExceptions: config.enableExceptionHandling,
+      handleRejections: config.enableRejectionHandling,
+    });
+
+    rotateTransport.on('rotate', (oldFilename, newFilename) => {
+      console.log(`[Winston] 日志轮转: ${oldFilename} -> ${newFilename}`);
+    });
+
+    rotateTransport.on('error', (error) => {
+      console.error('[Winston] 日志轮转错误:', error);
+    });
+
+    transports.push(rotateTransport);
+  }
+
+  // 普通文件传输
+  if (config.enableFile && !config.enableDailyRotate) {
+    transports.push(
+      new winston.transports.File({
+        filename: path.join(config.logDir, `${config.service}.log`),
         format: createCustomFormat({
           ...config,
           jsonFormat: true,
           colorize: false,
         }),
         level: config.level,
-        zippedArchive: config.compress,
-      });
-
-      rotateTransport.on('rotate', (oldFilename, newFilename) => {
-        console.log(`[Winston] 日志轮转: ${oldFilename} -> ${newFilename}`);
-      });
-
-      rotateTransport.on('error', (error) => {
-        console.error('[Winston] 日志轮转错误:', error);
-      });
-
-      transports.push(rotateTransport);
-    } else {
-      // 普通文件
-      transports.push(
-        new winston.transports.File({
-          filename: path.join(logDir, `${config.service}.log`),
-          format: createCustomFormat({
-            ...config,
-            jsonFormat: true,
-            colorize: false,
-          }),
-          level: config.level,
-          maxsize: 100 * 1024 * 1024, // 100MB
-          maxFiles: 10,
-        })
-      );
-    }
+        maxsize: 100 * 1024 * 1024,
+        maxFiles: 10,
+        handleExceptions: config.enableExceptionHandling,
+        handleRejections: config.enableRejectionHandling,
+      })
+    );
   }
 
-  // 错误日志文件
+  // 错误日志单独文件
   if (config.enableErrorFile) {
-    const logDir = config.logDir;
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
-
     transports.push(
       new winston.transports.File({
-        filename: path.join(logDir, `${config.service}-error.log`),
+        filename: path.join(config.logDir, `${config.service}-error.log`),
         format: createCustomFormat({
           ...config,
           jsonFormat: true,
           colorize: false,
         }),
         level: LogLevel.ERROR,
-        maxsize: 50 * 1024 * 1024, // 50MB
+        maxsize: 50 * 1024 * 1024,
         maxFiles: 10,
+        handleExceptions: config.enableExceptionHandling,
+        handleRejections: config.enableRejectionHandling,
       })
     );
   }
@@ -270,6 +300,7 @@ function createTransports(config: LoggerConfig): winston.transport[] {
 class LoggerContext {
   private static instance: LoggerContext;
   private context: Map<string, any> = new Map();
+  private traceMap: Map<string, any> = new Map();
 
   private constructor() {}
 
@@ -305,6 +336,23 @@ class LoggerContext {
   child(data: Record<string, any>): Record<string, any> {
     return { ...this.getAll(), ...data };
   }
+
+  // TraceID 管理
+  setTrace(traceId: string, data: any): void {
+    this.traceMap.set(traceId, data);
+  }
+
+  getTrace(traceId: string): any {
+    return this.traceMap.get(traceId);
+  }
+
+  clearTrace(traceId: string): void {
+    this.traceMap.delete(traceId);
+  }
+
+  getAllTraces(): Map<string, any> {
+    return this.traceMap;
+  }
 }
 
 // ============================================
@@ -338,39 +386,27 @@ class Logger {
       enableRejectionHandling: config.enableRejectionHandling !== undefined ? config.enableRejectionHandling : true,
       sensitiveFields: config.sensitiveFields || [],
       redactSensitiveData: config.redactSensitiveData !== undefined ? config.redactSensitiveData : true,
+      enablePerformanceMonitoring: config.enablePerformanceMonitoring !== undefined ? config.enablePerformanceMonitoring : true,
+      enableTraceLogging: config.enableTraceLogging !== undefined ? config.enableTraceLogging : true,
     };
 
     this.logger = this.createLogger();
   }
 
   private createLogger(): winston.Logger {
-    const levelMap: Record<string, string> = {
-      fatal: 'error',
-      error: 'error',
-      warn: 'warn',
-      info: 'info',
-      debug: 'debug',
-      trace: 'debug',
-    };
-
     const transports = createTransports(this.config);
 
     const logger = winston.createLogger({
       level: this.config.level,
-      levels: {
-        fatal: 0,
-        error: 1,
-        warn: 2,
-        info: 3,
-        debug: 4,
-        trace: 5,
-      },
+      levels: LOG_LEVEL_PRIORITY,
       defaultMeta: {
         service: this.config.service,
         environment: this.config.environment,
         version: this.config.version,
         pid: process.pid,
         hostname: require('os').hostname(),
+        nodeVersion: process.version,
+        timestamp: new Date().toISOString(),
       },
       transports,
       exitOnError: false,
@@ -389,8 +425,20 @@ class Logger {
     const allContext = {
       ...this.context.getAll(),
       ...context,
-      timestamp: new Date().toISOString(),
     };
+
+    // 添加性能监控
+    if (this.config.enablePerformanceMonitoring) {
+      const memUsage = process.memoryUsage();
+      allContext.memoryUsage = {
+        rss: Math.round(memUsage.rss / 1024 / 1024 * 100) / 100,
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024 * 100) / 100,
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024 * 100) / 100,
+        external: Math.round(memUsage.external / 1024 / 1024 * 100) / 100,
+      };
+      allContext.cpuUsage = process.cpuUsage();
+      allContext.uptime = process.uptime();
+    }
 
     this.logger.log(level, message, allContext);
   }
@@ -468,11 +516,11 @@ class Logger {
   }
 
   // ============================================
-  // 工具方法
+  // 业务日志方法
   // ============================================
 
   /**
-   * 记录API请求
+   * 记录 API 请求日志
    */
   logApiRequest(req: any, res: any, responseTime: number): void {
     const status = res.statusCode || res.status;
@@ -488,8 +536,15 @@ class Logger {
       ip: req.ip || req.connection?.remoteAddress,
       userAgent: req.headers?.['user-agent'],
       userId: req.user?.id || 'anonymous',
-      traceId: req.traceId,
+      traceId: req.traceId || this.context.get('traceId'),
+      query: req.query,
+      params: req.params,
     };
+
+    // 过滤敏感查询参数
+    if (logData.query) {
+      logData.query = redactSensitiveData(logData.query, this.config.sensitiveFields);
+    }
 
     this.log(level, `API ${req.method} ${req.url} ${status}`, logData);
   }
@@ -539,6 +594,55 @@ class Logger {
       ...data,
     });
   }
+
+  /**
+   * 记录用户操作
+   */
+  logUserAction(userId: string | number, action: string, data: any = {}): void {
+    this.info(`用户操作: ${action}`, {
+      type: 'user_action',
+      userId,
+      action,
+      ...data,
+    });
+  }
+
+  /**
+   * 记录系统启动
+   */
+  logStartup(): void {
+    this.info(`🚀 ${this.config.service} v${this.config.version} 启动成功`, {
+      type: 'system_startup',
+      environment: this.config.environment,
+      pid: process.pid,
+      nodeVersion: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      memory: process.memoryUsage(),
+    });
+  }
+
+  /**
+   * 记录系统关闭
+   */
+  logShutdown(reason: string = 'SIGTERM'): void {
+    this.info(`📦 服务正在关闭`, {
+      type: 'system_shutdown',
+      reason,
+      uptime: process.uptime(),
+    });
+  }
+
+  /**
+   * 记录健康检查
+   */
+  logHealthCheck(status: 'healthy' | 'unhealthy', details?: any): void {
+    if (status === 'healthy') {
+      this.debug('✅ 健康检查通过', { type: 'health_check', status, details });
+    } else {
+      this.warn('❌ 健康检查失败', { type: 'health_check', status, details });
+    }
+  }
 }
 
 // ============================================
@@ -565,44 +669,43 @@ export function getLogger(): Logger {
 
 export const logUtils = {
   /**
-   * 记录启动日志
+   * 检查日志级别是否启用
    */
-  logStartup(appName: string, version: string, port: number): void {
-    logger.info(`🚀 ${appName} v${version} 启动成功`, {
-      port,
-      environment: process.env.NODE_ENV,
-      pid: process.pid,
-      nodeVersion: process.version,
-    });
+  isLevelEnabled(level: LogLevel): boolean {
+    return LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[logger.getConfig().level];
   },
 
   /**
-   * 记录关闭日志
+   * 获取当前日志级别
    */
-  logShutdown(reason: string = 'SIGTERM'): void {
-    logger.info(`📦 服务正在关闭`, { reason });
+  getCurrentLevel(): LogLevel {
+    return logger.getConfig().level;
   },
 
   /**
-   * 记录健康检查
+   * 设置日志级别
    */
-  logHealthCheck(status: 'healthy' | 'unhealthy', details?: any): void {
-    if (status === 'healthy') {
-      logger.debug('✅ 健康检查通过', details);
-    } else {
-      logger.warn('❌ 健康检查失败', details);
-    }
+  setLevel(level: LogLevel): void {
+    logger.updateConfig({ level });
   },
 
   /**
-   * 记录配置加载
+   * 获取所有日志级别
    */
-  logConfigLoad(configName: string, status: 'success' | 'failed', error?: string): void {
-    if (status === 'success') {
-      logger.info(`配置加载成功: ${configName}`);
-    } else {
-      logger.error(`配置加载失败: ${configName}`, { error });
-    }
+  getLevels(): LogLevel[] {
+    return Object.values(LogLevel);
+  },
+
+  /**
+   * 格式化错误对象
+   */
+  formatError(error: Error): Record<string, any> {
+    return {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      ...(error as any),
+    };
   },
 };
 
