@@ -1,20 +1,28 @@
-﻿import { BaseRepository } from '../repositories/BaseRepository';
-import { ProductModel, IProduct } from '../models/Product.model';
+﻿import { BaseRepository } from './BaseRepository';
+import { ProductModel } from '../models/Product.model';
 
-export class ProductRepository extends BaseRepository<IProduct> {
+export class ProductRepository extends BaseRepository<any> {
   constructor() {
     super(ProductModel);
   }
-  
-  async findByCode(code: string): Promise<IProduct | null> {
+
+  async findByCode(code: string): Promise<any | null> {
+    if (!code) return null;
     return this.model.findOne({ productCode: code });
   }
-  
-  async findByCategory(category: string): Promise<IProduct[]> {
+
+  async findByCategory(category: string): Promise<any[]> {
+    if (!category) return [];
     return this.model.find({ category, status: 'active' });
   }
-  
-  async search(keyword: string): Promise<IProduct[]> {
+
+  async findByBrand(brand: string): Promise<any[]> {
+    if (!brand) return [];
+    return this.model.find({ brand, status: 'active' });
+  }
+
+  async search(keyword: string): Promise<any[]> {
+    if (!keyword) return [];
     return this.model.find({
       $or: [
         { name: { $regex: keyword, $options: 'i' } },
@@ -24,22 +32,33 @@ export class ProductRepository extends BaseRepository<IProduct> {
       status: 'active'
     });
   }
-  
-  async updateStock(id: string, quantity: number): Promise<IProduct | null> {
+
+  async updateStock(id: string, quantity: number): Promise<any | null> {
+    if (!id) return null;
     return this.model.findByIdAndUpdate(
       id,
-      { 
-        $inc: { currentStock: quantity },
-        updatedAt: new Date()
-      },
+      { $inc: { currentStock: quantity } },
       { new: true }
     );
   }
-  
-  async getLowStockProducts(threshold: number = 10): Promise<IProduct[]> {
+
+  async getLowStock(threshold: number = 10): Promise<any[]> {
     return this.model.find({ 
       currentStock: { $lte: threshold },
       status: 'active'
     });
+  }
+
+  async getCategoryStats(): Promise<any> {
+    return this.model.aggregate([
+      { $match: { status: 'active' } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          totalValue: { $sum: { $multiply: ['$price', '$currentStock'] } }
+        }
+      }
+    ]);
   }
 }
