@@ -1,98 +1,276 @@
-﻿<!-- 
+﻿<!--
   文件路径: frontend/src/modules/hr/pages/EmployeeProfile.vue
-  功能: 员工档案 - 完整员工档案管理
+  功能: 人力资源管理列表
+  最后更新: 2026-07-25 12:50:52
 -->
 
 <template>
-  <div class="page-container">
-    <el-card>
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="基本信息" name="basic">
-          <el-descriptions :column="3" border>
-            <el-descriptions-item label="员工编号">EMP-001</el-descriptions-item>
-            <el-descriptions-item label="姓名">Ahmed Al-Fahd</el-descriptions-item>
-            <el-descriptions-item label="性别">男</el-descriptions-item>
-            <el-descriptions-item label="国籍">沙特阿拉伯</el-descriptions-item>
-            <el-descriptions-item label="身份证/Iqama">SA-1234567890</el-descriptions-item>
-            <el-descriptions-item label="出生日期">1985-06-15</el-descriptions-item>
-            <el-descriptions-item label="婚姻状况">已婚</el-descriptions-item>
-            <el-descriptions-item label="联系电话">+966 50 123 4567</el-descriptions-item>
-            <el-descriptions-item label="邮箱">ahmed@company.com</el-descriptions-item>
-            <el-descriptions-item label="住址" :span="3">利雅得，沙特阿拉伯</el-descriptions-item>
-          </el-descriptions>
-        </el-tab-pane>
+  <div class="hr-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/hr' }">人力资源管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">人力资源管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">人力资源管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-        <el-tab-pane label="工作信息" name="work">
-          <el-descriptions :column="3" border>
-            <el-descriptions-item label="部门">销售部</el-descriptions-item>
-            <el-descriptions-item label="职位">销售经理</el-descriptions-item>
-            <el-descriptions-item label="入职日期">2020-01-15</el-descriptions-item>
-            <el-descriptions-item label="薪资">SAR 25,000</el-descriptions-item>
-            <el-descriptions-item label="工作状态">在职</el-descriptions-item>
-            <el-descriptions-item label="直属上级">Mohammed Al-Qahtani</el-descriptions-item>
-          </el-descriptions>
-        </el-tab-pane>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-        <el-tab-pane label="合同信息" name="contract">
-          <el-descriptions :column="3" border>
-            <el-descriptions-item label="合同编号">CT-2020-001</el-descriptions-item>
-            <el-descriptions-item label="合同类型">全职</el-descriptions-item>
-            <el-descriptions-item label="合同期限">无限期</el-descriptions-item>
-            <el-descriptions-item label="生效日期">2020-01-15</el-descriptions-item>
-            <el-descriptions-item label="到期日期">无限期</el-descriptions-item>
-            <el-descriptions-item label="试用期">3个月</el-descriptions-item>
-          </el-descriptions>
-        </el-tab-pane>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-        <el-tab-pane label="教育经历" name="education">
-          <el-timeline>
-            <el-timeline-item timestamp="2010-2014" placement="top">
-              <el-card>
-                <h4>利雅得大学</h4>
-                <p>工商管理学士 - 市场营销专业</p>
-              </el-card>
-            </el-timeline-item>
-            <el-timeline-item timestamp="2006-2010" placement="top">
-              <el-card>
-                <h4>利雅得高中</h4>
-                <p>理科</p>
-              </el-card>
-            </el-timeline-item>
-          </el-timeline>
-        </el-tab-pane>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
 
-        <el-tab-pane label="证件管理" name="documents">
-          <el-table :data="documents" style="width: 100%">
-            <el-table-column prop="name" label="证件名称" />
-            <el-table-column prop="number" label="证件编号" />
-            <el-table-column prop="expiryDate" label="有效期至" />
-            <el-table-column label="状态" align="center">
-              <template #default="{ row }">
-                <el-tag :type="row.status === '有效' ? 'success' : 'danger'">{{ row.status }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" align="center">
-              <el-button type="primary" size="small">查看</el-button>
-            </el-table-column>
-          </el-table>
-        </el-tab-pane>
-      </el-tabs>
-    </el-card>
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { hrApi } from '@/api/hr';
 
-const activeTab = ref('basic')
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const documents = ref([
-  { name: 'Iqama', number: 'SA-1234567890', expiryDate: '2025-06-15', status: '有效' },
-  { name: '护照', number: 'P-123456789', expiryDate: '2026-12-31', status: '有效' },
-  { name: '驾驶证', number: 'D-987654321', expiryDate: '2024-12-31', status: '有效' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
+
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
+
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
+
+const filters = reactive({ page: 1, limit: 20, search: '' });
+
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await hrApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await hrApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/hr/);
+const handleCreate = () => router.push(/hr/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/hr//edit);
+};
+const handleCancel = () => router.push(/hr);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await hrApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await hrApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/hr);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await hrApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/hr);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
+};
+
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
+<style scoped lang="scss">
+.hr-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .hr-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

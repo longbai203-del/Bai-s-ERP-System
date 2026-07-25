@@ -1,99 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/purchase/pages/SupplierQuotation.vue
-  功能: 供应商报价 - 管理供应商报价记录
+﻿<!--
+  文件路径: frontend/src/modules/purchase/pages/
+  功能: 采购管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="供应商">
-              <el-input v-model="searchForm.supplier" placeholder="请输入供应商名称" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="产品名称">
-              <el-input v-model="searchForm.product" placeholder="请输入产品名称" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="primary" @click="handleCreate" style="float: right"><el-icon><Plus /></el-icon> 新增报价</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="purchase-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/purchase' }">采购管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">采购管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="supplier" label="供应商" />
-        <el-table-column prop="product" label="产品名称" />
-        <el-table-column prop="spec" label="规格型号" />
-        <el-table-column prop="price" label="报价" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.price) }}</template>
-        </el-table-column>
-        <el-table-column prop="moq" label="最小起订量" align="center" />
-        <el-table-column prop="leadTime" label="交货期" align="center" />
-        <el-table-column prop="currency" label="币种" align="center" width="80" />
-        <el-table-column prop="status" label="状态" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-              {{ row.status === 'active' ? '有效' : '过期' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" width="150" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="warning" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)"><el-icon><Delete /></el-icon></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
+
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Plus, View, Edit, Delete } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { purchaseApi } from '@/api/purchase';
 
-const searchForm = reactive({ supplier: '', product: '' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const router = useRouter();
 
-const tableData = ref([
-  { id: 1, supplier: 'Apple Supplier', product: 'iPhone 15 Pro Max', spec: '256GB 黑色', price: 4800, moq: 50, leadTime: '15天', currency: 'SAR', status: 'active' },
-  { id: 2, supplier: 'Samsung Supplier', product: '三星 Galaxy S24 Ultra', spec: '512GB 黑色', price: 4400, moq: 30, leadTime: '20天', currency: 'SAR', status: 'active' },
-  { id: 3, supplier: 'Dell Supplier', product: 'MacBook Pro 16"', spec: 'M3 Pro 36GB', price: 9200, moq: 10, leadTime: '25天', currency: 'SAR', status: 'active' },
-  { id: 4, supplier: 'Sony Supplier', product: 'WH-1000XM5', spec: '黑色', price: 1200, moq: 20, leadTime: '10天', currency: 'SAR', status: 'expired' },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const loading = ref(false)
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await purchaseApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.supplier = ''; searchForm.product = '' }
-const handleCreate = () => { ElMessage.info('新增报价') }
-const handleView = (row: any) => { ElMessage.info(`查看报价: ${row.supplier} - ${row.product}`) }
-const handleEdit = (row: any) => { ElMessage.info(`编辑报价: ${row.supplier} - ${row.product}`) }
-const handleDelete = (row: any) => {
-  ElMessageBox.confirm(`确定要删除 ${row.supplier} 的报价吗？`, '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' })
-    .then(() => ElMessage.success('删除成功')).catch(() => {})
-}
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/purchase/);
+};
+
+const handleCreate = () => {
+  router.push(/purchase/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/purchase//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await purchaseApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.purchase-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .purchase-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

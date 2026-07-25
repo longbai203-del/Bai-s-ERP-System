@@ -1,175 +1,276 @@
-<!-- 
+﻿<!--
   文件路径: frontend/src/modules/finance/pages/FinancialAnalysis.vue
-  功能: 财务分析 - 多维度财务数据分析
+  功能: 财务管理列表
+  最后更新: 2026-07-25 12:50:52
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-date-picker v-model="searchForm.period" type="month" placeholder="选择期间" style="width: 100%" />
-          </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchForm.analysisType" placeholder="分析类型" style="width: 100%">
-              <el-option label="财务比率" value="ratio" />
-              <el-option label="趋势分析" value="trend" />
-              <el-option label="结构分析" value="structure" />
+  <div class="finance-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/finance' }">财务管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">财务管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">财务管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
+
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
             </el-select>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 分析</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
 
-    <!-- 财务比率 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="ratio in financialRatios" :key="ratio.label">
-        <el-card class="ratio-card" :class="ratio.status">
-          <div class="ratio-label">{{ ratio.label }}</div>
-          <div class="ratio-value">{{ ratio.value }}</div>
-          <div class="ratio-status">{{ ratio.status === 'healthy' ? '健康' : '需关注' }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 图表 -->
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-card class="chart-card">
-          <template #header><span>财务趋势</span></template>
-          <div ref="trendChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card class="chart-card">
-          <template #header><span>杜邦分析</span></template>
-          <div ref="duPontChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 财务健康度 -->
-    <el-card style="margin-top: 20px">
-      <template #header><span>财务健康度评分</span></template>
-      <el-row :gutter="20">
-        <el-col :span="6" v-for="health in healthIndicators" :key="health.label">
-          <div class="health-item">
-            <div class="health-label">{{ health.label }}</div>
-            <div class="health-value">{{ health.value }}</div>
-            <el-progress :percentage="health.score" :color="health.color" />
-          </div>
-        </el-col>
-      </el-row>
-    </el-card>
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Search, Download } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { financeApi } from '@/api/finance';
 
-const searchForm = reactive({ period: new Date(), analysisType: 'ratio' })
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const financialRatios = ref([
-  { label: '流动比率', value: '2.8', status: 'healthy' },
-  { label: '速动比率', value: '1.6', status: 'healthy' },
-  { label: '资产负债率', value: '45.2%', status: 'healthy' },
-  { label: '毛利率', value: '33.4%', status: 'healthy' },
-  { label: '净利率', value: '12.8%', status: 'healthy' },
-  { label: 'ROE', value: '18.5%', status: 'healthy' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const healthIndicators = ref([
-  { label: '偿债能力', value: 'A级', score: 92, color: '#67C23A' },
-  { label: '盈利能力', value: 'A级', score: 88, color: '#67C23A' },
-  { label: '运营效率', value: 'B级', score: 76, color: '#E6A23C' },
-  { label: '成长能力', value: 'A级', score: 85, color: '#67C23A' },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const trendChartRef = ref<HTMLElement>()
-const duPontChartRef = ref<HTMLElement>()
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const handleSearch = () => { ElMessage.success('分析完成') }
-const handleReset = () => {}
-const handleExport = () => { ElMessage.success('导出完成') }
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
-const initCharts = async () => {
-  await nextTick()
-  if (trendChartRef.value) {
-    const chart = echarts.init(trendChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['营收', '净利润', '毛利率'] },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['Q1', 'Q2', 'Q3', 'Q4'] },
-      yAxis: [
-        { type: 'value', name: '营收(万)', splitLine: { lineStyle: { color: '#f0f0f0' } } },
-        { type: 'value', name: '毛利率(%)', splitLine: { show: false } },
-      ],
-      series: [
-        { name: '营收', type: 'bar', data: [3200, 3800, 4200, 4600], itemStyle: { color: '#409EFF' } },
-        { name: '净利润', type: 'bar', data: [980, 1250, 1400, 1570], itemStyle: { color: '#67C23A' } },
-        { name: '毛利率', type: 'line', yAxisIndex: 1, data: [30.6, 32.9, 33.3, 34.1], lineStyle: { color: '#E6A23C', width: 3 }, smooth: true },
-      ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await financeApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await financeApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/finance/);
+const handleCreate = () => router.push(/finance/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/finance//edit);
+};
+const handleCancel = () => router.push(/finance);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await financeApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await financeApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/finance);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await financeApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/finance);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-  if (duPontChartRef.value) {
-    const chart = echarts.init(duPontChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'item' },
-      series: [{
-        type: 'treemap',
-        data: [
-          {
-            name: 'ROE 18.5%',
-            children: [
-              { name: '净利率 12.8%', value: 128 },
-              { name: '资产周转率 1.2', value: 120 },
-              { name: '权益乘数 1.8', value: 180 },
-            ],
-          },
-        ],
-        label: { show: true, formatter: '{b}' },
-        itemStyle: { borderColor: '#fff' },
-        levels: [
-          { itemStyle: { borderWidth: 0, gapWidth: 5 } },
-          { itemStyle: { gapWidth: 2 } },
-        ],
-      }],
-    })
-    window.addEventListener('resize', () => chart.resize())
-  }
-}
+};
 
-onMounted(() => { initCharts() })
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.stat-row { margin-bottom: 20px; }
-.ratio-card { text-align: center; border-radius: 12px; padding: 16px; }
-.ratio-card.healthy { border-left: 4px solid #67C23A; }
-.ratio-card.unhealthy { border-left: 4px solid #F56C6C; }
-.ratio-label { color: #909399; font-size: 14px; }
-.ratio-value { font-size: 24px; font-weight: 700; color: #303133; margin: 4px 0; }
-.ratio-status { font-size: 12px; color: #909399; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 280px; width: 100%; }
-.health-item { text-align: center; padding: 12px; border-right: 1px solid #e4e7ed; }
-.health-item:last-child { border-right: none; }
-.health-label { color: #909399; font-size: 13px; }
-.health-value { font-size: 20px; font-weight: 700; color: #303133; margin: 4px 0; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.finance-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .finance-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

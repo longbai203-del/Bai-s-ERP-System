@@ -1,338 +1,284 @@
-﻿<script setup lang="ts">
-import { ref, reactive, onMounted, nextTick, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import * as echarts from 'echarts'
-import {
-  FolderOpened,
-  Plus,
-  Download,
-  RefreshRight,
-  Folder,
-  Select,
-  Clock,
-  SuccessFilled,
-  Top,
-  Bottom,
-  Search,
-  Refresh,
-  View,
-  Edit,
-  Play,
-  Pause,
-  Delete,
-  WarningFilled
-} from '@element-plus/icons-vue'
-// ============================================================
-// 新增：导入 API
-// ============================================================
-import { getProjectList, getProjectStats, deleteProject, startProject, pauseProject } from '@/api/project'
+﻿<!--
+  文件路径: frontend/src/modules/project/pages/Index.vue
+  功能: 项目管理列表
+  最后更新: 2026-07-25 12:52:06
+-->
 
-const router = useRouter()
+<template>
+  <div class="project-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/project' }">项目管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">项目管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">项目管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-// ========== 响应式数据 ==========
-const loading = ref(false)
-const deleteLoading = ref(false)
-const deleteDialogVisible = ref(false)
-const deleteProjectId = ref<number | null>(null)
-const deleteProjectName = ref('')
-const trendPeriod = ref('month')
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-const trendChartRef = ref<HTMLDivElement | null>(null)
-const pieChartRef = ref<HTMLDivElement | null>(null)
-let trendChart: echarts.ECharts | null = null
-let pieChart: echarts.ECharts | null = null
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-// 统计数据
-const stats = reactive({
-  total: 0,
-  active: 0,
-  planning: 0,
-  completed: 0,
-  totalGrowth: 12.5,
-  activeGrowth: 8.3,
-  planningGrowth: -3.2,
-  completedGrowth: 15.6
-})
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
 
-// 筛选表单
-const filterForm = reactive({
-  name: '',
-  status: '',
-  priority: '',
-  customer: ''
-})
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入描述"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
 
-// 分页
-const pagination = reactive({
-  current: 1,
-  pageSize: 10,
-  total: 0
-})
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
+  </div>
+</template>
 
-// 表格数据
-const tableData = ref<any[]>([])
-const allData = ref<any[]>([])
+<script setup lang="ts">
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { projectApi } from '@/api/project';
 
-// ========== 计算属性 ==========
-const formatNumber = (num: number) => {
-  return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const getStatusTag = (status: string) => {
-  const map: Record<string, string> = {
-    planning: 'info',
-    active: 'success',
-    paused: 'warning',
-    completed: 'primary',
-    cancelled: 'danger'
-  }
-  return map[status] || 'info'
-}
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  return 'List';
+});
 
-const getStatusLabel = (status: string) => {
-  const map: Record<string, string> = {
-    planning: '规划中',
-    active: '进行中',
-    paused: '已暂停',
-    completed: '已完成',
-    cancelled: '已取消'
-  }
-  return map[status] || status
-}
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-// ============================================================
-// 替换：使用真实 API 获取数据
-// ============================================================
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-// ========== 获取统计数据 ==========
-const fetchStats = async () => {
+const filters = reactive({ page: 1, limit: 20, search: '' });
+
+const formData = reactive({
+  id: '', name: '', status: 'active', description: '', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
   try {
-    const res = await getProjectStats()
-    if (res.code === 0 && res.data) {
-      stats.total = res.data.total || 0
-      stats.active = res.data.active || 0
-      stats.planning = res.data.planning || 0
-      stats.completed = res.data.completed || 0
-    }
-  } catch (error) {
-    console.error('获取统计失败:', error)
-  }
-}
+    const response = await projectApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
 
-// ========== 获取项目列表 ==========
-const fetchProjects = async () => {
-  loading.value = true
+const loadDetail = async (id: string) => {
+  loading.value = true;
   try {
-    const params: any = {
-      page: pagination.current,
-      limit: pagination.pageSize
-    }
-    
-    if (filterForm.name) params.keyword = filterForm.name
-    if (filterForm.status) params.status = filterForm.status
-    if (filterForm.priority) params.priority = filterForm.priority
-    if (filterForm.customer) params.customer = filterForm.customer
+    const data = await projectApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
 
-    const res = await getProjectList(params)
-    
-    if (res.code === 0 && res.data) {
-      allData.value = res.data.list || []
-      pagination.total = res.data.total || 0
-      tableData.value = allData.value
-    }
-  } catch (error) {
-    ElMessage.error('加载项目列表失败')
-    console.error('fetchProjects error:', error)
-  } finally {
-    loading.value = false
-  }
-}
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/project/);
+const handleCreate = () => router.push(/project/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/project//edit);
+};
+const handleCancel = () => router.push(/project);
 
-// ========== 初始化数据 ==========
-const initData = async () => {
-  await Promise.all([
-    fetchStats(),
-    fetchProjects()
-  ])
-  
-  nextTick(() => {
-    initCharts()
-  })
-}
-
-// ========== 筛选数据 ==========
-const filterData = () => {
-  // 筛选由后端处理，重新调用 fetchProjects
-  pagination.current = 1
-  fetchProjects()
-}
-
-// ============================================================
-// 图表初始化（保持不变）
-// ============================================================
-
-const initCharts = () => {
-  // ... 保持原有图表代码不变
-}
-
-// ============================================================
-// 事件处理（更新为调用真实 API）
-// ============================================================
-
-const handleSearch = () => {
-  pagination.current = 1
-  fetchProjects()
-}
-
-const handleReset = () => {
-  filterForm.name = ''
-  filterForm.status = ''
-  filterForm.priority = ''
-  filterForm.customer = ''
-  pagination.current = 1
-  fetchProjects()
-}
-
-const filterByStatus = (status: string) => {
-  filterForm.status = status
-  pagination.current = 1
-  fetchProjects()
-}
-
-const filterByStock = (type: string) => {
-  // 库存筛选功能
-}
-
-const handleCreate = () => {
-  router.push('/project/create')
-}
-
-const handleViewDetail = (id: number) => {
-  router.push(`/project/detail/${id}`)
-}
-
-const handleEdit = (id: number) => {
-  router.push(`/project/edit/${id}`)
-}
-
-// ============================================================
-// 启动项目 - 调用 API
-// ============================================================
-const handleStart = async (row: any) => {
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
   try {
-    await ElMessageBox.confirm(`确定要启动项目 ${row.name} 吗？`, '确认', {
-      confirmButtonText: '启动',
-      cancelButtonText: '取消',
-      type: 'success'
-    })
-    
-    await startProject(row.id)
-    ElMessage.success(`项目 ${row.name} 已启动`)
-    await fetchProjects()
-    await fetchStats()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('启动失败，请重试')
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await projectApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await projectApi.create(data);
+      ElMessage.success('创建成功');
     }
-  }
-}
+    router.push(/project);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
 
-// ============================================================
-// 暂停项目 - 调用 API
-// ============================================================
-const handlePause = async (row: any) => {
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
   try {
-    await ElMessageBox.confirm(`确定要暂停项目 ${row.name} 吗？`, '确认', {
-      confirmButtonText: '暂停',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    
-    await pauseProject(row.id)
-    ElMessage.warning(`项目 ${row.name} 已暂停`)
-    await fetchProjects()
-    await fetchStats()
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await projectApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/project);
+    else loadData();
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('暂停失败，请重试')
-    }
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-}
-
-// ============================================================
-// 删除项目 - 调用 API
-// ============================================================
-const handleDelete = (id: number) => {
-  const project = allData.value.find((d: any) => d.id === id)
-  if (project) {
-    deleteProjectName.value = project.name
-  }
-  deleteProjectId.value = id
-  deleteDialogVisible.value = true
-}
-
-const confirmDelete = async () => {
-  if (!deleteProjectId.value) return
-  
-  deleteLoading.value = true
-  try {
-    await deleteProject(deleteProjectId.value)
-    ElMessage.success('删除成功！')
-    deleteDialogVisible.value = false
-    await fetchProjects()
-    await fetchStats()
-  } catch (error) {
-    ElMessage.error('删除失败，请重试')
-  } finally {
-    deleteLoading.value = false
-    deleteProjectId.value = null
-    deleteProjectName.value = ''
-  }
-}
-
-// ============================================================
-// 其他方法
-// ============================================================
-
-const handleExport = () => {
-  ElMessage.success('导出任务已提交')
-}
-
-const handleRefresh = () => {
-  initData()
-  nextTick(() => {
-    trendChart?.resize()
-    pieChart?.resize()
-  })
-}
-
-const handleSortChange = ({ prop, order }: any) => {
-  // 排序由后端处理
-  // 可以在 fetchProjects 中添加排序参数
-  fetchProjects()
-}
-
-const handleSizeChange = (val: number) => {
-  pagination.pageSize = val
-  pagination.current = 1
-  fetchProjects()
-}
-
-const handleCurrentChange = (val: number) => {
-  pagination.current = val
-  fetchProjects()
-}
-
-// ============================================================
-// 生命周期
-// ============================================================
+};
 
 onMounted(() => {
-  initData()
-})
-
-watch(trendPeriod, () => {
-  initCharts()
-})
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
+
+<style scoped lang="scss">
+.project-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .project-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
+</style>

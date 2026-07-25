@@ -1,180 +1,276 @@
-<!-- 
+﻿<!--
   文件路径: frontend/src/modules/inventory/pages/StockForecast.vue
-  功能: 库存预测 - AI驱动的库存预测分析
+  功能: 库存管理列表
+  最后更新: 2026-07-25 12:50:51
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="预测周期">
-              <el-select v-model="searchForm.period" style="width: 100%">
-                <el-option label="未来30天" value="30d" />
-                <el-option label="未来60天" value="60d" />
-                <el-option label="未来90天" value="90d" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="产品分类">
-              <el-select v-model="searchForm.category" placeholder="全部分类" clearable style="width: 100%">
-                <el-option label="电子产品" value="electronics" />
-                <el-option label="服装鞋帽" value="clothing" />
-                <el-option label="食品饮料" value="food" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handlePredict"><el-icon><Monitor /></el-icon> 生成预测</el-button>
-              <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="inventory-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/inventory' }">库存管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">库存管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">库存管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-    <!-- 预测KPI -->
-    <el-row :gutter="20" class="kpi-row">
-      <el-col :span="6" v-for="kpi in forecastKpis" :key="kpi.label">
-        <el-card class="kpi-card" :class="kpi.type">
-          <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value">{{ kpi.value }}</div>
-          <div class="kpi-sub">置信度: {{ kpi.confidence }}%</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <!-- 预测图表 -->
-    <el-row :gutter="20">
-      <el-col :span="16">
-        <el-card class="chart-card">
-          <template #header>
-            <span>库存需求预测</span>
-            <el-tag type="warning" size="small">AI预测</el-tag>
-          </template>
-          <div ref="forecastChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card>
-          <template #header><span>预测产品TOP10</span></template>
-          <el-table :data="topProducts" style="width: 100%">
-            <el-table-column type="index" label="#" width="40" />
-            <el-table-column prop="name" label="产品" />
-            <el-table-column prop="forecast" label="预测需求" align="center" />
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-    <!-- 预测明细 -->
-    <el-card style="margin-top: 20px">
-      <template #header><span>预测明细数据</span></template>
-      <el-table :data="forecastDetail" style="width: 100%" stripe>
-        <el-table-column prop="product" label="产品名称" />
-        <el-table-column prop="currentStock" label="当前库存" align="center" />
-        <el-table-column prop="forecastDemand" label="预测需求" align="center" />
-        <el-table-column prop="suggestedOrder" label="建议采购" align="center">
-          <template #default="{ row }">
-            <span :style="{ color: row.suggestedOrder > 0 ? '#F56C6C' : '#67C23A', fontWeight: 600 }">
-              {{ row.suggestedOrder > 0 ? row.suggestedOrder : '无需采购' }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="confidence" label="置信度" align="center">
-          <template #default="{ row }">{{ row.confidence }}%</template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Monitor, Download } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { inventoryApi } from '@/api/inventory';
 
-const searchForm = reactive({ period: '30d', category: '' })
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const forecastKpis = ref([
-  { label: '预测总需求', value: '45,600件', confidence: 92, type: 'primary' },
-  { label: '建议采购量', value: '28,500件', confidence: 88, type: 'warning' },
-  { label: '库存周转率', value: '8.6次', confidence: 85, type: 'success' },
-  { label: '缺货风险', value: '中等', confidence: 78, type: 'primary' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const topProducts = ref([
-  { name: 'iPhone 15 Pro Max', forecast: 250 },
-  { name: '三星 Galaxy S24 Ultra', forecast: 180 },
-  { name: 'AirPods Pro 2', forecast: 350 },
-  { name: 'MacBook Pro 16"', forecast: 120 },
-  { name: 'iPad Pro 12.9"', forecast: 150 },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const forecastDetail = ref([
-  { product: 'iPhone 15 Pro Max', currentStock: 156, forecastDemand: 250, suggestedOrder: 144, confidence: 92 },
-  { product: '三星 Galaxy S24 Ultra', currentStock: 89, forecastDemand: 180, suggestedOrder: 131, confidence: 88 },
-  { product: 'AirPods Pro 2', currentStock: 8, forecastDemand: 350, suggestedOrder: 342, confidence: 85 },
-  { product: 'MacBook Pro 16"', currentStock: 34, forecastDemand: 120, suggestedOrder: 106, confidence: 90 },
-  { product: 'iPad Pro 12.9"', currentStock: 12, forecastDemand: 150, suggestedOrder: 138, confidence: 87 },
-])
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const forecastChartRef = ref<HTMLElement>()
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
-const handlePredict = () => { ElMessage.success('预测已生成') }
-const handleExport = () => { ElMessage.success('导出完成') }
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
 
-const initChart = async () => {
-  await nextTick()
-  if (forecastChartRef.value) {
-    const chart = echarts.init(forecastChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['历史需求', '预测需求'] },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月'] },
-      yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0f0f0' } } },
-      series: [
-        {
-          name: '历史需求',
-          type: 'bar',
-          data: [320, 380, 420, 390, 450, 520, 480, 540, 580, 620, 560, 600],
-          itemStyle: { color: '#409EFF' },
-        },
-        {
-          name: '预测需求',
-          type: 'line',
-          data: [null, null, null, null, null, null, null, null, null, null, null, null, 680, 720],
-          smooth: true,
-          lineStyle: { color: '#F56C6C', width: 3, type: 'dashed' },
-          symbol: 'diamond',
-          symbolSize: 10,
-        },
-      ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await inventoryApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await inventoryApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/inventory/);
+const handleCreate = () => router.push(/inventory/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/inventory//edit);
+};
+const handleCancel = () => router.push(/inventory);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await inventoryApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await inventoryApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/inventory);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await inventoryApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/inventory);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-}
+};
 
-onMounted(() => { initChart() })
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.kpi-row { margin-bottom: 20px; }
-.kpi-card { text-align: center; border-radius: 12px; }
-.kpi-card.primary { border-left: 4px solid #409EFF; }
-.kpi-card.warning { border-left: 4px solid #E6A23C; }
-.kpi-card.success { border-left: 4px solid #67C23A; }
-.kpi-label { color: #909399; font-size: 14px; }
-.kpi-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-.kpi-sub { color: #909399; font-size: 12px; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 300px; width: 100%; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.inventory-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .inventory-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

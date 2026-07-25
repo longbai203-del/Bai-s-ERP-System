@@ -1,128 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/production/pages/QualityControl.vue
-  功能: 质检管理 - 产品质量检验
+﻿<!--
+  文件路径: frontend/src/modules/production/pages/
+  功能: 生产管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="工单号">
-              <el-input v-model="searchForm.workOrderNo" placeholder="请输入工单号" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="结果">
-              <el-select v-model="searchForm.result" placeholder="请选择结果" clearable style="width: 100%">
-                <el-option label="合格" value="pass" />
-                <el-option label="不合格" value="fail" />
-                <el-option label="待检验" value="pending" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="primary" @click="handleCreate" style="float: right"><el-icon><Plus /></el-icon> 新建质检</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="production-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/production' }">生产管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">生产管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <!-- 质检统计 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="stat in qcStats" :key="stat.label">
-        <el-card class="stat-card" :class="stat.type">
-          <div class="stat-label">{{ stat.label }}</div>
-          <div class="stat-value">{{ stat.value }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="qcNo" label="质检编号" width="140" />
-        <el-table-column prop="workOrderNo" label="工单号" width="140" />
-        <el-table-column prop="product" label="产品名称" />
-        <el-table-column prop="sampleSize" label="抽检数量" align="center" />
-        <el-table-column prop="defectCount" label="不良数" align="center">
-          <template #default="{ row }">
-            <span :style="{ color: row.defectCount > 0 ? '#F56C6C' : '#67C23A' }">
-              {{ row.defectCount }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="defectRate" label="不良率" align="center">
-          <template #default="{ row }">
-            <span :style="{ color: row.defectRate > 5 ? '#F56C6C' : row.defectRate > 2 ? '#E6A23C' : '#67C23A' }">
-              {{ row.defectRate }}%
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="result" label="结果" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.result === 'pass' ? 'success' : row.result === 'fail' ? 'danger' : 'info'">
-              {{ row.result === 'pass' ? '合格' : row.result === 'fail' ? '不合格' : '待检验' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" width="150" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="warning" size="small" @click="handleInspect(row)" v-if="row.result === 'pending'"><el-icon><Edit /></el-icon> 检验</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Plus, View, Edit } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { productionApi } from '@/api/production';
 
-const searchForm = reactive({ workOrderNo: '', result: '' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const router = useRouter();
 
-const qcStats = ref([
-  { label: '质检总数', value: '286', type: 'primary' },
-  { label: '合格', value: '256', type: 'success' },
-  { label: '不合格', value: '18', type: 'danger' },
-  { label: '合格率', value: '93.4%', type: 'success' },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const tableData = ref([
-  { id: 1, qcNo: 'QC-2024-001', workOrderNo: 'WO-2024-001', product: 'iPhone 15 Pro Max', sampleSize: 50, defectCount: 2, defectRate: 4, result: 'pass' },
-  { id: 2, qcNo: 'QC-2024-002', workOrderNo: 'WO-2024-001', product: 'iPhone 15 Pro Max', sampleSize: 50, defectCount: 8, defectRate: 16, result: 'fail' },
-  { id: 3, qcNo: 'QC-2024-003', workOrderNo: 'WO-2024-003', product: 'MacBook Pro 16"', sampleSize: 30, defectCount: 1, defectRate: 3.3, result: 'pending' },
-])
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const loading = ref(false)
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await productionApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.workOrderNo = ''; searchForm.result = '' }
-const handleCreate = () => { ElMessage.info('新建质检') }
-const handleView = (row: any) => { ElMessage.info(`查看质检: ${row.qcNo}`) }
-const handleInspect = (row: any) => { ElMessage.info(`检验: ${row.qcNo}`) }
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/production/);
+};
+
+const handleCreate = () => {
+  router.push(/production/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/production//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await productionApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.stat-row { margin-bottom: 20px; }
-.stat-card { text-align: center; border-radius: 12px; }
-.stat-card.primary { border-left: 4px solid #409EFF; }
-.stat-card.success { border-left: 4px solid #67C23A; }
-.stat-card.danger { border-left: 4px solid #F56C6C; }
-.stat-label { color: #909399; font-size: 14px; }
-.stat-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.production-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .production-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

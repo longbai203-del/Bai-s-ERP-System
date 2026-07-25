@@ -1,188 +1,276 @@
-﻿<!-- 
+﻿<!--
   文件路径: frontend/src/modules/analytics/pages/AnalyticsDashboard.vue
-  功能: 分析中心首页 - 数据分析总览
+  功能: 数据分析仪表板
+  最后更新: 2026-07-25 12:50:51
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="header-card">
-      <div class="page-header">
-        <div>
-          <h2>数据分析中心</h2>
-          <p class="subtitle">多维度业务数据分析</p>
-        </div>
-        <div>
-          <el-date-picker
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            size="large"
-            style="width: 280px"
-          />
-          <el-button type="primary" size="large" @click="handleRefresh" style="margin-left: 12px;">
-            <el-icon><Refresh /></el-icon> 刷新
-          </el-button>
-        </div>
+  <div class="analytics-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/analytics' }">数据分析</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">数据分析仪表板</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">数据分析仪表板</h1>
       </div>
-    </el-card>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-    <!-- KPI卡片 -->
-    <el-row :gutter="20" class="kpi-row">
-      <el-col :span="6" v-for="kpi in kpiData" :key="kpi.label">
-        <el-card class="kpi-card" :class="kpi.trend">
-          <div class="kpi-header">
-            <span class="kpi-label">{{ kpi.label }}</span>
-            <el-tag :type="kpi.trend === 'up' ? 'success' : 'danger'" size="small">
-              {{ kpi.trend === 'up' ? '↑' : '↓' }} {{ Math.abs(kpi.change) }}%
-            </el-tag>
-          </div>
-          <div class="kpi-value">{{ kpi.value }}</div>
-          <div class="kpi-footer">较上期 {{ kpi.change > 0 ? '增长' : '下降' }} {{ Math.abs(kpi.change) }}%</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <!-- 分析入口 -->
-    <el-row :gutter="20">
-      <el-col :span="6" v-for="item in analyticsEntries" :key="item.label">
-        <el-card class="entry-card" @click="handleNavigate(item.path)">
-          <div class="entry-icon" :style="{ background: item.color }">
-            <el-icon :size="32"><component :is="item.icon" /></el-icon>
-          </div>
-          <div class="entry-label">{{ item.label }}</div>
-          <div class="entry-desc">{{ item.desc }}</div>
-          <div class="entry-action">
-            <el-button type="primary" text>查看分析 →</el-button>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-    <!-- 图表区域 -->
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="16">
-        <el-card class="chart-card">
-          <template #header><span>分析趋势</span></template>
-          <div ref="trendChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="chart-card">
-          <template #header><span>分析维度分布</span></template>
-          <div ref="pieChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
-import {
-  Plus,
-  Search,
-  Refresh,
-  View,
-  Edit,
-  Delete
-} from '@element-plus/icons-vue'
-// ============================================================
-// API 导入
-// ============================================================
-import {  } from '@/api/modules/analytics'
-import { useRouter } from 'vue-router'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { analyticsApi } from '@/api/analytics';
 
-const router = useRouter()
-const dateRange = ref<[Date, Date]>([new Date(new Date().setDate(new Date().getDate() - 30)), new Date()])
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const kpiData = ref([
-  { label: '总分析量', value: '12,856', change: 12.5, trend: 'up' },
-  { label: '分析准确率', value: '94.8%', change: 3.2, trend: 'up' },
-  { label: '活跃分析用户', value: '286', change: 8.3, trend: 'up' },
-  { label: '分析报告数', value: '856', change: -2.1, trend: 'down' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const analyticsEntries = ref([
-  { label: '销售分析', desc: '多维度销售数据分析', icon: 'TrendCharts', color: '#409EFF', path: '/analytics/sales' },
-  { label: '客户分析', desc: '客户画像与行为分析', icon: 'User', color: '#67C23A', path: '/analytics/customer' },
-  { label: '产品分析', desc: '产品表现与优化分析', icon: 'Box', color: '#E6A23C', path: '/analytics/product' },
-  { label: '渠道分析', desc: '渠道效果与优化分析', icon: 'DataLine', color: '#9B59B6', path: '/analytics/channel' },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const trendChartRef = ref<HTMLElement>()
-const pieChartRef = ref<HTMLElement>()
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const handleRefresh = () => { /* 刷新逻辑 */ }
-const handleNavigate = (path: string) => { router.push(path) }
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
-const initCharts = async () => {
-  await nextTick()
-  if (trendChartRef.value) {
-    const chart = echarts.init(trendChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['分析量', '准确率'] },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
-      yAxis: [
-        { type: 'value', name: '分析量', splitLine: { lineStyle: { color: '#f0f0f0' } } },
-        { type: 'value', name: '准确率(%)', min: 0, max: 100, splitLine: { show: false } },
-      ],
-      series: [
-        { name: '分析量', type: 'bar', data: [120, 200, 150, 180, 220, 260], itemStyle: { color: '#409EFF' } },
-        { name: '准确率', type: 'line', yAxisIndex: 1, data: [85, 88, 90, 92, 94, 95], lineStyle: { color: '#67C23A', width: 3 }, smooth: true },
-      ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await analyticsApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await analyticsApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/analytics/);
+const handleCreate = () => router.push(/analytics/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/analytics//edit);
+};
+const handleCancel = () => router.push(/analytics);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await analyticsApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await analyticsApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/analytics);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await analyticsApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/analytics);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-  if (pieChartRef.value) {
-    const chart = echarts.init(pieChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: 35, name: '销售分析', itemStyle: { color: '#409EFF' } },
-          { value: 25, name: '客户分析', itemStyle: { color: '#67C23A' } },
-          { value: 20, name: '产品分析', itemStyle: { color: '#E6A23C' } },
-          { value: 12, name: '渠道分析', itemStyle: { color: '#F56C6C' } },
-          { value: 8, name: '其他', itemStyle: { color: '#909399' } },
-        ],
-        label: { formatter: '{b}\n{d}%' },
-        emphasis: { scale: true },
-      }],
-    })
-    window.addEventListener('resize', () => chart.resize())
-  }
-}
+};
 
-onMounted(() => { initCharts() })
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.header-card { border-radius: 12px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.subtitle { color: #909399; margin: 4px 0 0 0; }
-.kpi-row { margin-bottom: 20px; }
-.kpi-card { border-radius: 12px; transition: all 0.3s; }
-.kpi-card.up { border-left: 4px solid #67C23A; }
-.kpi-card.down { border-left: 4px solid #F56C6C; }
-.kpi-header { display: flex; justify-content: space-between; align-items: center; }
-.kpi-label { color: #909399; font-size: 14px; }
-.kpi-value { font-size: 28px; font-weight: 700; color: #303133; margin: 8px 0; }
-.kpi-footer { color: #909399; font-size: 12px; }
-.entry-card { text-align: center; border-radius: 12px; cursor: pointer; transition: all 0.3s; padding: 16px 0; }
-.entry-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
-.entry-icon { width: 56px; height: 56px; border-radius: 12px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: white; }
-.entry-label { font-size: 16px; font-weight: 600; }
-.entry-desc { color: #909399; font-size: 13px; margin: 4px 0; }
-.entry-action { margin-top: 8px; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 280px; width: 100%; }
+<style scoped lang="scss">
+.analytics-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .analytics-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

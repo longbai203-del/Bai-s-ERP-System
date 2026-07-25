@@ -1,176 +1,276 @@
-<!-- 
+﻿<!--
   文件路径: frontend/src/modules/finance/pages/JournalEntryCreate.vue
-  功能: 新建凭证
+  功能: 创建财务管理
+  最后更新: 2026-07-25 12:50:52
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="header-card">
-      <div class="page-header">
-        <div>
-          <h2>新建会计凭证</h2>
-          <p class="subtitle">录入会计分录</p>
-        </div>
-        <div>
-          <el-button @click="handleSaveDraft">保存草稿</el-button>
-          <el-button type="primary" @click="handleSubmit">提交审核</el-button>
+  <div class="finance-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/finance' }">财务管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">创建财务管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">创建财务管理</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
           <el-button @click="handleCancel">取消</el-button>
-        </div>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
       </div>
-    </el-card>
+    </div>
 
-    <el-card style="margin-top: 20px">
-      <template #header><span>凭证信息</span></template>
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="凭证号" prop="voucherNo">
-              <el-input v-model="form.voucherNo" disabled />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="日期" prop="date">
-              <el-date-picker v-model="form.date" type="date" placeholder="选择日期" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="凭证类型" prop="type">
-              <el-select v-model="form.type" placeholder="请选择类型" style="width: 100%">
-                <el-option label="收款凭证" value="receipt" />
-                <el-option label="付款凭证" value="payment" />
-                <el-option label="转账凭证" value="transfer" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="摘要" prop="summary">
-              <el-input v-model="form.summary" placeholder="请输入凭证摘要" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <el-card style="margin-top: 20px">
-      <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span>会计分录</span>
-          <el-button type="primary" text @click="addRow"><el-icon><Plus /></el-icon> 添加分录</el-button>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
         </div>
-      </template>
-      <el-table :data="form.entries" border style="width: 100%">
-        <el-table-column type="index" label="#" width="50" />
-        <el-table-column label="科目代码" width="140">
-          <template #default="{ row }">
-            <el-select v-model="row.accountCode" placeholder="选择科目" filterable style="width: 100%">
-              <el-option label="1001 库存现金" value="1001" />
-              <el-option label="1002 银行存款" value="1002" />
-              <el-option label="1122 应收账款" value="1122" />
-              <el-option label="1405 库存商品" value="1405" />
-              <el-option label="2001 应付账款" value="2001" />
-              <el-option label="6001 主营业务收入" value="6001" />
-              <el-option label="6401 主营业务成本" value="6401" />
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
             </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column label="科目名称" width="140">
-          <template #default="{ row }">
-            <el-input v-model="row.accountName" placeholder="科目名称" disabled />
-          </template>
-        </el-table-column>
-        <el-table-column label="借方金额" width="180">
-          <template #default="{ row }">
-            <el-input-number v-model="row.debit" :min="0" :precision="2" controls-position="right" style="width: 100%" />
-          </template>
-        </el-table-column>
-        <el-table-column label="贷方金额" width="180">
-          <template #default="{ row }">
-            <el-input-number v-model="row.credit" :min="0" :precision="2" controls-position="right" style="width: 100%" />
-          </template>
-        </el-table-column>
-        <el-table-column label="摘要" min-width="150">
-          <template #default="{ row }">
-            <el-input v-model="row.summary" placeholder="分录摘要" />
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="80" align="center">
-          <template #default="{ $index }">
-            <el-button type="danger" size="small" @click="removeRow($index)"><el-icon><Delete /></el-icon></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div style="text-align: right; margin-top: 16px; font-size: 16px;">
-        合计借方: <span style="font-weight: 600; color: #409EFF;">{{ formatCurrency(totalDebit) }}</span>
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-        合计贷方: <span style="font-weight: 600; color: #E6A23C;">{{ formatCurrency(totalCredit) }}</span>
-        &nbsp;&nbsp;
-        <el-tag :type="isBalanced ? 'success' : 'danger'" size="large">
-          {{ isBalanced ? '✓ 借贷平衡' : '✗ 借贷不平衡' }}
-        </el-tag>
-      </div>
-    </el-card>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { Plus, Delete } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { financeApi } from '@/api/finance';
 
-const router = useRouter()
-const formRef = ref()
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const form = reactive({
-  voucherNo: 'VOU-2024-004',
-  date: new Date(),
-  type: 'transfer',
-  summary: '',
-  entries: [] as Array<{
-    accountCode: string
-    accountName: string
-    debit: number
-    credit: number
-    summary: string
-  }>,
-})
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const rules = {
-  date: [{ required: true, message: '请选择日期', trigger: 'change' }],
-  summary: [{ required: true, message: '请输入摘要', trigger: 'blur' }],
-}
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const totalDebit = computed(() => form.entries.reduce((sum, e) => sum + (e.debit || 0), 0))
-const totalCredit = computed(() => form.entries.reduce((sum, e) => sum + (e.credit || 0), 0))
-const isBalanced = computed(() => Math.abs(totalDebit.value - totalCredit.value) < 0.01)
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
-const addRow = () => {
-  form.entries.push({ accountCode: '', accountName: '', debit: 0, credit: 0, summary: '' })
-}
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
 
-const removeRow = (index: number) => {
-  form.entries.splice(index, 1)
-}
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
 
-const handleSaveDraft = () => { ElMessage.success('已保存草稿') }
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await financeApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await financeApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/finance/);
+const handleCreate = () => router.push(/finance/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/finance//edit);
+};
+const handleCancel = () => router.push(/finance);
+
 const handleSubmit = async () => {
-  await formRef.value?.validate()
-  if (!isBalanced.value) {
-    ElMessage.error('借贷不平衡，请检查分录')
-    return
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await financeApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await financeApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/finance);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await financeApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/finance);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-  ElMessage.success('凭证已提交审核')
-  router.push('/finance/journal')
-}
-const handleCancel = () => { router.push('/finance/journal') }
+};
+
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.header-card { border-radius: 12px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.subtitle { color: #909399; margin: 4px 0 0 0; }
+<style scoped lang="scss">
+.finance-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .finance-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

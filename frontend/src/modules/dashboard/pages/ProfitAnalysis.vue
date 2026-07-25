@@ -1,199 +1,347 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/dashboard/pages/ProfitAnalysis.vue
-  功能: 利润分析 - 深度利润结构分析
+  功能: 利润分析
+  最后更新: 2026-07-25 12:44:21
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-row :gutter="20" align="middle">
-        <el-col :span="6">
-          <el-date-picker
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            style="width: 100%"
-          />
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="selectedDimension" placeholder="分析维度" style="width: 100%">
-            <el-option label="产品维度" value="product" />
-            <el-option label="客户维度" value="customer" />
-            <el-option label="部门维度" value="department" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon> 分析
-          </el-button>
+  <div class="dashboard-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item>利润分析</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">利润分析</h1>
+      </div>
+      <div class="header-right">
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+        <el-button type="primary" @click="handleExport">
+          <el-icon><Download /></el-icon> 导出报表
+        </el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="8" animated />
+    </div>
+
+    <template v-else>
+      <!-- 统计卡片 -->
+      <el-row :gutter="20" class="stats-row">
+        <el-col :span="6" v-for="stat in statCards" :key="stat.key">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-icon" :style="{ background: stat.color }">
+              <el-icon><component :is="stat.icon" /></el-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+              <div class="stat-trend" :class="stat.trend > 0 ? 'up' : 'down'">
+                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+              </div>
+            </div>
+          </el-card>
         </el-col>
       </el-row>
-    </el-card>
 
-    <el-row :gutter="20" class="kpi-row">
-      <el-col :span="6" v-for="kpi in profitKpis" :key="kpi.label">
-        <el-card class="kpi-card" :class="kpi.type">
-          <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value">{{ kpi.value }}</div>
-          <div class="kpi-sub">{{ kpi.sub }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
+      <!-- 图表区域 -->
+      <el-row :gutter="20">
+        <el-col :span="16">
+          <el-card shadow="hover" class="chart-card">
+            <template #header>
+              <div class="card-header">
+                <span>数据趋势</span>
+                <el-radio-group v-model="chartPeriod" size="small">
+                  <el-radio-button label="week">本周</el-radio-button>
+                  <el-radio-button label="month">本月</el-radio-button>
+                  <el-radio-button label="quarter">本季度</el-radio-button>
+                </el-radio-group>
+              </div>
+            </template>
+            <div class="chart-container" ref="chartRef"></div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="chart-card">
+            <template #header>
+              <div class="card-header">
+                <span>数据分布</span>
+              </div>
+            </template>
+            <div class="chart-container" ref="pieChartRef"></div>
+          </el-card>
+        </el-col>
+      </el-row>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-card class="chart-card">
-          <template #header>
-            <span>利润瀑布图</span>
-          </template>
-          <div ref="waterfallRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card class="chart-card">
-          <template #header>
-            <span>毛利率分析</span>
-          </template>
-          <div ref="marginChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="24">
-        <el-card>
-          <template #header>
-            <span>产品利润排行</span>
-          </template>
-          <el-table :data="productProfit" style="width: 100%">
-            <el-table-column type="index" label="#" width="50" />
-            <el-table-column prop="name" label="产品名称" />
-            <el-table-column prop="revenue" label="营收" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.revenue) }}</template>
-            </el-table-column>
-            <el-table-column prop="cost" label="成本" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.cost) }}</template>
-            </el-table-column>
-            <el-table-column prop="profit" label="利润" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.profit) }}</template>
-            </el-table-column>
-            <el-table-column prop="margin" label="利润率" align="center">
-              <template #default="{ row }">
-                <el-tag :type="row.margin >= 30 ? 'success' : row.margin >= 20 ? 'warning' : 'danger'">
-                  {{ row.margin }}%
-                </el-tag>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
+      <!-- 最近数据表格 -->
+      <el-card shadow="hover" class="table-card">
+        <template #header>
+          <div class="card-header">
+            <span>最近记录</span>
+            <el-button type="text" @click="viewAll">查看全部</el-button>
+          </div>
+        </template>
+        <el-table :data="recentItems" border stripe style="width: 100%">
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="value" label="数值" width="120" align="right" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '正常' : '异常' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
-import { Search } from '@element-plus/icons-vue'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { Refresh, Download } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import * as echarts from 'echarts';
+import { dashboardApi } from '@/api/dashboard';
 
-const dateRange = ref<[Date, Date]>([new Date(new Date().setDate(new Date().getDate() - 90)), new Date()])
-const selectedDimension = ref('product')
+const router = useRouter();
+const chartRef = ref<HTMLDivElement>();
+const pieChartRef = ref<HTMLDivElement>();
+let chartInstance: any = null;
+let pieChartInstance: any = null;
 
-const profitKpis = ref([
-  { label: '总利润', value: 'SAR 5.2M', sub: '↑ 22.3% 同比', type: 'profit' },
-  { label: '毛利率', value: '33.4%', sub: '↑ 2.1% 较上期', type: 'margin' },
-  { label: '净利率', value: '12.8%', sub: '↑ 1.5% 较上期', type: 'net' },
-  { label: 'EBITDA', value: 'SAR 6.8M', sub: '↑ 18.7% 同比', type: 'ebitda' },
-])
+// ==================== 状态 ====================
+const loading = ref(false);
+const chartPeriod = ref('month');
+const recentItems = ref<any[]>([]);
 
-const productProfit = ref([
-  { name: 'iPhone 15 Pro Max', revenue: 1285000, cost: 856000, profit: 429000, margin: 33.4 },
-  { name: '三星 Galaxy S24 Ultra', revenue: 985000, cost: 650000, profit: 335000, margin: 34.0 },
-  { name: 'MacBook Pro 16"', revenue: 876000, cost: 620000, profit: 256000, margin: 29.2 },
-  { name: 'iPad Pro 12.9"', revenue: 654000, cost: 450000, profit: 204000, margin: 31.2 },
-  { name: 'AirPods Pro 2', revenue: 523000, cost: 380000, profit: 143000, margin: 27.3 },
-])
+// ==================== 统计卡片 ====================
+const statCards = reactive([
+  { key: 'total', label: '总数', value: 0, icon: 'DataBoard', color: '#409EFF', trend: 12 },
+  { key: 'active', label: '活跃数', value: 0, icon: 'UserFilled', color: '#67C23A', trend: 8 },
+  { key: 'revenue', label: '总收入', value: '¥0.00', icon: 'Money', color: '#E6A23C', trend: -3 },
+  { key: 'growth', label: '增长率', value: '0%', icon: 'TrendCharts', color: '#909399', trend: 5 },
+]);
 
-const waterfallRef = ref<HTMLElement>()
-const marginChartRef = ref<HTMLElement>()
+// ==================== 方法 ====================
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
-}
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const data = await dashboardApi.getDashboardData();
+    // 更新统计卡片
+    Object.assign(statCards, data.stats);
+    recentItems.value = data.recent || [];
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-const handleSearch = () => {}
-
-const initCharts = async () => {
-  await nextTick()
-
-  if (waterfallRef.value) {
-    const chart = echarts.init(waterfallRef.value)
-    chart.setOption({
+const initChart = async () => {
+  await nextTick();
+  if (chartRef.value) {
+    chartInstance = echarts.init(chartRef.value);
+    chartInstance.setOption({
       tooltip: { trigger: 'axis' },
+      legend: { data: ['收入', '支出', '利润'] },
       grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['营收', '成本', '毛利', '费用', '净利润'] },
-      yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0f0f0' } } },
+      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'] },
+      yAxis: { type: 'value' },
       series: [
-        {
-          type: 'bar',
-          data: [
-            { value: 1285, itemStyle: { color: '#409EFF' } },
-            { value: -856, itemStyle: { color: '#F56C6C' } },
-            { value: 429, itemStyle: { color: '#67C23A' } },
-            { value: -230, itemStyle: { color: '#E6A23C' } },
-            { value: 199, itemStyle: { color: '#9B59B6' } },
-          ],
-          barWidth: '40%',
-        },
+        { name: '收入', type: 'line', data: [120, 132, 101, 134, 90, 230, 210], smooth: true },
+        { name: '支出', type: 'line', data: [80, 100, 90, 110, 70, 150, 140], smooth: true },
+        { name: '利润', type: 'bar', data: [40, 32, 11, 24, 20, 80, 70] },
       ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+    });
+    window.addEventListener('resize', () => chartInstance?.resize());
   }
 
-  if (marginChartRef.value) {
-    const chart = echarts.init(marginChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['Q1', 'Q2', 'Q3', 'Q4'] },
-      yAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0f0f0' } } },
+  if (pieChartRef.value) {
+    pieChartInstance = echarts.init(pieChartRef.value);
+    pieChartInstance.setOption({
+      tooltip: { trigger: 'item' },
+      legend: { orient: 'vertical', left: 'left' },
       series: [
         {
-          type: 'bar',
+          type: 'pie',
+          radius: '50%',
           data: [
-            { value: 30.2, itemStyle: { color: '#E6A23C' } },
-            { value: 31.8, itemStyle: { color: '#67C23A' } },
-            { value: 33.4, itemStyle: { color: '#67C23A' } },
-            { value: 35.0, itemStyle: { color: '#409EFF' } },
+            { value: 1048, name: '类别A' },
+            { value: 735, name: '类别B' },
+            { value: 580, name: '类别C' },
+            { value: 484, name: '类别D' },
           ],
-          barWidth: '50%',
-          label: { show: true, position: 'top', formatter: '{c}%' },
+          emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.5)' } },
         },
       ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+    });
+    window.addEventListener('resize', () => pieChartInstance?.resize());
   }
-}
+};
 
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleExport = () => {
+  ElMessage.info('导出功能开发中');
+};
+
+const viewAll = () => {
+  router.push('/reports');
+};
+
+// ==================== 生命周期 ====================
 onMounted(() => {
-  initCharts()
-})
+  loadData();
+  initChart();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.kpi-row { margin-bottom: 20px; }
-.kpi-card { text-align: center; border-radius: 12px; }
-.kpi-card.profit { border-left: 4px solid #67C23A; }
-.kpi-card.margin { border-left: 4px solid #409EFF; }
-.kpi-card.net { border-left: 4px solid #9B59B6; }
-.kpi-card.ebitda { border-left: 4px solid #E6A23C; }
-.kpi-label { color: #909399; font-size: 14px; }
-.kpi-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-.kpi-sub { color: #909399; font-size: 12px; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 280px; width: 100%; }
+<style scoped lang="scss">
+.dashboard-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .stats-row {
+    margin-bottom: 20px;
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-radius: 12px;
+
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 24px;
+        margin-right: 16px;
+      }
+
+      .stat-content {
+        flex: 1;
+
+        .stat-number {
+          font-size: 24px;
+          font-weight: 700;
+          color: #303133;
+        }
+
+        .stat-label {
+          font-size: 14px;
+          color: #909399;
+        }
+
+        .stat-trend {
+          font-size: 12px;
+          margin-top: 4px;
+
+          &.up {
+            color: #67C23A;
+          }
+          &.down {
+            color: #F56C6C;
+          }
+        }
+      }
+    }
+  }
+
+  .chart-card,
+  .table-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .chart-container {
+    height: 300px;
+    width: 100%;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+
+    .stats-row .el-col {
+      margin-bottom: 12px;
+    }
+
+    .chart-container {
+      height: 200px;
+    }
+  }
+}
 </style>

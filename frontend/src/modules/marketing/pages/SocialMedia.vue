@@ -1,133 +1,454 @@
-<!-- 
+﻿<!-- 
   文件路径: frontend/src/modules/marketing/pages/SocialMedia.vue
-  功能: 社交媒体管理
+  功能: 社交媒体
+  最后更新: 2026-07-25 12:45:23
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="平台">
-              <el-select v-model="searchForm.platform" placeholder="全部平台" clearable style="width: 100%">
-                <el-option label="Twitter" value="twitter" />
-                <el-option label="Instagram" value="instagram" />
-                <el-option label="LinkedIn" value="linkedin" />
-                <el-option label="TikTok" value="tiktok" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="状态">
-              <el-select v-model="searchForm.status" placeholder="请选择状态" clearable style="width: 100%">
-                <el-option label="已发布" value="published" />
-                <el-option label="待审核" value="pending" />
-                <el-option label="已排期" value="scheduled" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="primary" @click="handleCreate" style="float: right"><el-icon><Plus /></el-icon> 创建内容</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="marketing-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/marketing' }">营销管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'Dashboard'">社交媒体</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">社交媒体</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit">
+            <el-icon><Edit /></el-icon> 编辑
+          </el-button>
+          <el-button type="danger" @click="handleDelete">
+            <el-icon><Delete /></el-icon> 删除
+          </el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <!-- 统计 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="stat in socialStats" :key="stat.label">
-        <el-card class="stat-card" :class="stat.type">
-          <div class="stat-label">{{ stat.label }}</div>
-          <div class="stat-value">{{ stat.value }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="content" label="内容" min-width="200" />
-        <el-table-column prop="platform" label="平台" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.platform === 'twitter' ? 'primary' : row.platform === 'instagram' ? 'danger' : row.platform === 'linkedin' ? 'success' : 'warning'">
-              {{ row.platform }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="engagement" label="互动量" align="center" />
-        <el-table-column prop="likes" label="点赞" align="center" />
-        <el-table-column prop="shares" label="分享" align="center" />
-        <el-table-column prop="status" label="状态" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'published' ? 'success' : row.status === 'pending' ? 'warning' : 'info'">
-              {{ row.status === 'published' ? '已发布' : row.status === 'pending' ? '待审核' : '已排期' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="publishedAt" label="发布时间" width="160" />
-        <el-table-column label="操作" align="center" width="150" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="success" size="small" @click="handlePublish(row)" v-if="row.status === 'pending'"><el-icon><Check /></el-icon> 发布</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <template v-if="showList && !loading">
+      <!-- 统计卡片 -->
+      <el-row :gutter="20" class="stats-row" v-if="pageType === 'Dashboard'">
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">营销活动</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.active }}</div>
+            <div class="stat-label">进行中</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.leads }}</div>
+            <div class="stat-label">线索数</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.conversionRate }}%</div>
+            <div class="stat-label">转化率</div>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 搜索栏 -->
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入名称"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="filters.status" placeholder="全部状态" clearable style="width: 120px">
+              <el-option label="进行中" value="active" />
+              <el-option label="已暂停" value="paused" />
+              <el-option label="已完成" value="completed" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <!-- 数据表格 -->
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="type" label="类型" width="120">
+            <template #default="{ row }">
+              <el-tag size="small">{{ getTypeLabel(row.type) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)" size="small">
+                {{ getStatusLabel(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="budget" label="预算" width="120" align="right">
+            <template #default="{ row }">
+              ¥{{ row.budget?.toFixed(2) || '0.00' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <!-- 详情/表单页面 -->
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form
+          ref="formRef"
+          :model="formData"
+          :rules="formRules"
+          label-width="120px"
+          class="detail-form"
+        >
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="类型" prop="type">
+            <el-select v-model="formData.type" placeholder="请选择类型" :disabled="isViewMode" style="width:100%">
+              <el-option label="营销活动" value="campaign" />
+              <el-option label="邮件营销" value="email" />
+              <el-option label="社交媒体" value="social" />
+              <el-option label="内容营销" value="content" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="进行中" value="active" />
+              <el-option label="已暂停" value="paused" />
+              <el-option label="已完成" value="completed" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="预算" prop="budget">
+            <el-input-number
+              v-model="formData.budget"
+              :min="0"
+              :precision="2"
+              :step="100"
+              style="width:100%"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入描述"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Plus, View, Check } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { marketingApi } from '@/api/marketing';
 
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const searchForm = reactive({ platform: '', status: '' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+// ==================== 页面类型 ====================
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'Index';
+});
 
-const socialStats = ref([
-  { label: '总内容数', value: '186', type: 'primary' },
-  { label: '总互动量', value: '856,000', type: 'success' },
-  { label: '平均互动率', value: '4.8%', type: 'warning' },
-  { label: '待发布', value: '28', type: 'primary' },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'Index' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'Index' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const tableData = ref([
-  { id: 1, content: '双十一大促活动宣传', platform: 'Twitter', engagement: 2856, likes: 1856, shares: 456, status: 'published', publishedAt: '2024-11-20 10:30' },
-  { id: 2, content: '新品上市预告', platform: 'Instagram', engagement: 0, likes: 0, shares: 0, status: 'pending', publishedAt: '-' },
-  { id: 3, content: '品牌故事系列', platform: 'LinkedIn', engagement: 1256, likes: 856, shares: 256, status: 'published', publishedAt: '2024-11-19 14:20' },
-])
+// ==================== 状态 ====================
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const loading = ref(false)
+const stats = reactive({ total: 0, active: 0, leads: 0, conversionRate: 0 });
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.platform = ''; searchForm.status = '' }
-const handleCreate = () => { router.push('/marketing/social/create') }
-const handleView = (row: any) => { router.push(`/marketing/social/detail/${row.id}`) }
-const handlePublish = (row: any) => {
-  ElMessageBox.confirm(`确认发布内容？`, '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' })
-    .then(() => { row.status = 'published'; ElMessage.success('已发布') }).catch(() => {})
-}
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+  status: '',
+});
+
+const formData = reactive({
+  id: '',
+  name: '',
+  type: '',
+  status: 'active',
+  budget: 0,
+  description: '',
+  createdAt: '',
+  updatedAt: '',
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  type: [{ required: true, message: '请选择类型', trigger: 'change' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+// ==================== 辅助方法 ====================
+const getTypeLabel = (value: string) => {
+  const map: Record<string, string> = { campaign: '营销活动', email: '邮件营销', social: '社交媒体', content: '内容营销' };
+  return map[value] || value;
+};
+
+const getStatusLabel = (value: string) => {
+  const map: Record<string, string> = { active: '进行中', paused: '已暂停', completed: '已完成' };
+  return map[value] || value;
+};
+
+const getStatusType = (value: string) => {
+  const map: Record<string, string> = { active: 'success', paused: 'warning', completed: 'info' };
+  return map[value] || 'info';
+};
+
+// ==================== CRUD操作 ====================
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await marketingApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadStats = async () => {
+  try {
+    const response = await marketingApi.getStats();
+    Object.assign(stats, response.data);
+  } catch (error) { /* 静默失败 */ }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await marketingApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleReset = () => {
+  filters.search = '';
+  filters.status = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  if (pageType.value === 'Dashboard') loadStats();
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => router.push(/marketing/);
+const handleCreate = () => router.push('/marketing/create');
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/marketing//edit);
+};
+const handleCancel = () => router.push('/marketing');
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
+
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await marketingApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await marketingApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push('/marketing');
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await marketingApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push('/marketing');
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
+};
+
+// ==================== 生命周期 ====================
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else if (pageType.value === 'Create') {
+    // 初始化
+  } else {
+    loadData();
+    if (pageType.value === 'Dashboard') loadStats();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.stat-row { margin-bottom: 20px; }
-.stat-card { text-align: center; border-radius: 12px; padding: 8px 0; }
-.stat-card.primary { border-left: 4px solid #409EFF; }
-.stat-card.success { border-left: 4px solid #67C23A; }
-.stat-card.warning { border-left: 4px solid #E6A23C; }
-.stat-label { color: #909399; font-size: 14px; }
-.stat-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.marketing-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .stats-row { margin-bottom: 20px; }
+  .stat-card { text-align: center; border-radius: 12px; }
+  .stat-number { font-size: 32px; font-weight: 700; color: #303133; }
+  .stat-label { font-size: 14px; color: #909399; margin-top: 8px; }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .detail-form { max-width: 800px; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .marketing-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+    .detail-form { max-width: 100%; }
+  }
+}
 </style>

@@ -1,153 +1,276 @@
-﻿<!-- 
+﻿<!--
   文件路径: frontend/src/modules/inventory/pages/StockQuery.vue
-  功能: 库存查询 - 实时库存查询与筛选
+  功能: 库存管理列表
+  最后更新: 2026-07-25 12:50:51
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="5">
-            <el-form-item label="产品名称">
-              <el-input v-model="searchForm.product" placeholder="请输入产品名称" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="SKU">
-              <el-input v-model="searchForm.sku" placeholder="请输入SKU" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="分类">
-              <el-select v-model="searchForm.category" placeholder="请选择分类" clearable style="width: 100%">
-                <el-option label="电子产品" value="electronics" />
-                <el-option label="服装鞋帽" value="clothing" />
-                <el-option label="食品饮料" value="food" />
-                <el-option label="家居用品" value="home" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="仓库">
-              <el-select v-model="searchForm.warehouse" placeholder="请选择仓库" clearable style="width: 100%">
-                <el-option label="全部" value="all" />
-                <el-option label="利雅得仓库" value="riyadh" />
-                <el-option label="吉达仓库" value="jeddah" />
-                <el-option label="达曼仓库" value="dammam" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="inventory-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/inventory' }">库存管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">库存管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">库存管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-    <!-- 库存摘要 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="4" v-for="stat in stockStats" :key="stat.label">
-        <el-card class="stat-card">
-          <div class="stat-label">{{ stat.label }}</div>
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-change" :class="stat.trend">{{ stat.trend === 'up' ? '↑' : '↓' }} {{ Math.abs(stat.change) }}%</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="sku" label="SKU" width="120" />
-        <el-table-column prop="product" label="产品名称" min-width="180" />
-        <el-table-column prop="category" label="分类" width="100" />
-        <el-table-column prop="quantity" label="库存数量" align="center" width="120">
-          <template #default="{ row }">
-            <span :style="{ color: row.quantity < row.safetyStock ? '#F56C6C' : '#303133', fontWeight: row.quantity < row.safetyStock ? 700 : 400 }">
-              {{ row.quantity }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="safetyStock" label="安全库存" align="center" width="100" />
-        <el-table-column prop="warehouse" label="仓库" width="100" />
-        <el-table-column label="状态" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.quantity > row.safetyStock * 2 ? 'success' : row.quantity > row.safetyStock ? 'warning' : 'danger'">
-              {{ row.quantity > row.safetyStock * 2 ? '充足' : row.quantity > row.safetyStock ? '正常' : '紧缺' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="lastUpdated" label="最后更新" width="160" />
-        <el-table-column label="操作" align="center" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleDetail(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="warning" size="small" @click="handleAdjust(row)"><el-icon><Edit /></el-icon> 调整</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import {
-  Plus,
-  Search,
-  Refresh,
-  View,
-  Edit,
-  Delete
-} from '@element-plus/icons-vue'
-// ============================================================
-// API 导入
-// ============================================================
-import {  } from '@/api/modules/inventory'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { inventoryApi } from '@/api/inventory';
 
-const searchForm = reactive({ product: '', sku: '', category: '', warehouse: 'all' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const stockStats = ref([
-  { label: '总库存数量', value: '285,600', change: 3.2, trend: 'up' },
-  { label: '总库存金额', value: 'SAR 8,560,000', change: 5.8, trend: 'up' },
-  { label: 'SKU总数', value: '1,286', change: 2.1, trend: 'up' },
-  { label: '库存紧缺', value: '45', change: -8.5, trend: 'down' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const tableData = ref([
-  { id: 1, sku: 'IPH-15-PM-256', product: 'iPhone 15 Pro Max 256GB', category: '电子产品', quantity: 156, safetyStock: 50, warehouse: '利雅得仓库', lastUpdated: '2024-11-20 10:30' },
-  { id: 2, sku: 'SGS-S24-U-512', product: '三星 Galaxy S24 Ultra', category: '电子产品', quantity: 89, safetyStock: 40, warehouse: '利雅得仓库', lastUpdated: '2024-11-20 10:25' },
-  { id: 3, sku: 'MBP-16-M3-512', product: 'MacBook Pro 16" M3', category: '电子产品', quantity: 34, safetyStock: 30, warehouse: '吉达仓库', lastUpdated: '2024-11-20 10:20' },
-  { id: 4, sku: 'IPP-129-M2-256', product: 'iPad Pro 12.9" M2', category: '电子产品', quantity: 12, safetyStock: 25, warehouse: '利雅得仓库', lastUpdated: '2024-11-20 10:15' },
-  { id: 5, sku: 'APP-2-WH', product: 'AirPods Pro 2', category: '电子产品', quantity: 8, safetyStock: 30, warehouse: '达曼仓库', lastUpdated: '2024-11-20 10:10' },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const loading = ref(false)
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.product = ''; searchForm.sku = ''; searchForm.category = ''; searchForm.warehouse = 'all' }
-const handleExport = () => { ElMessage.success('导出完成') }
-const handleDetail = (row: any) => { ElMessage.info(`查看产品: ${row.product}`) }
-const handleAdjust = (row: any) => { ElMessage.info(`调整库存: ${row.product}`) }
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const filters = reactive({ page: 1, limit: 20, search: '' });
+
+const formData = reactive({
+  id: '', name: '', status: 'active', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await inventoryApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await inventoryApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/inventory/);
+const handleCreate = () => router.push(/inventory/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/inventory//edit);
+};
+const handleCancel = () => router.push(/inventory);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await inventoryApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await inventoryApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/inventory);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await inventoryApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/inventory);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
+};
+
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.stat-row { margin-bottom: 20px; }
-.stat-card { text-align: center; border-radius: 12px; }
-.stat-label { color: #909399; font-size: 14px; }
-.stat-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-.stat-change { font-size: 12px; }
-.stat-change.up { color: #67C23A; }
-.stat-change.down { color: #F56C6C; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.inventory-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .inventory-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

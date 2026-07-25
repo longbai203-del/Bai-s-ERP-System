@@ -1,117 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/production/pages/WorkOrderCreate.vue
-  功能: 新建工单
+﻿<!--
+  文件路径: frontend/src/modules/production/pages/
+  功能: 生产管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="header-card">
-      <div class="page-header">
-        <div>
-          <h2>新建生产工单</h2>
-          <p class="subtitle">创建生产工单</p>
-        </div>
-        <div>
-          <el-button @click="handleSaveDraft">保存草稿</el-button>
-          <el-button type="primary" @click="handleSubmit">提交工单</el-button>
-          <el-button @click="handleCancel">取消</el-button>
-        </div>
+  <div class="production-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/production' }">生产管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">生产管理</h1>
       </div>
-    </el-card>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <el-card style="margin-top: 20px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="工单号" prop="workOrderNo">
-              <el-input v-model="form.workOrderNo" disabled />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="产品名称" prop="product">
-              <el-select v-model="form.product" placeholder="请选择产品" style="width: 100%" filterable>
-                <el-option label="iPhone 15 Pro Max" value="iPhone 15 Pro Max" />
-                <el-option label="三星 Galaxy S24 Ultra" value="三星 Galaxy S24 Ultra" />
-                <el-option label="MacBook Pro 16\"" value="MacBook Pro 16\"" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="BOM版本" prop="bomVersion">
-              <el-select v-model="form.bomVersion" placeholder="请选择BOM版本" style="width: 100%">
-                <el-option label="V1.0" value="V1.0" />
-                <el-option label="V2.0" value="V2.0" />
-                <el-option label="V2.1" value="V2.1" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="计划数量" prop="quantity">
-              <el-input-number v-model="form.quantity" :min="1" controls-position="right" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="优先级" prop="priority">
-              <el-select v-model="form.priority" placeholder="请选择优先级" style="width: 100%">
-                <el-option label="高" value="high" />
-                <el-option label="中" value="medium" />
-                <el-option label="低" value="low" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="截止日期" prop="deadline">
-              <el-date-picker v-model="form.deadline" type="date" placeholder="选择截止日期" style="width: 100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
+
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { productionApi } from '@/api/production';
 
-const router = useRouter()
-const formRef = ref()
+const router = useRouter();
 
-const form = reactive({
-  workOrderNo: 'WO-2024-004',
-  product: '',
-  bomVersion: 'V1.0',
-  quantity: 100,
-  priority: 'medium',
-  deadline: '',
-  remark: '',
-})
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const rules = {
-  product: [{ required: true, message: '请选择产品', trigger: 'change' }],
-  quantity: [{ required: true, message: '请输入计划数量', trigger: 'blur' }],
-  deadline: [{ required: true, message: '请选择截止日期', trigger: 'change' }],
-}
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const handleSaveDraft = () => { ElMessage.success('已保存草稿') }
-const handleSubmit = async () => {
-  await formRef.value?.validate()
-  ElMessage.success('工单已提交')
-  router.push('/production/workorders')
-}
-const handleCancel = () => { router.push('/production/workorders') }
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await productionApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/production/);
+};
+
+const handleCreate = () => {
+  router.push(/production/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/production//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await productionApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.header-card { border-radius: 12px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.subtitle { color: #909399; margin: 4px 0 0 0; }
+<style scoped lang="scss">
+.production-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .production-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

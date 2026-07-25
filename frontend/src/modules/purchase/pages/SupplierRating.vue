@@ -1,173 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/purchase/pages/SupplierRating.vue
-  功能: 供应商评分 - 管理供应商评估与评分
+﻿<!--
+  文件路径: frontend/src/modules/purchase/pages/
+  功能: 采购管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="供应商">
-              <el-input v-model="searchForm.supplier" placeholder="请输入供应商名称" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="评分等级">
-              <el-select v-model="searchForm.rating" placeholder="请选择等级" clearable style="width: 100%">
-                <el-option label="A级" value="A" />
-                <el-option label="B级" value="B" />
-                <el-option label="C级" value="C" />
-                <el-option label="D级" value="D" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="primary" @click="handleCreate" style="float: right"><el-icon><Plus /></el-icon> 新增评估</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="purchase-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/purchase' }">采购管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">采购管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="supplier" label="供应商名称" />
-        <el-table-column prop="overallScore" label="综合评分" align="center" width="120">
-          <template #default="{ row }">
-            <el-progress :percentage="row.overallScore" :color="row.overallScore >= 85 ? '#67C23A' : row.overallScore >= 70 ? '#E6A23C' : '#F56C6C'" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="rating" label="等级" align="center" width="80">
-          <template #default="{ row }">
-            <el-tag :type="row.rating === 'A' ? 'success' : row.rating === 'B' ? 'primary' : row.rating === 'C' ? 'warning' : 'danger'">
-              {{ row.rating }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="quality" label="质量" align="center">
-          <template #default="{ row }">{{ row.quality }}分</template>
-        </el-table-column>
-        <el-table-column prop="delivery" label="交期" align="center">
-          <template #default="{ row }">{{ row.delivery }}分</template>
-        </el-table-column>
-        <el-table-column prop="price" label="价格" align="center">
-          <template #default="{ row }">{{ row.price }}分</template>
-        </el-table-column>
-        <el-table-column prop="service" label="服务" align="center">
-          <template #default="{ row }">{{ row.service }}分</template>
-        </el-table-column>
-        <el-table-column prop="evaluationDate" label="评估日期" width="120" />
-        <el-table-column label="操作" align="center" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="warning" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)"><el-icon><Delete /></el-icon></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <!-- 评估弹窗 -->
-    <el-dialog v-model="dialogVisible" title="供应商评估" width="500px">
-      <el-form :model="evalForm" label-width="100px">
-        <el-form-item label="供应商">{{ evalForm.supplier }}</el-form-item>
-        <el-form-item label="质量评分">
-          <el-slider v-model="evalForm.quality" :min="0" :max="100" show-stops />
-        </el-form-item>
-        <el-form-item label="交期评分">
-          <el-slider v-model="evalForm.delivery" :min="0" :max="100" show-stops />
-        </el-form-item>
-        <el-form-item label="价格评分">
-          <el-slider v-model="evalForm.price" :min="0" :max="100" show-stops />
-        </el-form-item>
-        <el-form-item label="服务评分">
-          <el-slider v-model="evalForm.service" :min="0" :max="100" show-stops />
-        </el-form-item>
-        <el-form-item label="评估意见">
-          <el-input v-model="evalForm.comment" type="textarea" :rows="3" placeholder="请输入评估意见" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSaveEval" :loading="submitting">保存评估</el-button>
-      </template>
-    </el-dialog>
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Plus, View, Edit, Delete } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { purchaseApi } from '@/api/purchase';
 
-const searchForm = reactive({ supplier: '', rating: '' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const router = useRouter();
 
-const tableData = ref([
-  { id: 1, supplier: 'Apple Supplier', overallScore: 92, rating: 'A', quality: 95, delivery: 90, price: 88, service: 95, evaluationDate: '2024-11-15' },
-  { id: 2, supplier: 'Samsung Supplier', overallScore: 85, rating: 'B', quality: 88, delivery: 85, price: 80, service: 87, evaluationDate: '2024-11-10' },
-  { id: 3, supplier: 'Dell Supplier', overallScore: 78, rating: 'C', quality: 80, delivery: 75, price: 78, service: 80, evaluationDate: '2024-11-05' },
-  { id: 4, supplier: 'Sony Supplier', overallScore: 72, rating: 'C', quality: 75, delivery: 70, price: 75, service: 68, evaluationDate: '2024-10-28' },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const loading = ref(false)
-const dialogVisible = ref(false)
-const submitting = ref(false)
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const evalForm = reactive({
-  supplier: '',
-  quality: 0,
-  delivery: 0,
-  price: 0,
-  service: 0,
-  comment: '',
-})
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await purchaseApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.supplier = ''; searchForm.rating = '' }
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/purchase/);
+};
+
 const handleCreate = () => {
-  evalForm.supplier = ''
-  evalForm.quality = 80
-  evalForm.delivery = 80
-  evalForm.price = 80
-  evalForm.service = 80
-  evalForm.comment = ''
-  dialogVisible.value = true
-}
-const handleView = (row: any) => { ElMessage.info(`查看供应商: ${row.supplier}`) }
-const handleEdit = (row: any) => {
-  evalForm.supplier = row.supplier
-  evalForm.quality = row.quality
-  evalForm.delivery = row.delivery
-  evalForm.price = row.price
-  evalForm.service = row.service
-  evalForm.comment = ''
-  dialogVisible.value = true
-}
-const handleDelete = (row: any) => {
-  ElMessageBox.confirm(`确定要删除 ${row.supplier} 的评估记录吗？`, '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' })
-    .then(() => ElMessage.success('删除成功')).catch(() => {})
-}
-const handleSaveEval = () => {
-  submitting.value = true
-  setTimeout(() => {
-    submitting.value = false
-    dialogVisible.value = false
-    ElMessage.success('评估已保存')
-  }, 1000)
-}
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+  router.push(/purchase/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/purchase//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await purchaseApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.purchase-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .purchase-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

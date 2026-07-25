@@ -1,164 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/purchase/pages/PurchaseAnalysis.vue
-  功能: 采购分析 - 多维度采购数据分析
+﻿<!--
+  文件路径: frontend/src/modules/purchase/pages/
+  功能: 采购管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-date-picker v-model="searchForm.dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 100%" />
-          </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchForm.dimension" placeholder="分析维度" style="width: 100%">
-              <el-option label="供应商维度" value="supplier" />
-              <el-option label="产品维度" value="product" />
-              <el-option label="时间维度" value="time" />
-            </el-select>
-          </el-col>
-          <el-col :span="6">
-            <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 分析</el-button>
+  <div class="purchase-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/purchase' }">采购管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">采购管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
+
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
             <el-button @click="handleReset">重置</el-button>
-            <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-    <!-- 图表 -->
-    <el-row :gutter="20">
-      <el-col :span="16">
-        <el-card class="chart-card">
-          <template #header><span>采购趋势分析</span></template>
-          <div ref="trendChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="chart-card">
-          <template #header><span>供应商占比</span></template>
-          <div ref="supplierChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="12">
-        <el-card>
-          <template #header><span>TOP10 采购产品</span></template>
-          <el-table :data="topProducts" style="width: 100%">
-            <el-table-column type="index" label="#" width="50" />
-            <el-table-column prop="name" label="产品名称" />
-            <el-table-column prop="amount" label="采购额" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.amount) }}</template>
-            </el-table-column>
-            <el-table-column prop="share" label="占比" align="center">
-              <template #default="{ row }"><el-progress :percentage="row.share" :show-text="false" /></template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card>
-          <template #header><span>TOP10 供应商</span></template>
-          <el-table :data="topSuppliers" style="width: 100%">
-            <el-table-column type="index" label="#" width="50" />
-            <el-table-column prop="name" label="供应商" />
-            <el-table-column prop="amount" label="采购额" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.amount) }}</template>
-            </el-table-column>
-            <el-table-column prop="share" label="占比" align="center">
-              <template #default="{ row }"><el-progress :percentage="row.share" :show-text="false" /></template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Search, Download } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { purchaseApi } from '@/api/purchase';
 
-const searchForm = reactive({ dateRange: [] as [Date, Date] | [], dimension: 'supplier' })
+const router = useRouter();
 
-const topProducts = ref([
-  { name: 'iPhone 15 Pro Max', amount: 1285000, share: 28 },
-  { name: '三星 Galaxy S24 Ultra', amount: 985000, share: 21 },
-  { name: 'MacBook Pro 16"', amount: 876000, share: 19 },
-  { name: 'iPad Pro 12.9"', amount: 654000, share: 14 },
-  { name: 'AirPods Pro 2', amount: 523000, share: 11 },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const topSuppliers = ref([
-  { name: 'Apple Supplier', amount: 2856000, share: 32 },
-  { name: 'Samsung Supplier', amount: 2568000, share: 28 },
-  { name: 'Dell Supplier', amount: 2234000, share: 25 },
-  { name: 'Sony Supplier', amount: 1987000, share: 22 },
-  { name: 'LG Supplier', amount: 1765000, share: 19 },
-])
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const trendChartRef = ref<HTMLElement>()
-const supplierChartRef = ref<HTMLElement>()
-
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
-
-const handleSearch = () => { ElMessage.success('分析完成') }
-const handleReset = () => {}
-const handleExport = () => { ElMessage.success('导出完成') }
-
-const initCharts = async () => {
-  await nextTick()
-  if (trendChartRef.value) {
-    const chart = echarts.init(trendChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['采购金额', '采购数量'] },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'] },
-      yAxis: [
-        { type: 'value', name: '金额', splitLine: { lineStyle: { color: '#f0f0f0' } } },
-        { type: 'value', name: '数量', splitLine: { show: false } },
-      ],
-      series: [
-        { name: '采购金额', type: 'bar', data: [280, 320, 360, 340, 380, 420, 400, 440, 460, 480, 450, 490], itemStyle: { color: '#409EFF' } },
-        { name: '采购数量', type: 'line', yAxisIndex: 1, data: [180, 210, 240, 220, 260, 290, 270, 310, 330, 350, 320, 360], lineStyle: { color: '#67C23A', width: 3 }, smooth: true },
-      ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await purchaseApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
   }
-  if (supplierChartRef.value) {
-    const chart = echarts.init(supplierChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: 32, name: 'Apple', itemStyle: { color: '#409EFF' } },
-          { value: 28, name: 'Samsung', itemStyle: { color: '#67C23A' } },
-          { value: 25, name: 'Dell', itemStyle: { color: '#E6A23C' } },
-          { value: 15, name: 'Sony', itemStyle: { color: '#F56C6C' } },
-        ],
-        label: { formatter: '{b}\n{d}%' },
-        emphasis: { scale: true },
-      }],
-    })
-    window.addEventListener('resize', () => chart.resize())
+};
+
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/purchase/);
+};
+
+const handleCreate = () => {
+  router.push(/purchase/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/purchase//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await purchaseApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
+</script>
+
+<style scoped lang="scss">
+.purchase-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
-onMounted(() => { initCharts() })
-</script>
+@media (max-width: 768px) {
+  .purchase-page {
+    padding: 12px;
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 280px; width: 100%; }
-:deep(.el-form-item) { margin-bottom: 0; }
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

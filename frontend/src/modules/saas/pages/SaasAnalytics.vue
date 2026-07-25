@@ -1,170 +1,284 @@
-<!-- 
+﻿<!--
   文件路径: frontend/src/modules/saas/pages/SaasAnalytics.vue
-  功能: SaaS分析 - SaaS数据分析
+  功能: SaaS管理列表
+  最后更新: 2026-07-25 12:52:07
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-date-picker v-model="searchForm.dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" style="width: 100%" />
-          </el-col>
-          <el-col :span="6">
-            <el-select v-model="searchForm.metric" placeholder="选择指标" style="width: 100%">
-              <el-option label="MRR" value="mrr" />
-              <el-option label="用户数" value="users" />
-              <el-option label="租户数" value="tenants" />
-            </el-select>
-          </el-col>
-          <el-col :span="6">
-            <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 分析</el-button>
+  <div class="saas-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/saas' }">SaaS管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">SaaS管理列表</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">SaaS管理列表</h1>
+      </div>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
+
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
             <el-button @click="handleReset">重置</el-button>
-            <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-    <!-- KPI -->
-    <el-row :gutter="20" class="kpi-row">
-      <el-col :span="6" v-for="kpi in saasAnalyticsKpis" :key="kpi.label">
-        <el-card class="kpi-card" :class="kpi.trend">
-          <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value">{{ kpi.value }}</div>
-          <div class="kpi-change" :class="kpi.trend">{{ kpi.trend === 'up' ? '↑' : '↓' }} {{ Math.abs(kpi.change) }}%</div>
-        </el-card>
-      </el-col>
-    </el-row>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
 
-    <!-- 图表 -->
-    <el-row :gutter="20">
-      <el-col :span="16">
-        <el-card class="chart-card">
-          <template #header><span>MRR增长趋势</span></template>
-          <div ref="mrrChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="chart-card">
-          <template #header><span>租户分布</span></template>
-          <div ref="pieChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入描述"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
 
-    <!-- 明细 -->
-    <el-card style="margin-top: 20px">
-      <template #header><span>SaaS指标明细</span></template>
-      <el-table :data="tableData" style="width: 100%" stripe>
-        <el-table-column prop="month" label="月份" />
-        <el-table-column prop="mrr" label="MRR" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.mrr) }}</template>
-        </el-table-column>
-        <el-table-column prop="tenants" label="租户数" align="center" />
-        <el-table-column prop="users" label="用户数" align="center" />
-        <el-table-column prop="arpu" label="ARPU" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.arpu) }}</template>
-        </el-table-column>
-        <el-table-column prop="churn" label="流失率" align="center">
-          <template #default="{ row }">{{ row.churn }}%</template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Search, Download } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { saasApi } from '@/api/saas';
 
-const searchForm = reactive({ dateRange: [] as [Date, Date] | [], metric: 'mrr' })
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const saasAnalyticsKpis = ref([
-  { label: 'MRR', value: 'SAR 856,000', change: 12.5, trend: 'up' },
-  { label: 'ARR', value: 'SAR 10,272,000', change: 15.3, trend: 'up' },
-  { label: 'ARPU', value: 'SAR 2,993', change: 3.2, trend: 'up' },
-  { label: '流失率', value: '2.5%', change: -0.8, trend: 'down' },
-])
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  return 'List';
+});
 
-const tableData = ref([
-  { month: '2024-06', mrr: 720000, tenants: 256, users: 2856, arpu: 2813, churn: 2.8 },
-  { month: '2024-07', mrr: 750000, tenants: 262, users: 2956, arpu: 2863, churn: 2.6 },
-  { month: '2024-08', mrr: 780000, tenants: 268, users: 3056, arpu: 2910, churn: 2.5 },
-  { month: '2024-09', mrr: 810000, tenants: 275, users: 3156, arpu: 2945, churn: 2.3 },
-  { month: '2024-10', mrr: 830000, tenants: 280, users: 3256, arpu: 2964, churn: 2.2 },
-  { month: '2024-11', mrr: 856000, tenants: 286, users: 3356, arpu: 2993, churn: 2.0 },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const mrrChartRef = ref<HTMLElement>()
-const pieChartRef = ref<HTMLElement>()
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
 
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
-const handleSearch = () => { ElMessage.success('分析完成') }
-const handleReset = () => { searchForm.dateRange = []; searchForm.metric = 'mrr' }
-const handleExport = () => { ElMessage.success('导出完成') }
+const formData = reactive({
+  id: '', name: '', status: 'active', description: '', createdAt: '', updatedAt: ''
+});
 
-const initCharts = async () => {
-  await nextTick()
-  if (mrrChartRef.value) {
-    const chart = echarts.init(mrrChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['MRR', '租户数'] },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: ['6月', '7月', '8月', '9月', '10月', '11月'] },
-      yAxis: [
-        { type: 'value', name: 'MRR', splitLine: { lineStyle: { color: '#f0f0f0' } } },
-        { type: 'value', name: '租户数', splitLine: { show: false } },
-      ],
-      series: [
-        { name: 'MRR', type: 'bar', data: [720, 750, 780, 810, 830, 856], itemStyle: { color: '#409EFF' } },
-        { name: '租户数', type: 'line', yAxisIndex: 1, data: [256, 262, 268, 275, 280, 286], lineStyle: { color: '#67C23A', width: 3 }, smooth: true },
-      ],
-    })
-    window.addEventListener('resize', () => chart.resize())
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await saasApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await saasApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/saas/);
+const handleCreate = () => router.push(/saas/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/saas//edit);
+};
+const handleCancel = () => router.push(/saas);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await saasApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await saasApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/saas);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await saasApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/saas);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
   }
-  if (pieChartRef.value) {
-    const chart = echarts.init(pieChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: 45, name: '企业版', itemStyle: { color: '#409EFF' } },
-          { value: 30, name: '专业版', itemStyle: { color: '#67C23A' } },
-          { value: 20, name: '标准版', itemStyle: { color: '#E6A23C' } },
-          { value: 5, name: '基础版', itemStyle: { color: '#909399' } },
-        ],
-        label: { formatter: '{b}\n{d}%' },
-        emphasis: { scale: true },
-      }],
-    })
-    window.addEventListener('resize', () => chart.resize())
-  }
-}
+};
 
-onMounted(() => { initCharts() })
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.kpi-row { margin-bottom: 20px; }
-.kpi-card { text-align: center; border-radius: 12px; padding: 8px 0; }
-.kpi-card.up { border-left: 4px solid #67C23A; }
-.kpi-card.down { border-left: 4px solid #F56C6C; }
-.kpi-label { color: #909399; font-size: 14px; }
-.kpi-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-.kpi-change { font-size: 12px; }
-.kpi-change.up { color: #67C23A; }
-.kpi-change.down { color: #F56C6C; }
-.chart-card { border-radius: 12px; }
-.chart-container { height: 280px; width: 100%; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.saas-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .saas-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

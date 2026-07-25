@@ -1,161 +1,347 @@
-﻿<template>
+﻿<!-- 
+  文件路径: frontend/src/modules/dashboard/pages/Dashboard.vue
+  功能: 仪表板
+  最后更新: 2026-07-25 12:44:21
+-->
+
+<template>
   <div class="dashboard-page">
-    <!-- 统计卡片 -->
-    <div class="stats-grid">
-      <el-card class="stat-card" v-for="stat in stats" :key="stat.label">
-        <div class="stat-content">
-          <div class="stat-icon" :style="{ background: stat.bg }">
-            <el-icon :size="24"><component :is="stat.icon" /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-value">{{ stat.value }}</div>
-            <div class="stat-label">{{ stat.label }}</div>
-          </div>
-        </div>
-      </el-card>
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item>仪表板</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">仪表板</h1>
+      </div>
+      <div class="header-right">
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+        <el-button type="primary" @click="handleExport">
+          <el-icon><Download /></el-icon> 导出报表
+        </el-button>
+      </div>
     </div>
 
-    <!-- 最近订单表格 -->
-    <el-card class="table-card">
-      <template #header>
-        <div class="card-header">
-          <span>📋 最近订单</span>
-          <el-button size="small" @click="$router.push('/orders')">查看全部</el-button>
-        </div>
-      </template>
-      <el-table
-        v-loading="loading"
-        :data="recentOrders"
-        border
-        style="width: 100%"
-        @row-click="viewOrder"
-      >
-        <el-table-column prop="order_number" label="订单号" width="160" />
-        <el-table-column prop="customer_name" label="客户" min-width="120" />
-        <el-table-column prop="total" label="金额" width="120" align="right">
-          <template #default="{ row }">¥{{ row.total?.toFixed(2) || '0.00' }}</template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="120">
-          <template #default="{ row }">
-            <el-button size="small" @click.stop="viewOrder(row)">查看</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="8" animated />
+    </div>
+
+    <template v-else>
+      <!-- 统计卡片 -->
+      <el-row :gutter="20" class="stats-row">
+        <el-col :span="6" v-for="stat in statCards" :key="stat.key">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-icon" :style="{ background: stat.color }">
+              <el-icon><component :is="stat.icon" /></el-icon>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+              <div class="stat-trend" :class="stat.trend > 0 ? 'up' : 'down'">
+                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 图表区域 -->
+      <el-row :gutter="20">
+        <el-col :span="16">
+          <el-card shadow="hover" class="chart-card">
+            <template #header>
+              <div class="card-header">
+                <span>数据趋势</span>
+                <el-radio-group v-model="chartPeriod" size="small">
+                  <el-radio-button label="week">本周</el-radio-button>
+                  <el-radio-button label="month">本月</el-radio-button>
+                  <el-radio-button label="quarter">本季度</el-radio-button>
+                </el-radio-group>
+              </div>
+            </template>
+            <div class="chart-container" ref="chartRef"></div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover" class="chart-card">
+            <template #header>
+              <div class="card-header">
+                <span>数据分布</span>
+              </div>
+            </template>
+            <div class="chart-container" ref="pieChartRef"></div>
+          </el-card>
+        </el-col>
+      </el-row>
+
+      <!-- 最近数据表格 -->
+      <el-card shadow="hover" class="table-card">
+        <template #header>
+          <div class="card-header">
+            <span>最近记录</span>
+            <el-button type="text" @click="viewAll">查看全部</el-button>
+          </div>
+        </template>
+        <el-table :data="recentItems" border stripe style="width: 100%">
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="value" label="数值" width="120" align="right" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '正常' : '异常' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </template>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import api from '@/services/api'
+<script setup lang="ts">
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { Refresh, Download } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import * as echarts from 'echarts';
+import { dashboardApi } from '@/api/dashboard';
 
-const router = useRouter()
-const loading = ref(false)
+const router = useRouter();
+const chartRef = ref<HTMLDivElement>();
+const pieChartRef = ref<HTMLDivElement>();
+let chartInstance: any = null;
+let pieChartInstance: any = null;
 
-// 统计卡片数据
-const stats = reactive([
-  { label: '总订单', value: '0', icon: 'Document', bg: '#E8F5FE' },
-  { label: '总收入', value: '¥0', icon: 'Money', bg: '#E6F7E6' },
-  { label: '总客户', value: '0', icon: 'User', bg: '#FEF3E2' },
-  { label: '总产品', value: '0', icon: 'Box', bg: '#F3E8FF' }
-])
+// ==================== 状态 ====================
+const loading = ref(false);
+const chartPeriod = ref('month');
+const recentItems = ref<any[]>([]);
 
-// 最近订单数据
-const recentOrders = ref([])
+// ==================== 统计卡片 ====================
+const statCards = reactive([
+  { key: 'total', label: '总数', value: 0, icon: 'DataBoard', color: '#409EFF', trend: 12 },
+  { key: 'active', label: '活跃数', value: 0, icon: 'UserFilled', color: '#67C23A', trend: 8 },
+  { key: 'revenue', label: '总收入', value: '¥0.00', icon: 'Money', color: '#E6A23C', trend: -3 },
+  { key: 'growth', label: '增长率', value: '0%', icon: 'TrendCharts', color: '#909399', trend: 5 },
+]);
 
-// 状态工具函数
-const getStatusLabel = (status) => {
-  const map = { paid: '已支付', pending: '待处理', completed: '已完成', cancelled: '已取消' }
-  return map[status] || status
-}
+// ==================== 方法 ====================
 
-const getStatusType = (status) => {
-  const map = { paid: 'success', pending: 'warning', completed: 'info', cancelled: 'danger' }
-  return map[status] || 'info'
-}
-
-const viewOrder = (row) => {
-  router.push(`/orders/${row.id}`)
-}
-
-// 加载 Dashboard 数据
 const loadData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    // 获取统计信息
-    const statsResponse = await api.get('/dashboard/stats')
-    if (statsResponse.data?.success) {
-      const data = statsResponse.data.data
-      stats[0].value = data.totalOrders?.toLocaleString() || '0'
-      stats[1].value = `¥${data.totalRevenue?.toLocaleString() || '0'}`
-      stats[2].value = data.totalCustomers?.toLocaleString() || '0'
-      stats[3].value = data.totalProducts?.toLocaleString() || '0'
+    const data = await dashboardApi.getDashboardData();
+    // 更新统计卡片
+    Object.assign(statCards, data.stats);
+    recentItems.value = data.recent || [];
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const initChart = async () => {
+  await nextTick();
+  if (chartRef.value) {
+    chartInstance = echarts.init(chartRef.value);
+    chartInstance.setOption({
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['收入', '支出', '利润'] },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'] },
+      yAxis: { type: 'value' },
+      series: [
+        { name: '收入', type: 'line', data: [120, 132, 101, 134, 90, 230, 210], smooth: true },
+        { name: '支出', type: 'line', data: [80, 100, 90, 110, 70, 150, 140], smooth: true },
+        { name: '利润', type: 'bar', data: [40, 32, 11, 24, 20, 80, 70] },
+      ],
+    });
+    window.addEventListener('resize', () => chartInstance?.resize());
+  }
+
+  if (pieChartRef.value) {
+    pieChartInstance = echarts.init(pieChartRef.value);
+    pieChartInstance.setOption({
+      tooltip: { trigger: 'item' },
+      legend: { orient: 'vertical', left: 'left' },
+      series: [
+        {
+          type: 'pie',
+          radius: '50%',
+          data: [
+            { value: 1048, name: '类别A' },
+            { value: 735, name: '类别B' },
+            { value: 580, name: '类别C' },
+            { value: 484, name: '类别D' },
+          ],
+          emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.5)' } },
+        },
+      ],
+    });
+    window.addEventListener('resize', () => pieChartInstance?.resize());
+  }
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleExport = () => {
+  ElMessage.info('导出功能开发中');
+};
+
+const viewAll = () => {
+  router.push('/reports');
+};
+
+// ==================== 生命周期 ====================
+onMounted(() => {
+  loadData();
+  initChart();
+});
+</script>
+
+<style scoped lang="scss">
+.dashboard-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
     }
 
-    // 获取最近订单
-    const ordersResponse = await api.get('/orders', { 
-      params: { limit: 5, sort: 'created_at:desc' }
-    })
-    if (ordersResponse.data?.success) {
-      recentOrders.value = ordersResponse.data.data || []
+    .header-right {
+      display: flex;
+      gap: 12px;
     }
-  } catch (error) {
-    console.warn('API 请求失败，使用模拟数据:', error.message)
-    // 降级到模拟数据
-    stats[0].value = '1,284'
-    stats[1].value = '¥128,500'
-    stats[2].value = '856'
-    stats[3].value = '342'
-    
-    recentOrders.value = [
-      { id: 1, order_number: 'ORD-2024-001', customer_name: '张三', total: 299.99, status: 'paid' },
-      { id: 2, order_number: 'ORD-2024-002', customer_name: '李四', total: 159.50, status: 'pending' },
-      { id: 3, order_number: 'ORD-2024-003', customer_name: '王五', total: 459.00, status: 'completed' },
-      { id: 4, order_number: 'ORD-2024-004', customer_name: '赵六', total: 89.00, status: 'paid' },
-      { id: 5, order_number: 'ORD-2024-005', customer_name: '孙七', total: 329.50, status: 'pending' }
-    ]
-  } finally {
-    loading.value = false
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .stats-row {
+    margin-bottom: 20px;
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-radius: 12px;
+
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 24px;
+        margin-right: 16px;
+      }
+
+      .stat-content {
+        flex: 1;
+
+        .stat-number {
+          font-size: 24px;
+          font-weight: 700;
+          color: #303133;
+        }
+
+        .stat-label {
+          font-size: 14px;
+          color: #909399;
+        }
+
+        .stat-trend {
+          font-size: 12px;
+          margin-top: 4px;
+
+          &.up {
+            color: #67C23A;
+          }
+          &.down {
+            color: #F56C6C;
+          }
+        }
+      }
+    }
+  }
+
+  .chart-card,
+  .table-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .chart-container {
+    height: 300px;
+    width: 100%;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
-onMounted(loadData)
-</script>
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 12px;
 
-<style scoped>
-.dashboard-page { padding: 20px; }
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.stat-card { border-radius: 12px; }
-.stat-content { display: flex; align-items: center; gap: 16px; }
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4F46E5;
-}
-.stat-value { font-size: 24px; font-weight: 700; color: #1F2937; }
-.stat-label { font-size: 14px; color: #6B7280; }
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
 
-.table-card { border-radius: 12px; }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+      .header-right {
+        width: 100%;
+      }
+    }
+
+    .stats-row .el-col {
+      margin-bottom: 12px;
+    }
+
+    .chart-container {
+      height: 200px;
+    }
+  }
 }
 </style>
-

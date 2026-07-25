@@ -1,112 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/production/pages/ProductionCost.vue
-  功能: 生产成本 - 生产成本核算
+﻿<!--
+  文件路径: frontend/src/modules/production/pages/
+  功能: 生产管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-date-picker v-model="searchForm.period" type="month" placeholder="选择计划周期" style="width: 100%" />
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="产品">
-              <el-select v-model="searchForm.product" placeholder="请选择产品" clearable style="width: 100%">
-                <el-option label="全部" value="all" />
-                <el-option label="iPhone 15 Pro Max" value="iPhone 15 Pro Max" />
-                <el-option label="三星 Galaxy S24 Ultra" value="三星 Galaxy S24 Ultra" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="success" @click="handleExport"><el-icon><Download /></el-icon> 导出</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="production-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/production' }">生产管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">生产管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <!-- 成本统计 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="stat in costStats" :key="stat.label">
-        <el-card class="stat-card" :class="stat.type">
-          <div class="stat-label">{{ stat.label }}</div>
-          <div class="stat-value">{{ stat.value }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="product" label="产品名称" />
-        <el-table-column prop="totalQuantity" label="总产量" align="center" />
-        <el-table-column prop="materialCost" label="材料成本" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.materialCost) }}</template>
-        </el-table-column>
-        <el-table-column prop="laborCost" label="人工成本" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.laborCost) }}</template>
-        </el-table-column>
-        <el-table-column prop="overheadCost" label="制造费用" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.overheadCost) }}</template>
-        </el-table-column>
-        <el-table-column prop="totalCost" label="总成本" align="right">
-          <template #default="{ row }"><span style="font-weight: 700; color: #409EFF;">{{ formatCurrency(row.totalCost) }}</span></template>
-        </el-table-column>
-        <el-table-column prop="unitCost" label="单位成本" align="right">
-          <template #default="{ row }">{{ formatCurrency(row.unitCost) }}</template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Download } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { productionApi } from '@/api/production';
 
-const searchForm = reactive({ period: new Date(), product: 'all' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const router = useRouter();
 
-const costStats = ref([
-  { label: '总生产成本', value: 'SAR 8,560,000', type: 'primary' },
-  { label: '材料成本', value: 'SAR 5,200,000', type: 'warning' },
-  { label: '人工成本', value: 'SAR 2,100,000', type: 'success' },
-  { label: '单位成本', value: 'SAR 425', type: 'primary' },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const tableData = ref([
-  { id: 1, product: 'iPhone 15 Pro Max', totalQuantity: 5000, materialCost: 3200000, laborCost: 1200000, overheadCost: 800000, totalCost: 5200000, unitCost: 1040 },
-  { id: 2, product: '三星 Galaxy S24 Ultra', totalQuantity: 3000, materialCost: 1800000, laborCost: 700000, overheadCost: 500000, totalCost: 3000000, unitCost: 1000 },
-  { id: 3, product: 'MacBook Pro 16"', totalQuantity: 1500, materialCost: 1200000, laborCost: 400000, overheadCost: 300000, totalCost: 1900000, unitCost: 1267 },
-])
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const loading = ref(false)
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await productionApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
 
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.product = 'all' }
-const handleExport = () => { ElMessage.success('导出完成') }
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/production/);
+};
+
+const handleCreate = () => {
+  router.push(/production/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/production//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await productionApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.stat-row { margin-bottom: 20px; }
-.stat-card { text-align: center; border-radius: 12px; }
-.stat-card.primary { border-left: 4px solid #409EFF; }
-.stat-card.warning { border-left: 4px solid #E6A23C; }
-.stat-card.success { border-left: 4px solid #67C23A; }
-.stat-label { color: #909399; font-size: 14px; }
-.stat-value { font-size: 22px; font-weight: 700; color: #303133; margin: 4px 0; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.production-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .production-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

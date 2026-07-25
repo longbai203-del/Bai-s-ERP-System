@@ -1,102 +1,247 @@
-<!-- 
-  文件路径: frontend/src/modules/production/pages/ProductionPlan.vue
-  功能: 生产计划 - 管理生产计划
+﻿<!--
+  文件路径: frontend/src/modules/production/pages/
+  功能: 生产管理
+  最后更新: 2026-07-25 13:00:02
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <el-form :model="searchForm" layout="inline">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="计划编号">
-              <el-input v-model="searchForm.planNo" placeholder="请输入计划编号" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="状态">
-              <el-select v-model="searchForm.status" placeholder="请选择状态" clearable style="width: 100%">
-                <el-option label="草稿" value="draft" />
-                <el-option label="已发布" value="published" />
-                <el-option label="执行中" value="executing" />
-                <el-option label="已完成" value="completed" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon> 查询</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="primary" @click="handleCreate" style="float: right"><el-icon><Plus /></el-icon> 新建计划</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
+  <div class="production-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/production' }">生产管理</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">生产管理</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button @click="handleRefresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </div>
+    </div>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" style="width: 100%" stripe>
-        <el-table-column prop="planNo" label="计划编号" width="140" />
-        <el-table-column prop="product" label="产品名称" />
-        <el-table-column prop="period" label="计划周期" width="120" />
-        <el-table-column prop="plannedQuantity" label="计划产量" align="center" />
-        <el-table-column prop="actualQuantity" label="实际产量" align="center" />
-        <el-table-column label="完成率" align="center" width="120">
-          <template #default="{ row }">
-            <el-progress :percentage="row.completionRate" :color="row.completionRate === 100 ? '#67C23A' : '#409EFF'" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'completed' ? 'success' : row.status === 'executing' ? 'warning' : row.status === 'published' ? 'primary' : 'info'">
-              {{ row.status === 'draft' ? '草稿' : row.status === 'published' ? '已发布' : row.status === 'executing' ? '执行中' : '已完成' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleView(row)"><el-icon><View /></el-icon></el-button>
-            <el-button type="warning" size="small" @click="handleEdit(row)"><el-icon><Edit /></el-icon></el-button>
-            <el-button type="success" size="small" @click="handlePublish(row)" v-if="row.status === 'draft'"><el-icon><Share /></el-icon> 发布</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination v-model:page-size="pagination.pageSize" v-model:current-page="pagination.currentPage" :total="pagination.total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" style="margin-top: 20px; justify-content: flex-end;" />
-    </el-card>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
+
+    <template v-else>
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入关键词"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Search, Plus, View, Edit, Share } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { productionApi } from '@/api/production';
 
-const searchForm = reactive({ planNo: '', status: '' })
-const pagination = reactive({ currentPage: 1, pageSize: 20, total: 0 })
+const router = useRouter();
 
-const tableData = ref([
-  { id: 1, planNo: 'PP-2024-001', product: 'iPhone 15 Pro Max', period: '2024-11', plannedQuantity: 5000, actualQuantity: 3800, completionRate: 76, status: 'executing' },
-  { id: 2, planNo: 'PP-2024-002', product: '三星 Galaxy S24 Ultra', period: '2024-11', plannedQuantity: 3000, actualQuantity: 0, completionRate: 0, status: 'published' },
-  { id: 3, planNo: 'PP-2024-003', product: 'MacBook Pro 16"', period: '2024-10', plannedQuantity: 1500, actualQuantity: 1500, completionRate: 100, status: 'completed' },
-])
+const loading = ref(false);
+const items = ref<any[]>([]);
+const total = ref(0);
 
-const loading = ref(false)
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+});
 
-const handleSearch = () => { loading.value = true; setTimeout(() => { loading.value = false }, 500) }
-const handleReset = () => { searchForm.planNo = ''; searchForm.status = '' }
-const handleCreate = () => { ElMessage.info('新建计划') }
-const handleView = (row: any) => { ElMessage.info(`查看计划: ${row.planNo}`) }
-const handleEdit = (row: any) => { ElMessage.info(`编辑计划: ${row.planNo}`) }
-const handlePublish = (row: any) => {
-  ElMessageBox.confirm(`确认发布计划 ${row.planNo}？`, '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' })
-    .then(() => { row.status = 'published'; ElMessage.success('计划已发布') }).catch(() => {})
-}
-const handleSizeChange = (val: number) => { pagination.pageSize = val; handleSearch() }
-const handleCurrentChange = (val: number) => { pagination.currentPage = val; handleSearch() }
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await productionApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleReset = () => {
+  filters.search = '';
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => {
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+const handleView = (id: string) => {
+  router.push(/production/);
+};
+
+const handleCreate = () => {
+  router.push(/production/create);
+};
+
+const handleEdit = (id: string) => {
+  router.push(/production//edit);
+};
+
+const handleDelete = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await productionApi.delete(id);
+    ElMessage.success('删除成功');
+    loadData();
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-:deep(.el-form-item) { margin-bottom: 0; }
+<style scoped lang="scss">
+.production-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .production-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
+}
 </style>

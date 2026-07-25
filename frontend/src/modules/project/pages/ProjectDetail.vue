@@ -1,125 +1,284 @@
-﻿<!-- 
+﻿<!--
   文件路径: frontend/src/modules/project/pages/ProjectDetail.vue
-  功能: 项目详情
+  功能: 项目管理详情
+  最后更新: 2026-07-25 12:52:06
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="header-card">
-      <div class="page-header">
-        <div>
-          <h2>{{ project.name }}</h2>
-          <p class="subtitle">项目编号: {{ project.projectNo }}</p>
-        </div>
-        <div>
-          <el-button type="primary" @click="handleEdit">编辑</el-button>
-          <el-button type="success" @click="handleComplete" v-if="project.status === 'active'"><el-icon><Check /></el-icon> 完成</el-button>
-          <el-button @click="handleBack">返回</el-button>
-        </div>
+  <div class="project-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/project' }">项目管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">项目管理详情</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">项目管理详情</h1>
       </div>
-    </el-card>
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
 
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="16">
-        <el-card>
-          <template #header><span>项目信息</span></template>
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="项目编号">{{ project.projectNo }}</el-descriptions-item>
-            <el-descriptions-item label="状态">
-              <el-tag :type="project.status === 'active' ? 'success' : project.status === 'planning' ? 'info' : 'primary'">
-                {{ project.status === 'planning' ? '规划中' : project.status === 'active' ? '进行中' : '已完成' }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="客户">{{ project.customer }}</el-descriptions-item>
-            <el-descriptions-item label="优先级">
-              <el-tag :type="project.priority === 'high' ? 'danger' : project.priority === 'medium' ? 'warning' : 'info'">
-                {{ project.priority === 'high' ? '高' : project.priority === 'medium' ? '中' : '低' }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="预算">{{ formatCurrency(project.budget) }}</el-descriptions-item>
-            <el-descriptions-item label="已花费">{{ formatCurrency(project.spent) }}</el-descriptions-item>
-            <el-descriptions-item label="开始日期">{{ project.startDate }}</el-descriptions-item>
-            <el-descriptions-item label="截止日期">{{ project.deadline }}</el-descriptions-item>
-            <el-descriptions-item label="项目经理">{{ project.projectManager }}</el-descriptions-item>
-            <el-descriptions-item label="进度" :span="2">
-              <el-progress :percentage="project.progress" :color="project.progress === 100 ? '#67C23A' : '#409EFF'" />
-            </el-descriptions-item>
-            <el-descriptions-item label="项目描述" :span="2">{{ project.description }}</el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card>
-          <template #header><span>项目团队</span></template>
-          <div v-for="member in team" :key="member.name" class="team-member">
-            <el-avatar :size="32" icon="UserFilled" />
-            <div class="member-info">
-              <div class="member-name">{{ member.name }}</div>
-              <div class="member-role">{{ member.role }}</div>
-            </div>
-            <el-tag size="small" :type="member.status === 'active' ? 'success' : 'info'">
-              {{ member.status === 'active' ? '在线' : '离线' }}
-            </el-tag>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <el-card style="margin-top: 20px">
-      <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span>项目任务</span>
-          <el-button type="primary" size="small" @click="handleAddTask"><el-icon><Plus /></el-icon> 添加任务</el-button>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
         </div>
-      </template>
-      <el-table :data="tasks" style="width: 100%" stripe>
-        <el-table-column prop="taskNo" label="任务编号" width="120" />
-        <el-table-column prop="name" label="任务名称" />
-        <el-table-column prop="assignee" label="负责人" />
-        <el-table-column prop="status" label="状态" align="center" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'done' ? 'success' : row.status === 'doing' ? 'warning' : 'info'">
-              {{ row.status === '"deadline" label="截止日期" width="120" />
-        <el-table-column label="操作" align="center" width="150">
-          <el-button type="primary" size="small">查看</el-button>
-        </el-table-column>
-      </el-table>
-    </el-card>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入描述"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { UserFilled, Check, Plus } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { projectApi } from '@/api/project';
 
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const project = ref({
-  projectNo: 'PRJ-2024-001',
-  name: 'STC 5G网络升级',
-  customer: '沙特电信公司',
-  budget: 5000000,
-  spent: 3800000,
-  progress: 76,
-  priority: 'high',
-  status: 'active',
-  startDate: '2024-08-01',
-  deadline: '2024-12-20',
-  projectManager: 'Ahmed Al-Fahd',
-  description: 'STC 5G网络基础设施升级项目，覆盖利雅得、吉达、达曼三城市',
-})
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  return 'List';
+});
 
-const team = ref([
-  { name: 'Ahmed Al-Fahd', role: '项目经理', status: 'active' },
-  { name: 'Mohammed Al-Qahtani', role: '技术架构师', status: 'active' },
-  { name: 'Saud Al-Otaibi', role: '开发工程师', status: 'active' },
-  { name: 'Faisal Al-Dossary', role: '运维工程师', status: 'offline' },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const tasks = ref([
-  { taskNo: 'TSK-001', name: '需求分析', assignee: 'Ahmed Al-Fahd', status: 'done', deadline: '2024-08-15' },
-  { taskNo: 'TSK-002', name: '系统设计', assignee: 'Mohammed Al-Qahtani', status: 'done', deadline: '2024-09-15' },
-  { taskNo: 'TSK-003', name: '开发实施', assignee: 'Saud Al-Otaibi', status: 'doing', deadline: '2024-11-15' },
-  { taskNo: 'TSK-004', name: '测试部署', assignee: 'Faisal Al-Dossary', status: '
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
+
+const filters = reactive({ page: 1, limit: 20, search: '' });
+
+const formData = reactive({
+  id: '', name: '', status: 'active', description: '', createdAt: '', updatedAt: ''
+});
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const response = await projectApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await projectApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/project/);
+const handleCreate = () => router.push(/project/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/project//edit);
+};
+const handleCancel = () => router.push(/project);
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await projectApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await projectApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/project);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await projectApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/project);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
+};
+
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
+</script>
+
+<style scoped lang="scss">
+.project-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .project-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
+</style>

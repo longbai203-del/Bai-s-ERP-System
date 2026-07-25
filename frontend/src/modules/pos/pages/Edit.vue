@@ -1,184 +1,605 @@
-﻿<template>
-  <div class="production-edit-page">
+﻿<!-- 
+  文件路径: frontend/src/modules/pos/pages/Edit.vue
+  功能: 编辑POS配置 - 编辑POS终端配置信息
+  最后更新: 2026-07-25 12:43:15
+-->
+
+<template>
+  <div class="pos-page">
+    <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-          <el-breadcrumb-item :to="{ path: '/production' }">生产管理</el-breadcrumb-item>
-          <el-breadcrumb-item>编辑工单 #{{ workOrderData?.workOrder || '加载中...' }}</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/pos' }">POS管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'Index' && pageType !== 'Dashboard'">
+            编辑POS配置
+          </el-breadcrumb-item>
         </el-breadcrumb>
-        <h1 class="page-title">编辑生产工单</h1>
+        <h1 class="page-title">编辑POS配置</h1>
       </div>
       <div class="header-right">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        <template v-if="pageType === 'Index' || pageType === 'Dashboard'">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建POS
+          </el-button>
+          <el-button @click="handleRefresh">
+            <el-icon><Refresh /></el-icon> 刷新
+          </el-button>
+        </template>
+        <template v-if="pageType === 'Detail'">
+          <el-button type="primary" @click="handleEdit">
+            <el-icon><Edit /></el-icon> 编辑
+          </el-button>
+          <el-button type="danger" @click="handleDelete">
+            <el-icon><Delete /></el-icon> 删除
+          </el-button>
+        </template>
+        <template v-if="pageType === 'Edit' || pageType === 'Create'">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">
+            保存
+          </el-button>
+        </template>
       </div>
     </div>
 
-    <div v-if="loading" class="loading-container"><el-skeleton :rows="10" animated /></div>
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <template v-else-if="workOrderData">
-      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="130px">
-        <el-row :gutter="20">
-          <el-col :span="16">
-            <el-card class="form-section" shadow="hover">
-              <template #header>
-                <div class="section-header">
-                  <span>工单信息</span>
-                  <el-tag :type="statusType" size="small">{{ statusText }}</el-tag>
-                </div>
-              </template>
-              <el-form-item label="工单号"><el-input v-model="formData.workOrder" disabled /></el-form-item>
-              <el-form-item label="产品" prop="product"><el-input v-model="formData.product" /></el-form-item>
-              <el-form-item label="状态" prop="status">
-                <el-select v-model="formData.status" style="width:100%">
-                  <el-option label="计划中" value="scheduled" />
-                  <el-option label="进行中" value="in_progress" />
-                  <el-option label="已完成" value="completed" />
-                  <el-option label="已延迟" value="delayed" />
-                  <el-option label="已取消" value="cancelled" />
-                </el-select>
-              </el-form-item>
-              <el-row :gutter="20">
-                <el-col :span="12"><el-form-item label="计划数量" prop="plannedQuantity"><el-input-number v-model="formData.plannedQuantity" :min="1" style="width:100%" /></el-form-item></el-col>
-                <el-col :span="12"><el-form-item label="已完成数量"><el-input-number v-model="formData.completedQuantity" :min="0" :max="formData.plannedQuantity" style="width:100%" /></el-form-item></el-col>
-              </el-row>
-              <el-form-item label="备注"><el-input v-model="formData.note" type="textarea" :rows="2" /></el-form-item>
-            </el-card>
+    <!-- 列表/仪表板页面 -->
+    <template v-if="(pageType === 'Index' || pageType === 'Dashboard') && !loading">
+      <!-- 统计卡片 -->
+      <el-row :gutter="20" class="stats-row" v-if="pageType === 'Dashboard'">
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">POS总数</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.active }}</div>
+            <div class="stat-label">运行中</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">{{ stats.todayOrders }}</div>
+            <div class="stat-label">今日订单</div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover" class="stat-card">
+            <div class="stat-number">¥{{ stats.todayRevenue?.toFixed(2) || '0.00' }}</div>
+            <div class="stat-label">今日收入</div>
+          </el-card>
+        </el-col>
+      </el-row>
 
-            <el-card class="form-section" shadow="hover">
-              <template #header><div class="section-header"><span>物料清单</span></div></template>
-              <el-table :data="formData.materials || []" border stripe>
-                <el-table-column prop="name" label="物料名称" min-width="150" />
-                <el-table-column prop="sku" label="SKU" width="140" />
-                <el-table-column prop="required" label="需要数量" width="120" align="center" />
-                <el-table-column prop="available" label="可用数量" width="120" align="center">
-                  <template #default="{ row }">
-                    <span :style="{ color: row.available < row.required ? '#F56C6C' : '#67C23A' }">{{ row.available || 0 }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="status" label="状态" width="100" align="center">
-                  <template #default="{ row }">
-                    <el-tag :type="row.available >= row.required ? 'success' : 'danger'" size="small">
-                      {{ row.available >= row.required ? '充足' : '不足' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-card>
-          </el-col>
+      <!-- 搜索栏 -->
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="filters.search"
+              placeholder="请输入POS名称/终端ID"
+              clearable
+              @clear="loadData"
+              style="width: 200px"
+            />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="filters.status" placeholder="全部状态" clearable style="width: 120px">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+              <el-option label="维护中" value="maintenance" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData">
+              <el-icon><Search /></el-icon> 搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-          <el-col :span="8">
-            <el-card class="form-section" shadow="hover">
-              <template #header><div class="section-header"><span>时间信息</span></div></template>
-              <el-form-item label="开始日期" prop="startDate">
-                <el-date-picker v-model="formData.startDate" type="date" format="YYYY-MM-DD" style="width:100%" />
-              </el-form-item>
-              <el-form-item label="结束日期" prop="endDate">
-                <el-date-picker v-model="formData.endDate" type="date" format="YYYY-MM-DD" style="width:100%" />
-              </el-form-item>
-              <div class="stats-info">
-                <div class="stat-item"><span class="stat-label">进度</span>
-                  <el-progress :percentage="progressPercent" :status="progressStatus" />
-                </div>
-                <div class="stat-item"><span class="stat-label">创建时间</span><span class="stat-value">{{ formatDate(workOrderData.createdAt) }}</span></div>
-                <div class="stat-item"><span class="stat-label">更新时间</span><span class="stat-value">{{ formatDate(workOrderData.updatedAt) }}</span></div>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-      </el-form>
+      <!-- 数据表格 -->
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width: 100%">
+          <el-table-column prop="name" label="POS名称" min-width="150" />
+          <el-table-column prop="terminalId" label="终端ID" width="140" />
+          <el-table-column prop="storeId" label="门店" width="120" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)" size="small">
+                {{ getStatusLabel(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="lastSync" label="最后同步" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.lastSync) || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
     </template>
+
+    <!-- 详情/表单页面 -->
+    <template v-if="(pageType === 'Detail' || pageType === 'Edit' || pageType === 'Create') && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form
+          ref="formRef"
+          :model="formData"
+          :rules="formRules"
+          label-width="140px"
+          class="detail-form"
+        >
+          <el-form-item label="POS名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入POS名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="终端ID" prop="terminalId">
+            <el-input v-model="formData.terminalId" placeholder="请输入终端ID" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="门店" prop="storeId">
+            <el-input v-model="formData.storeId" placeholder="请输入门店ID" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+              <el-option label="维护中" value="maintenance" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="地址" prop="address">
+            <el-input
+              v-model="formData.address"
+              type="textarea"
+              :rows="2"
+              placeholder="请输入地址"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item label="硬件配置" prop="hardware">
+            <el-checkbox-group v-model="formData.hardware" :disabled="isViewMode">
+              <el-checkbox label="printer">打印机</el-checkbox>
+              <el-checkbox label="scanner">扫描枪</el-checkbox>
+              <el-checkbox label="cashDrawer">钱箱</el-checkbox>
+              <el-checkbox label="display">显示屏</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item label="支付方式" prop="paymentMethods">
+            <el-checkbox-group v-model="formData.paymentMethods" :disabled="isViewMode">
+              <el-checkbox label="cash">现金</el-checkbox>
+              <el-checkbox label="card">银行卡</el-checkbox>
+              <el-checkbox label="wechat">微信支付</el-checkbox>
+              <el-checkbox label="alipay">支付宝</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="更新时间">
+            <span>{{ formatDate(formData.updatedAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <!-- 空状态 -->
+    <el-empty v-if="!loading && items.length === 0 && (pageType === 'Index' || pageType === 'Dashboard')" description="暂无POS配置数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElMessage, FormInstance, FormRules } from 'element-plus';
-import { useProductionStore } from '../store';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Refresh, Edit, Delete, Search } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/format';
+import { posApi } from '@/api/pos';
 
+// ==================== 路由 ====================
 const route = useRoute();
 const router = useRouter();
-const productionStore = useProductionStore();
 const formRef = ref<FormInstance>();
-const loading = ref(true);
-const submitting = ref(false);
-const workOrderData = ref<any>(null);
 
-const formData = reactive({
-  workOrder: '',
-  product: '',
-  plannedQuantity: 1,
-  completedQuantity: 0,
-  status: 'scheduled' as 'scheduled' | 'in_progress' | 'completed' | 'delayed' | 'cancelled',
-  startDate: '',
-  endDate: '',
-  note: '',
-  materials: [] as any[],
+// ==================== 页面类型 ====================
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail') || path.includes('/view')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'Index';
 });
 
+const isViewMode = computed(() => pageType.value === 'Detail');
+
+// ==================== 状态 ====================
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
+
+// ==================== 统计 ====================
+const stats = reactive({
+  total: 0,
+  active: 0,
+  todayOrders: 0,
+  todayRevenue: 0,
+});
+
+// ==================== 过滤条件 ====================
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  search: '',
+  status: '',
+});
+
+// ==================== 表单数据 ====================
+const formData = reactive({
+  id: '',
+  name: '',
+  terminalId: '',
+  storeId: '',
+  status: 'active',
+  address: '',
+  hardware: [] as string[],
+  paymentMethods: [] as string[],
+  createdAt: '',
+  updatedAt: '',
+});
+
+// ==================== 表单验证规则 ====================
 const formRules: FormRules = {
-  product: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
-  plannedQuantity: [{ required: true, message: '请输入计划数量', trigger: 'blur' }],
+  name: [
+    { required: true, message: '请输入POS名称', trigger: 'blur' },
+    { min: 2, max: 100, message: '名称长度在2-100个字符', trigger: 'blur' },
+  ],
+  terminalId: [{ required: true, message: '请输入终端ID', trigger: 'blur' }],
+  storeId: [{ required: true, message: '请输入门店ID', trigger: 'blur' }],
   status: [{ required: true, message: '请选择状态', trigger: 'change' }],
 };
 
-const statusText = computed(() => {
-  const map: Record<string, string> = { scheduled: '计划中', in_progress: '进行中', completed: '已完成', delayed: '已延迟', cancelled: '已取消' };
-  return map[formData.status] || formData.status;
-});
-const statusType = computed(() => {
-  const map: Record<string, string> = { scheduled: 'info', in_progress: 'primary', completed: 'success', delayed: 'warning', cancelled: 'danger' };
-  return map[formData.status] || 'info';
-});
-const progressPercent = computed(() => {
-  if (!formData.plannedQuantity || formData.plannedQuantity === 0) return 0;
-  return Math.min((formData.completedQuantity / formData.plannedQuantity) * 100, 100);
-});
-const progressStatus = computed(() => {
-  const p = progressPercent.value;
-  if (p >= 100) return 'success';
-  if (p >= 50) return 'warning';
-  return 'info';
-});
+// ==================== 辅助方法 ====================
+const getStatusLabel = (value: string) => {
+  const map: Record<string, string> = { active: '启用', inactive: '停用', maintenance: '维护中' };
+  return map[value] || value;
+};
 
-const loadWorkOrderData = async () => {
-  const id = route.params.id as string;
-  if (!id) { ElMessage.error('工单ID无效'); router.push('/production'); return; }
+const getStatusType = (value: string) => {
+  const map: Record<string, string> = { active: 'success', inactive: 'danger', maintenance: 'warning' };
+  return map[value] || 'info';
+};
+
+// ==================== CRUD操作 ====================
+
+/**
+ * 加载数据
+ */
+const loadData = async () => {
   loading.value = true;
   try {
-    const data = await productionStore.getWorkOrderDetail(id);
-    if (data) {
-      workOrderData.value = data;
-      Object.assign(formData, { ...data, materials: data.materials || [] });
-    } else { ElMessage.error('工单不存在'); router.push('/production'); }
-  } catch (error) { console.error('加载数据失败:', error); ElMessage.error('加载数据失败'); }
-  finally { loading.value = false; }
+    const response = await posApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally {
+    loading.value = false;
+  }
 };
 
-const handleCancel = () => router.push(`/production/${workOrderData.value?.id}`);
+/**
+ * 加载统计
+ */
+const loadStats = async () => {
+  try {
+    const response = await posApi.getStats();
+    Object.assign(stats, response.data);
+  } catch (error) {
+    // 静默失败
+  }
+};
+
+/**
+ * 加载详情
+ */
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await posApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, {
+      id: data.id,
+      name: data.name || '',
+      terminalId: data.terminalId || '',
+      storeId: data.storeId || '',
+      status: data.status || 'active',
+      address: data.address || '',
+      hardware: data.hardware || [],
+      paymentMethods: data.paymentMethods || [],
+      createdAt: data.createdAt || '',
+      updatedAt: data.updatedAt || '',
+    });
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+/**
+ * 重置搜索
+ */
+const handleReset = () => {
+  filters.search = '';
+  filters.status = '';
+  filters.page = 1;
+  loadData();
+};
+
+/**
+ * 刷新
+ */
+const handleRefresh = () => {
+  if (pageType.value === 'Dashboard') {
+    loadStats();
+  }
+  loadData();
+  ElMessage.success('已刷新');
+};
+
+/**
+ * 查看详情
+ */
+const handleView = (id: string) => {
+  router.push(/pos/);
+};
+
+/**
+ * 创建
+ */
+const handleCreate = () => {
+  router.push('/pos/create');
+};
+
+/**
+ * 编辑
+ */
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) {
+    router.push(/pos//edit);
+  }
+};
+
+/**
+ * 取消
+ */
+const handleCancel = () => {
+  router.push('/pos');
+};
+
+/**
+ * 提交表单
+ */
 const handleSubmit = async () => {
   if (!formRef.value) return;
-  try { await formRef.value.validate(); } catch { return; }
+
+  try {
+    await formRef.value.validate();
+  } catch {
+    return;
+  }
+
   submitting.value = true;
   try {
-    await productionStore.updateWorkOrder(workOrderData.value.id, formData);
-    ElMessage.success('更新成功');
-    router.push(`/production/${workOrderData.value.id}`);
-  } catch (error) { console.error('保存失败:', error); ElMessage.error('保存失败'); }
-  finally { submitting.value = false; }
+    const data = { ...formData };
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
+
+    const isEdit = pageType.value === 'Edit' && currentItem.value?.id;
+    if (isEdit) {
+      await posApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await posApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push('/pos');
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally {
+    submitting.value = false;
+  }
 };
 
-onMounted(() => loadWorkOrderData());
+/**
+ * 删除
+ */
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+
+  try {
+    await ElMessageBox.confirm('确定要删除此POS配置吗？此操作不可恢复！', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await posApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') {
+      router.push('/pos');
+    } else {
+      loadData();
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+    }
+  }
+};
+
+// ==================== 生命周期 ====================
+onMounted(() => {
+  const id = route.params.id as string;
+
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else if (pageType.value === 'Create') {
+    // 初始化空表单
+  } else {
+    loadData();
+    if (pageType.value === 'Dashboard') {
+      loadStats();
+    }
+  }
+});
 </script>
 
 <style scoped lang="scss">
-.production-edit-page { padding: 20px;
-  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; .header-left { .page-title { font-size: 24px; font-weight: 600; margin: 8px 0 0; color: #303133; } } .header-right { display: flex; gap: 12px; } }
-  .loading-container { padding: 40px 0; }
-  .form-section { margin-bottom: 24px; .section-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 16px; } }
-  .stats-info { .stat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f7fa; &:last-child { border-bottom: none; } .stat-label { color: #909399; } .stat-value { color: #303133; font-weight: 500; } } }
+.pos-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .loading-container {
+    padding: 40px 0;
+  }
+
+  .stats-row {
+    margin-bottom: 20px;
+
+    .stat-card {
+      text-align: center;
+      border-radius: 12px;
+
+      .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #303133;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #909399;
+        margin-top: 8px;
+      }
+    }
+  }
+
+  .search-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 16px 20px;
+    }
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .form-card {
+    border-radius: 12px;
+  }
+
+  .pagination-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .detail-form {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
+
+      .header-right {
+        width: 100%;
+      }
+    }
+
+    .stats-row .el-col {
+      margin-bottom: 12px;
+    }
+
+    .detail-form {
+      max-width: 100%;
+    }
+  }
 }
 </style>

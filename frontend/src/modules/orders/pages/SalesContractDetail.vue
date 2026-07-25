@@ -1,168 +1,366 @@
-<!-- 
+﻿<!--
   文件路径: frontend/src/modules/orders/pages/SalesContractDetail.vue
-  功能: 销售合同详情 - 查看合同完整信息
+  功能: 订单详情 销售分析 销售合同
+  最后更新: 2026-07-25 12:46:08
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="header-card">
-      <div class="page-header">
-        <div>
-          <h2>合同详情</h2>
-          <p class="subtitle">合同编号: {{ contractNo }}</p>
-        </div>
-        <div>
-          <el-button type="success" @click="handleApprove">
-            <el-icon><Check /></el-icon> 审批通过
-          </el-button>
-          <el-button type="primary" @click="handleEdit">编辑</el-button>
-          <el-button @click="handlePrint">
-            <el-icon><Printer /></el-icon> 打印
-          </el-button>
-          <el-button @click="handleBack">返回</el-button>
-        </div>
+  <div class="orders-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/orders' }">订单管理</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'Dashboard' && pageType !== 'List'">订单详情 销售分析 销售合同</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">订单详情 销售分析 销售合同</h1>
       </div>
-    </el-card>
-
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="16">
-        <el-card>
-          <template #header>
-            <span>合同信息</span>
-          </template>
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="合同编号">{{ contractNo }}</el-descriptions-item>
-            <el-descriptions-item label="合同类型">
-              <el-tag type="primary">销售合同</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="客户名称">{{ customer }}</el-descriptions-item>
-            <el-descriptions-item label="合同金额">
-              <span style="font-weight: 700; color: #409EFF;">{{ formatCurrency(amount) }}</span>
-            </el-descriptions-item>
-            <el-descriptions-item label="签署日期">{{ signDate }}</el-descriptions-item>
-            <el-descriptions-item label="生效日期">{{ effectiveDate }}</el-descriptions-item>
-            <el-descriptions-item label="到期日期">{{ expiryDate }}</el-descriptions-item>
-            <el-descriptions-item label="状态">
-              <el-tag type="success">执行中</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="合同条款" :span="2">{{ terms }}</el-descriptions-item>
-            <el-descriptions-item label="备注" :span="2">{{ remark || '无' }}</el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-
-        <el-card style="margin-top: 20px">
-          <template #header>
-            <span>产品明细</span>
-          </template>
-          <el-table :data="items" border style="width: 100%">
-            <el-table-column type="index" label="#" width="50" />
-            <el-table-column prop="product" label="产品名称" />
-            <el-table-column prop="quantity" label="数量" align="center" />
-            <el-table-column prop="price" label="单价" align="right">
-              <template #default="{ row }">{{ formatCurrency(row.price) }}</template>
-            </el-table-column>
-            <el-table-column label="小计" align="right">
-              <template #default="{ row }">
-                <span style="font-weight: 600; color: #409EFF;">
-                  {{ formatCurrency(row.quantity * row.price) }}
-                </span>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div style="text-align: right; margin-top: 16px; font-size: 16px;">
-            合同总金额: <span style="font-weight: 700; color: #409EFF; font-size: 20px;">{{ formatCurrency(amount) }}</span>
-          </div>
-        </el-card>
-      </el-col>
-
-      <el-col :span="8">
-        <el-card>
-          <template #header>
-            <span>审批流程</span>
-          </template>
-          <el-steps direction="vertical" :active="3" finish-status="success">
-            <el-step title="提交申请" description="2024-01-10 09:00" />
-            <el-step title="部门审核" description="2024-01-11 14:30" />
-            <el-step title="法务审核" description="2024-01-12 10:00" />
-            <el-step title="总经理审批" description="2024-01-13 16:00" />
-          </el-steps>
-        </el-card>
-
-        <el-card style="margin-top: 20px">
-          <template #header>
-            <span>附件</span>
-          </template>
-          <el-table :data="attachments" style="width: 100%">
-            <el-table-column prop="name" label="文件名" />
-            <el-table-column label="操作" align="center">
-              <template #default>
-                <el-button type="primary" size="small">下载</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-button type="primary" text style="width: 100%; margin-top: 12px;">
-            <el-icon><Upload /></el-icon> 上传附件
+      <div class="header-right">
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建订单
           </el-button>
-        </el-card>
-      </el-col>
-    </el-row>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit">
+            <el-icon><Edit /></el-icon> 编辑
+          </el-button>
+          <el-button type="danger" @click="handleDelete">
+            <el-icon><Delete /></el-icon> 删除
+          </el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </div>
+    </div>
+
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
+
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="订单号">
+            <el-input v-model="filters.orderNumber" placeholder="请输入订单号" clearable style="width:150px" />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="filters.status" placeholder="全部状态" clearable style="width:120px">
+              <el-option label="待确认" value="pending" />
+              <el-option label="已确认" value="confirmed" />
+              <el-option label="处理中" value="processing" />
+              <el-option label="已发货" value="shipped" />
+              <el-option label="已送达" value="delivered" />
+              <el-option label="已取消" value="cancelled" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="日期范围">
+            <el-date-picker
+              v-model="filters.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              style="width:240px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="orderNumber" label="订单号" width="140" />
+          <el-table-column prop="customerName" label="客户" min-width="120" />
+          <el-table-column prop="grandTotal" label="金额" width="120" align="right">
+            <template #default="{ row }">¥{{ row.grandTotal?.toFixed(2) || '0.00' }}</template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)" size="small">{{ getStatusLabel(row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
+    </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="客户" prop="customerId">
+            <el-select v-model="formData.customerId" placeholder="请选择客户" filterable style="width:100%" :disabled="isViewMode">
+              <el-option v-for="c in customerOptions" :key="c.id" :label="c.name" :value="c.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="待确认" value="pending" />
+              <el-option label="已确认" value="confirmed" />
+              <el-option label="处理中" value="processing" />
+              <el-option label="已发货" value="shipped" />
+              <el-option label="已送达" value="delivered" />
+              <el-option label="已取消" value="cancelled" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="支付方式" prop="paymentMethod">
+            <el-select v-model="formData.paymentMethod" placeholder="请选择支付方式" :disabled="isViewMode" style="width:100%">
+              <el-option label="微信支付" value="wechat" />
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="银行转账" value="bank_transfer" />
+              <el-option label="现金" value="cash" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="备注" prop="note">
+            <el-input v-model="formData.note" type="textarea" :rows="2" placeholder="请输入备注" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无订单数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { Check, Printer, Upload } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { orderApi } from '@/api/orders';
 
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
 
-const contractNo = ref('SC-2024-001')
-const customer = ref('沙特电信公司')
-const amount = ref(1250000)
-const signDate = ref('2024-01-15')
-const effectiveDate = ref('2024-01-15')
-const expiryDate = ref('2025-01-14')
-const terms = ref('1. 付款方式: 30%预付款，70%交货后30天支付\n2. 交货期限: 合同生效后30天内\n3. 质保期限: 12个月')
-const remark = ref('优先客户，享受VIP服务')
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  if (path.includes('/dashboard')) return 'Dashboard';
+  return 'List';
+});
 
-const items = ref([
-  { product: 'iPhone 15 Pro Max 256GB', quantity: 50, price: 5200 },
-  { product: '三星 Galaxy S24 Ultra 512GB', quantity: 30, price: 4800 },
-  { product: 'MacBook Pro 16" M3 Pro', quantity: 20, price: 9800 },
-])
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List' || pageType.value === 'Dashboard');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
 
-const attachments = ref([
-  { name: '合同扫描件.pdf' },
-  { name: '附件一：产品清单.xlsx' },
-  { name: '附件二：技术规格.pdf' },
-])
+const loading = ref(false);
+const submitting = ref(false);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
+const customerOptions = ref<any[]>([]);
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(value)
-}
+const filters = reactive({
+  page: 1,
+  limit: 20,
+  orderNumber: '',
+  status: '',
+  dateRange: [] as Date[],
+});
 
-const handleApprove = () => {
-  ElMessage.success('审批通过')
-}
+const formData = reactive({
+  id: '',
+  customerId: '',
+  status: 'pending',
+  paymentMethod: '',
+  note: '',
+  createdAt: '',
+  updatedAt: '',
+});
 
-const handleEdit = () => {
-  router.push('/orders/contracts/edit/1')
-}
+const formRules: FormRules = {
+  customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+};
 
-const handlePrint = () => {
-  window.print()
-}
+const getStatusLabel = (value: string) => {
+  const map: Record<string,string> = { pending:'待确认', confirmed:'已确认', processing:'处理中', shipped:'已发货', delivered:'已送达', cancelled:'已取消' };
+  return map[value] || value;
+};
+const getStatusType = (value: string) => {
+  const map: Record<string,string> = { pending:'warning', confirmed:'info', processing:'primary', shipped:'primary', delivered:'success', cancelled:'danger' };
+  return map[value] || 'info';
+};
 
-const handleBack = () => {
-  router.push('/orders/contracts')
-}
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const params = { ...filters };
+    if (params.dateRange?.length === 2) {
+      params.startDate = formatDate(params.dateRange[0]);
+      params.endDate = formatDate(params.dateRange[1]);
+    }
+    delete params.dateRange;
+    const response = await orderApi.getList(params);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
+};
+
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await orderApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const loadCustomers = async () => {
+  try {
+    const response = await orderApi.getCustomers();
+    customerOptions.value = response.data || [];
+  } catch (error) { /* 静默失败 */ }
+};
+
+const handleReset = () => {
+  filters.orderNumber = '';
+  filters.status = '';
+  filters.dateRange = [];
+  filters.page = 1;
+  loadData();
+};
+
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/orders/);
+const handleCreate = () => router.push('/orders/create');
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/orders//edit);
+};
+const handleCancel = () => router.push('/orders');
+
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try { await formRef.value.validate(); } catch { return; }
+  submitting.value = true;
+  try {
+    const data = { ...formData };
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await orderApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await orderApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push('/orders');
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
+};
+
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
+  try {
+    await ElMessageBox.confirm('确定要删除此订单吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await orderApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push('/orders');
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
+};
+
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else if (pageType.value === 'Create') {
+    loadCustomers();
+  } else {
+    loadData();
+    loadCustomers();
+  }
+});
 </script>
 
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.header-card { border-radius: 12px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.subtitle { color: #909399; margin: 4px 0 0 0; }
+<style scoped lang="scss">
+.orders-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .detail-form { max-width: 800px; }
+  .loading-container { padding: 40px 0; }
+}
+
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
+}
 </style>

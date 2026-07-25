@@ -1,0 +1,2318 @@
+﻿============================================================
+  19个模块Pages文件夹Vue文件完整性检查报告
+  检查时间: 2026-07-25 12:36:57
+============================================================
+
+📊 总体统计:
+  总文件数: 446
+  完整文件: 71
+  问题文件: 375
+  完整率: 15.92%
+
+📋 各模块统计:
+  模块名          文件数    完整    问题    完整率
+  ------------------------------------------------------------  ai                 17       3      14     17.6%
+  analytics          18       3      15     16.7%
+  approval           18       4      14     22.2%
+  customers          19       5      14     26.3%
+  dashboard          16       7       9     43.8%
+  finance            31       3      28      9.7%
+  hr                 33       3      30      9.1%
+  inventory          25       3      22       12%
+  marketing          20       7      13       35%
+  orders             34      10      24     29.4%
+  pos                25      19       6       76%
+  production         19       1      18      5.3%
+  products           13       1      12      7.7%
+  project            19       0      19        0%
+  purchase           29       2      27      6.9%
+  reports            26       0      26        0%
+  saas               23       0      23        0%
+  settings           30       0      30        0%
+  system             31       0      31        0%
+
+🔴 问题文件详细列表:
+  .\frontend\src\modules\ai\pages\AIChat.vue
+    行数: 187 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 187 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AIContract.vue
+    行数: 133 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 133 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AiCreate.vue
+    行数: 15 | 模块: ai
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AICustomerService.vue
+    行数: 186 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 186 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AIInvoice.vue
+    行数: 122 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 122 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AIOCR.vue
+    行数: 136 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 136 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AIQA.vue
+    行数: 168 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 168 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\AIReport.vue
+    行数: 104 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\GeneratePurchaseOrder.vue
+    行数: 112 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\GenerateQuotation.vue
+    行数: 118 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\ai\pages\InventoryPrediction.vue
+    行数: 148 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 148 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\ai\pages\ProfitAnalysis.vue
+    行数: 131 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\PurchaseSuggestion.vue
+    行数: 109 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\ai\pages\SalesPrediction.vue
+    行数: 147 | 模块: ai
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 147 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\AnalyticsCreate.vue
+    行数: 15 | 模块: analytics
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\AnalyticsDashboard.vue
+    行数: 189 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 189 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ChannelAnalytics.vue
+    行数: 187 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 187 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ChannelAnalyticsDetail.vue
+    行数: 143 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 143 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ComparisonAnalysis.vue
+    行数: 198 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 198 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ComparisonAnalysisDetail.vue
+    行数: 100 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 100 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\CustomerAnalytics.vue
+    行数: 176 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 176 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\CustomerAnalyticsDetail.vue
+    行数: 165 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 165 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\Edit.vue
+    行数: 29 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ProductAnalytics.vue
+    行数: 196 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 196 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\ProductAnalyticsDetail.vue
+    行数: 152 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 152 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\SalesAnalytics.vue
+    行数: 199 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 199 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\SalesAnalyticsDetail.vue
+    行数: 166 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 166 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\TrendAnalysis.vue
+    行数: 177 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 177 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\analytics\pages\TrendAnalysisDetail.vue
+    行数: 107 | 模块: analytics
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 107 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalCreate.vue
+    行数: 128 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 128 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalDashboard.vue
+    行数: 133 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 133 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalDetail.vue
+    行数: 109 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\approvalEdit.vue
+    行数: 15 | 模块: approval
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalSettings.vue
+    行数: 125 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 125 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalTemplateCreate.vue
+    行数: 101 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ApprovalTemplates.vue
+    行数: 104 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\approval\pages\ContractApproval.vue
+    行数: 112 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\ExpenseApproval.vue
+    行数: 110 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\LeaveApproval.vue
+    行数: 113 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 113 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\MyApprovals.vue
+    行数: 108 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\PaymentApproval.vue
+    行数: 106 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 106 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\PurchaseApproval.vue
+    行数: 133 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 133 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\approval\pages\VehicleApproval.vue
+    行数: 104 | 模块: approval
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\customers\pages\Create.vue
+    行数: 49 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerAnalysis.vue
+    行数: 140 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 140 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerFollowup.vue
+    行数: 142 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 142 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\customers\pages\CustomerFollowupCreate.vue
+    行数: 119 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 119 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerLevel.vue
+    行数: 83 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 83 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\customers\pages\CustomerLifecycle.vue
+    行数: 148 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 148 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerMap.vue
+    行数: 113 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 113 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerProfile.vue
+    行数: 148 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 148 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomersCreate.vue
+    行数: 15 | 模块: customers
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerSource.vue
+    行数: 137 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 137 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\customers\pages\CustomerTags.vue
+    行数: 118 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\customers\pages\list.vue
+    行数: 63 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\customers\pages\Opportunities.vue
+    行数: 146 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 146 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\customers\pages\OpportunityCreate.vue
+    行数: 144 | 模块: customers
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 144 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\BusinessAnalysis.vue
+    行数: 282 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\Dashboard.vue
+    行数: 162 | 模块: dashboard
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 162 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\dashboard\pages\DashboardCreate.vue
+    行数: 15 | 模块: dashboard
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\FinanceDashboard.vue
+    行数: 219 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\Index.vue
+    行数: 63 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\dashboard\pages\InventoryDashboard.vue
+    行数: 83 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 83 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\PerformanceDashboard.vue
+    行数: 185 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 185 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\ProfitAnalysis.vue
+    行数: 199 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 199 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\dashboard\pages\PurchaseDashboard.vue
+    行数: 80 | 模块: dashboard
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 80 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\AccountsPayable.vue
+    行数: 103 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\BankManagement.vue
+    行数: 109 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\BudgetManagement.vue
+    行数: 134 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 134 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\finance\pages\CashFlow.vue
+    行数: 173 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 173 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\CashManagement.vue
+    行数: 127 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 127 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\CostCenter.vue
+    行数: 110 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\finance\pages\Create.vue
+    行数: 49 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\Depreciation.vue
+    行数: 108 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\ElectronicInvoice.vue
+    行数: 112 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\finance\pages\ExpenseCreate.vue
+    行数: 117 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 117 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\Expenses.vue
+    行数: 112 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\FinanceCreate.vue
+    行数: 15 | 模块: finance
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\FinanceDashboard.vue
+    行数: 103 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\FinancialAnalysis.vue
+    行数: 175 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 175 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\FixedAssets.vue
+    行数: 112 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\GeneralLedger.vue
+    行数: 128 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 128 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\Index.vue
+    行数: 66 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\JournalEntries.vue
+    行数: 112 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\JournalEntryCreate.vue
+    行数: 176 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 176 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\list.vue
+    行数: 63 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\PaymentCreate.vue
+    行数: 114 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 114 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\Payments.vue
+    行数: 128 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 128 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\ReceiptCreate.vue
+    行数: 114 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 114 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\Receipts.vue
+    行数: 105 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 105 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\Reimbursement.vue
+    行数: 109 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\finance\pages\SaudiVat.vue
+    行数: 131 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\SaudiZatca.vue
+    行数: 159 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 159 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\finance\pages\TaxManagement.vue
+    行数: 110 | 模块: finance
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Attendance.vue
+    行数: 117 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 117 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Certificates.vue
+    行数: 141 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 141 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\Contracts.vue
+    行数: 93 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 93 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Create.vue
+    行数: 49 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Edit.vue
+    行数: 159 | 模块: hr
+    ⚠️  代码行数不足: 159 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\EmployeeDetail.vue
+    行数: 136 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 136 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\EmployeeFiles.vue
+    行数: 98 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 98 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\EmployeeProfile.vue
+    行数: 99 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 99 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Employees.vue
+    行数: 148 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 148 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\FinanceDashboard.vue
+    行数: 103 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\HrCreate.vue
+    行数: 54 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\HrDashboard.vue
+    行数: 15 | 模块: hr
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\HrDetail.vue
+    行数: 49 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\HrEdit.vue
+    行数: 65 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\HrList.vue
+    行数: 96 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+
+  .\frontend\src\modules\hr\pages\Index.vue
+    行数: 66 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\Insurance.vue
+    行数: 116 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 116 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\IqamaManagement.vue
+    行数: 142 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 142 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\list.vue
+    行数: 63 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\Onboarding.vue
+    行数: 120 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 120 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Organization.vue
+    行数: 97 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 97 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Overtime.vue
+    行数: 105 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 105 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Payroll.vue
+    行数: 131 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\hr\pages\Performance.vue
+    行数: 109 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Positions.vue
+    行数: 93 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 93 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\hr\pages\Recruitment.vue
+    行数: 95 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 95 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Resignation.vue
+    行数: 131 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\ShiftManagement.vue
+    行数: 98 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 98 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\Training.vue
+    行数: 96 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\hr\pages\VisaManagement.vue
+    行数: 140 | 模块: hr
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 140 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\AbcAnalysis.vue
+    行数: 185 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 185 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\BatchManagement.vue
+    行数: 100 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 100 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\Create.vue
+    行数: 49 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\DeadStock.vue
+    行数: 130 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 130 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\FinanceDashboard.vue
+    行数: 15 | 模块: inventory
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\InventoryDashboard.vue
+    行数: 103 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\list.vue
+    行数: 63 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\LocationManagement.vue
+    行数: 112 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\SafetyStock.vue
+    行数: 95 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 95 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\SerialNumber.vue
+    行数: 100 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 100 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\inventory\pages\ShelfLife.vue
+    行数: 131 | 模块: inventory
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockAdjustment.vue
+    行数: 109 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\StockAlert.vue
+    行数: 124 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 124 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockCount.vue
+    行数: 126 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 126 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\StockCountCreate.vue
+    行数: 121 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 121 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockFlow.vue
+    行数: 108 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockForecast.vue
+    行数: 180 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 180 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockFreeze.vue
+    行数: 106 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 106 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\StockQuery.vue
+    行数: 154 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 154 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\inventory\pages\StockTransfer.vue
+    行数: 103 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\StockTransferCreate.vue
+    行数: 140 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 140 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\inventory\pages\WarehouseMap.vue
+    行数: 164 | 模块: inventory
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 164 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\Detail.vue
+    行数: 56 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 56 行 (需要 >= 200)
+    ⚠️  包含占位符 (TODO/FIXME/占位等)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\EmailMarketing.vue
+    行数: 129 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 129 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\marketing\pages\EmailMarketingCreate.vue
+    行数: 96 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\EmailMarketingDetail.vue
+    行数: 105 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 105 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\FinanceDashboard.vue
+    行数: 15 | 模块: marketing
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\LeadGeneration.vue
+    行数: 137 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 137 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\marketing\pages\LeadGenerationDetail.vue
+    行数: 90 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 90 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\MarketingAnalytics.vue
+    行数: 142 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 142 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\MarketingAutomation.vue
+    行数: 86 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 86 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\marketing\pages\MarketingDashboard.vue
+    行数: 179 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 179 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\SocialMedia.vue
+    行数: 133 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 133 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\marketing\pages\SocialMediaCreate.vue
+    行数: 111 | 模块: marketing
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\marketing\pages\SocialMediaDetail.vue
+    行数: 81 | 模块: marketing
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 81 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\Create.vue
+    行数: 49 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\CustomerComplaint.vue
+    行数: 129 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 129 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\CustomerCredit.vue
+    行数: 154 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 154 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\CustomerDebt.vue
+    行数: 123 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 123 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\CustomerPayment.vue
+    行数: 126 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 126 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\CustomerVisit.vue
+    行数: 164 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 164 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\FinanceDashboard.vue
+    行数: 15 | 模块: orders
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\List.vue
+    行数: 63 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\OrderDetail.vue
+    行数: 145 | 模块: orders
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 145 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\orders\pages\OrdersCreate.vue
+    行数: 54 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\OrdersDashboard.vue
+    行数: 103 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\OrdersDetail.vue
+    行数: 49 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\orders\pages\OrdersEdit.vue
+    行数: 65 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\orders\pages\OrdersList.vue
+    行数: 96 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+
+  .\frontend\src\modules\orders\pages\PriceManagement.vue
+    行数: 101 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\QuotationDetail.vue
+    行数: 189 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 189 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\SalesAnalysis.vue
+    行数: 167 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 167 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\SalesContractCreate.vue
+    行数: 199 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 199 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\SalesContractDetail.vue
+    行数: 168 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 168 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\SalesOutbound.vue
+    行数: 161 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 161 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\SalesRanking.vue
+    行数: 158 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 158 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\orders\pages\SalesReturns.vue
+    行数: 136 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 136 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\orders\pages\SalesTarget.vue
+    行数: 108 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\orders\pages\ServiceOrders.vue
+    行数: 109 | 模块: orders
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\pos\pages\Create.vue
+    行数: 49 | 模块: pos
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\pos\pages\Edit.vue
+    行数: 184 | 模块: pos
+    ⚠️  代码行数不足: 184 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\pos\pages\FinanceDashboard.vue
+    行数: 15 | 模块: pos
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\pos\pages\Index.vue
+    行数: 66 | 模块: pos
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\pos\pages\list.vue
+    行数: 63 | 模块: pos
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\pos\pages\PosDashboard.vue
+    行数: 103 | 模块: pos
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\BOMCreate.vue
+    行数: 168 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 168 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\production\pages\BOMDetail.vue
+    行数: 137 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 137 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\Create.vue
+    行数: 49 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\Edit.vue
+    行数: 184 | 模块: production
+    ⚠️  代码行数不足: 184 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\EquipmentMaintenance.vue
+    行数: 103 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\production\pages\EquipmentManagement.vue
+    行数: 103 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\production\pages\FinanceDashboard.vue
+    行数: 15 | 模块: production
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\Index.vue
+    行数: 66 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\production\pages\list.vue
+    行数: 63 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\production\pages\MaterialIssue.vue
+    行数: 101 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\production\pages\MRP.vue
+    行数: 134 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 134 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\production\pages\ProductionComplete.vue
+    行数: 109 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\ProductionCost.vue
+    行数: 112 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\ProductionDashboard.vue
+    行数: 103 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\ProductionPlan.vue
+    行数: 102 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 102 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\production\pages\ProductionPlanCreate.vue
+    行数: 113 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 113 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\production\pages\QualityControl.vue
+    行数: 128 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 128 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\production\pages\WorkOrderCreate.vue
+    行数: 117 | 模块: production
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 117 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Barcodes.vue
+    行数: 927 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Brands.vue
+    行数: 971 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Categories.vue
+    行数: 1023 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Combos.vue
+    行数: 1087 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\products\pages\Create.vue
+    行数: 49 | 模块: products
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\FinanceDashboard.vue
+    行数: 15 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Index.vue
+    行数: 66 | 模块: products
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\products\pages\list.vue
+    行数: 63 | 模块: products
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\products\pages\Modifiers.vue
+    行数: 943 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\PriceLists.vue
+    行数: 946 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Products.vue
+    行数: 1253 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\products\pages\Variants.vue
+    行数: 1005 | 模块: products
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\Create.vue
+    行数: 59 | 模块: project
+    ⚠️  缺少 <template> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 59 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\Detail.vue
+    行数: 104 | 模块: project
+    ⚠️  缺少 <template> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\Edit.vue
+    行数: 104 | 模块: project
+    ⚠️  缺少 <template> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\FinanceDashboard.vue
+    行数: 15 | 模块: project
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\Index.vue
+    行数: 338 | 模块: project
+    ⚠️  缺少 <template> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\project\pages\ProjectApproval.vue
+    行数: 134 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 134 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\project\pages\ProjectBudget.vue
+    行数: 107 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 107 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectCreate.vue
+    行数: 146 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 146 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectDashboard.vue
+    行数: 103 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectDetail.vue
+    行数: 126 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 126 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectDocuments.vue
+    行数: 103 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\project\pages\ProjectGantt.vue
+    行数: 104 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectMilestones.vue
+    行数: 91 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 91 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\project\pages\ProjectProgress.vue
+    行数: 149 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 149 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectRisks.vue
+    行数: 138 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 138 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\project\pages\Projects.vue
+    行数: 155 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 155 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\project\pages\ProjectTasks.vue
+    行数: 78 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 78 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\project\pages\ProjectTeam.vue
+    行数: 90 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 90 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\project\pages\ProjectTimeline.vue
+    行数: 138 | 模块: project
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 138 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\Create.vue
+    行数: 49 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\Detail.vue
+    行数: 29 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\FinanceDashboard.vue
+    行数: 15 | 模块: purchase
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\Index.vue
+    行数: 66 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\list.vue
+    行数: 63 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PaymentRequest.vue
+    行数: 133 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 133 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseAnalysis.vue
+    行数: 164 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 164 行 (需要 >= 200)
+    ⚠️  包含空实现或未实现的方法
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseApproval.vue
+    行数: 145 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 145 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseBudget.vue
+    行数: 131 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 131 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseComparison.vue
+    行数: 87 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 87 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseContractCreate.vue
+    行数: 180 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 180 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseContractDetail.vue
+    行数: 132 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 132 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseContracts.vue
+    行数: 106 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 106 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseCreate.vue
+    行数: 54 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseDashboard.vue
+    行数: 103 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseDetail.vue
+    行数: 49 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseEdit.vue
+    行数: 65 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseInquiry.vue
+    行数: 103 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseList.vue
+    行数: 114 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 114 行 (需要 >= 200)
+
+  .\frontend\src\modules\purchase\pages\PurchasePlan.vue
+    行数: 118 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseReceipt.vue
+    行数: 126 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 126 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseRequest.vue
+    行数: 118 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseRequestCreate.vue
+    行数: 184 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 184 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\PurchaseReturns.vue
+    行数: 105 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 105 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\SupplierCredit.vue
+    行数: 116 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 116 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\purchase\pages\SupplierQuotation.vue
+    行数: 99 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 99 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\purchase\pages\SupplierRating.vue
+    行数: 173 | 模块: purchase
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 173 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\reports\pages\CashFlowReport.vue
+    行数: 151 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 151 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\Create.vue
+    行数: 29 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\CRMReport.vue
+    行数: 138 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 138 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\CustomReportBuilder.vue
+    行数: 153 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 153 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\Detail.vue
+    行数: 29 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\Edit.vue
+    行数: 29 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\ExcelExport.vue
+    行数: 99 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 99 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\FinanceDashboard.vue
+    行数: 15 | 模块: reports
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\FinanceReport.vue
+    行数: 94 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 94 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\HRReport.vue
+    行数: 141 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 141 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\Index.vue
+    行数: 33 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 33 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\reports\pages\InventoryReport.vue
+    行数: 152 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 152 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\PDFExport.vue
+    行数: 111 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\PowerBIIntegration.vue
+    行数: 136 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 136 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\ProfitReport.vue
+    行数: 156 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 156 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\PurchaseReport.vue
+    行数: 146 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 146 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\ReportScheduler.vue
+    行数: 94 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 94 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\reports\pages\ReportsCreate.vue
+    行数: 54 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\ReportsDashboard.vue
+    行数: 103 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\ReportsDetail.vue
+    行数: 49 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\reports\pages\ReportsEdit.vue
+    行数: 65 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\reports\pages\ReportsList.vue
+    行数: 108 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+
+  .\frontend\src\modules\reports\pages\ReportTemplates.vue
+    行数: 91 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 91 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\reports\pages\SalesReport.vue
+    行数: 187 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 187 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\SaudiVatReport.vue
+    行数: 99 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 99 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\reports\pages\SaudiZatcaReport.vue
+    行数: 110 | 模块: reports
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Create.vue
+    行数: 29 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Detail.vue
+    行数: 29 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Edit.vue
+    行数: 29 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\FinanceDashboard.vue
+    行数: 15 | 模块: saas
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 15 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Index.vue
+    行数: 33 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 33 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\saas\pages\PlanCreate.vue
+    行数: 110 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\PlanDetail.vue
+    行数: 96 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\PlanEdit.vue
+    行数: 109 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Plans.vue
+    行数: 104 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\saas\pages\SaasAnalytics.vue
+    行数: 170 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 170 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\SaasCreate.vue
+    行数: 54 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\SaasDashboard.vue
+    行数: 103 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\SaasDetail.vue
+    行数: 49 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\saas\pages\SaasEdit.vue
+    行数: 65 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\saas\pages\SaasList.vue
+    行数: 96 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+
+  .\frontend\src\modules\saas\pages\SubscriptionCreate.vue
+    行数: 118 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\SubscriptionDetail.vue
+    行数: 104 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\SubscriptionEdit.vue
+    行数: 111 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Subscriptions.vue
+    行数: 144 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 144 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\saas\pages\TenantCreate.vue
+    行数: 118 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\TenantDetail.vue
+    行数: 113 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 113 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\TenantEdit.vue
+    行数: 116 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 116 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\saas\pages\Tenants.vue
+    行数: 141 | 模块: saas
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 141 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\settings\pages\BackupSettings.vue
+    行数: 111 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\CompanyProfile.vue
+    行数: 121 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 121 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\Create.vue
+    行数: 29 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\CurrencySettings.vue
+    行数: 77 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 77 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\Detail.vue
+    行数: 29 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\Edit.vue
+    行数: 29 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\EmailSettings.vue
+    行数: 111 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\ExchangeRate.vue
+    行数: 78 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 78 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\FinanceDashboard.vue
+    行数: 48 | 模块: settings
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 48 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\Index.vue
+    行数: 45 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 45 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\settings\pages\InventoryDashboard.vue
+    行数: 46 | 模块: settings
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 46 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\LicenseSettings.vue
+    行数: 101 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\LogoManagement.vue
+    行数: 124 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 124 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\Overview.vue
+    行数: 81 | 模块: settings
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 81 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\PaymentSettings.vue
+    行数: 79 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 79 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\PrintTemplate.vue
+    行数: 118 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 118 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\ReportDashboard.vue
+    行数: 48 | 模块: settings
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 48 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\SalesDashboard.vue
+    行数: 49 | 模块: settings
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\SaudiInvoiceSettings.vue
+    行数: 101 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\SaudiVATSettings.vue
+    行数: 99 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 99 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\settingsCreate.vue
+    行数: 100 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 100 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\SettingsDashboard.vue
+    行数: 103 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\settingsDetail.vue
+    行数: 72 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 72 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\settingsEdit.vue
+    行数: 116 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 116 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\settingsList.vue
+    行数: 157 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 157 行 (需要 >= 200)
+
+  .\frontend\src\modules\settings\pages\SMSSettings.vue
+    行数: 110 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 110 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\SystemParameters.vue
+    行数: 111 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 111 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\TaxSettings.vue
+    行数: 128 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 128 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\ThemeSettings.vue
+    行数: 103 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\settings\pages\WhatsAppSettings.vue
+    行数: 109 | 模块: settings
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 109 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\ApiPermissions.vue
+    行数: 87 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 87 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\BackupRestore.vue
+    行数: 122 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 122 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\ButtonPermissions.vue
+    行数: 78 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 78 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Create.vue
+    行数: 49 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Currency.vue
+    行数: 98 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 98 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\Detail.vue
+    行数: 29 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 29 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Dictionary.vue
+    行数: 96 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\Edit.vue
+    行数: 145 | 模块: system
+    ⚠️  代码行数不足: 145 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\FinanceDashboard.vue
+    行数: 58 | 模块: system
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 58 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Index.vue
+    行数: 66 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 66 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\InventoryDashboard.vue
+    行数: 43 | 模块: system
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 43 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Language.vue
+    行数: 92 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 92 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\LicenseManagement.vue
+    行数: 101 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 101 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\list.vue
+    行数: 63 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 63 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\LoginLogs.vue
+    行数: 112 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 112 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\MenuManagement.vue
+    行数: 92 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 92 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\Notification.vue
+    行数: 94 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 94 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\OperationLogs.vue
+    行数: 102 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 102 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Overview.vue
+    行数: 91 | 模块: system
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 91 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Region.vue
+    行数: 104 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 104 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\ReportDashboard.vue
+    行数: 52 | 模块: system
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 52 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\RolePermissions.vue
+    行数: 149 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 149 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\Roles.vue
+    行数: 87 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 87 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\SalesDashboard.vue
+    行数: 52 | 模块: system
+    ⚠️  缺少 <script setup lang='ts'> 标签
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 52 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\SystemCreate.vue
+    行数: 54 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 54 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 0/4)
+
+  .\frontend\src\modules\system\pages\SystemDetail.vue
+    行数: 49 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 49 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\system\pages\SystemEdit.vue
+    行数: 65 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 65 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 1/4)
+
+  .\frontend\src\modules\system\pages\SystemList.vue
+    行数: 108 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 108 行 (需要 >= 200)
+
+  .\frontend\src\modules\system\pages\SystemParameters.vue
+    行数: 96 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 96 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\ThemeManagement.vue
+    行数: 95 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 95 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+  .\frontend\src\modules\system\pages\WebhookManagement.vue
+    行数: 103 | 模块: system
+    ⚠️  缺少 <style scoped> 标签（建议添加）
+    ⚠️  代码行数不足: 103 行 (需要 >= 200)
+    ⚠️  CRUD操作不完整 (完成度: 2/4)
+
+============================================================
+  报告结束
+============================================================

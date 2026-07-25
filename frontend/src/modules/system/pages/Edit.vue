@@ -1,145 +1,284 @@
-﻿<template>
-  <div class="system-edit-page">
+﻿<!--
+  文件路径: frontend/src/modules/system/pages/Edit.vue
+  功能: 编辑系统管理
+  最后更新: 2026-07-25 12:52:08
+-->
+
+<template>
+  <div class="system-page">
     <div class="page-header">
       <div class="header-left">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
           <el-breadcrumb-item :to="{ path: '/system' }">系统管理</el-breadcrumb-item>
-          <el-breadcrumb-item>编辑配置 #{{ systemData?.key || '加载中...' }}</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="pageType !== 'List' && pageType !== 'Dashboard'">编辑系统管理</el-breadcrumb-item>
         </el-breadcrumb>
-        <h1 class="page-title">编辑系统配置</h1>
+        <h1 class="page-title">编辑系统管理</h1>
       </div>
       <div class="header-right">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        <template v-if="showCreate">
+          <el-button type="primary" @click="handleCreate">
+            <el-icon><Plus /></el-icon> 新建
+          </el-button>
+        </template>
+        <template v-if="showEdit">
+          <el-button type="primary" @click="handleEdit"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button type="danger" @click="handleDelete"><el-icon><Delete /></el-icon> 删除</el-button>
+        </template>
+        <template v-if="showSave">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">保存</el-button>
+        </template>
+        <el-button @click="handleRefresh"><el-icon><Refresh /></el-icon> 刷新</el-button>
       </div>
     </div>
 
-    <div v-if="loading" class="loading-container"><el-skeleton :rows="8" animated /></div>
+    <div v-if="loading" class="loading-container"><el-skeleton :rows="6" animated /></div>
 
-    <template v-else-if="systemData">
-      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="140px">
-        <el-row :gutter="20">
-          <el-col :span="16">
-            <el-card class="form-section" shadow="hover">
-              <template #header><div class="section-header"><span>配置信息</span></div></template>
-              <el-form-item label="配置键"><el-input v-model="formData.key" disabled /></el-form-item>
-              <el-form-item label="配置值" prop="value">
-                <el-input v-model="formData.value" type="textarea" :rows="3" />
-              </el-form-item>
-              <el-form-item label="分组" prop="group">
-                <el-select v-model="formData.group" style="width:100%">
-                  <el-option label="公司设置" value="company" />
-                  <el-option label="系统设置" value="system" />
-                  <el-option label="邮件设置" value="email" />
-                  <el-option label="订单设置" value="order" />
-                  <el-option label="库存设置" value="inventory" />
-                  <el-option label="认证设置" value="auth" />
-                  <el-option label="备份设置" value="backup" />
-                  <el-option label="通知设置" value="notification" />
-                  <el-option label="安全设置" value="security" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="描述" prop="description">
-                <el-input v-model="formData.description" type="textarea" :rows="2" />
-              </el-form-item>
-            </el-card>
-          </el-col>
+    <template v-if="showList && !loading">
+      <el-card class="search-card" shadow="hover">
+        <el-form :model="filters" inline @submit.prevent="loadData">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.search" placeholder="请输入关键词" clearable style="width:180px" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="loadData"><el-icon><Search /></el-icon> 搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
 
-          <el-col :span="8">
-            <el-card class="form-section" shadow="hover">
-              <template #header><div class="section-header"><span>配置信息</span></div></template>
-              <div class="stats-info">
-                <div class="stat-item"><span class="stat-label">类型</span><span class="stat-value">{{ typeof systemData.value }}</span></div>
-                <div class="stat-item"><span class="stat-label">是否可编辑</span><span class="stat-value">{{ systemData.isEditable ? '是' : '否' }}</span></div>
-                <div class="stat-item"><span class="stat-label">创建时间</span><span class="stat-value">{{ formatDate(systemData.createdAt) }}</span></div>
-                <div class="stat-item"><span class="stat-label">更新时间</span><span class="stat-value">{{ formatDate(systemData.updatedAt) }}</span></div>
-              </div>
-            </el-card>
-
-            <el-card class="form-section" shadow="hover">
-              <template #header><div class="section-header"><span>其他配置</span></div></template>
-              <el-button type="text" block @click="viewAllSettings">查看所有配置</el-button>
-              <el-button type="text" block @click="resetToDefault">恢复默认值</el-button>
-            </el-card>
-          </el-col>
-        </el-row>
-      </el-form>
+      <el-card class="table-card" shadow="hover">
+        <el-table :data="items" border stripe v-loading="loading" style="width:100%">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column prop="name" label="名称" min-width="150" />
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small">
+                {{ row.status === 'active' ? '启用' : '停用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
+            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button type="text" size="small" @click="handleView(row.id)">查看</el-button>
+              <el-button type="text" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="text" size="small" danger @click="handleDelete(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="filters.page"
+            v-model:page-size="filters.limit"
+            :total="total"
+            :page-sizes="[10,20,50,100]"
+            layout="total,sizes,prev,pager,next,jumper"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
+      </el-card>
     </template>
+
+    <template v-if="showForm && !loading">
+      <el-card class="form-card" shadow="hover">
+        <el-form ref="formRef" :model="formData" :rules="formRules" label-width="120px">
+          <el-form-item label="名称" prop="name">
+            <el-input v-model="formData.name" placeholder="请输入名称" :disabled="isViewMode" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="formData.status" placeholder="请选择状态" :disabled="isViewMode" style="width:100%">
+              <el-option label="启用" value="active" />
+              <el-option label="停用" value="inactive" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入描述"
+              :disabled="isViewMode"
+            />
+          </el-form-item>
+          <el-form-item v-if="isViewMode" label="创建时间">
+            <span>{{ formatDate(formData.createdAt) }}</span>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </template>
+
+    <el-empty v-if="!loading && items.length === 0 && showList" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
-import { useSystemStore } from '../store';
+import { Plus, Edit, Delete, Refresh, Search } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/format';
+import { systemApi } from '@/api/system';
 
 const route = useRoute();
 const router = useRouter();
-const systemStore = useSystemStore();
 const formRef = ref<FormInstance>();
-const loading = ref(true);
+
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.endsWith('/create')) return 'Create';
+  if (path.includes('/edit')) return 'Edit';
+  if (path.includes('/detail')) return 'Detail';
+  return 'List';
+});
+
+const isViewMode = computed(() => pageType.value === 'Detail');
+const showList = computed(() => pageType.value === 'List');
+const showForm = computed(() => pageType.value === 'Detail' || pageType.value === 'Edit' || pageType.value === 'Create');
+const showCreate = computed(() => pageType.value === 'List');
+const showEdit = computed(() => pageType.value === 'Detail');
+const showSave = computed(() => pageType.value === 'Edit' || pageType.value === 'Create');
+
+const loading = ref(false);
 const submitting = ref(false);
-const systemData = ref<any>(null);
+const items = ref<any[]>([]);
+const currentItem = ref<any>(null);
+const total = ref(0);
+
+const filters = reactive({ page: 1, limit: 20, search: '' });
 
 const formData = reactive({
-  key: '',
-  value: '',
-  group: '',
-  description: '',
+  id: '', name: '', status: 'active', description: '', createdAt: '', updatedAt: ''
 });
 
 const formRules: FormRules = {
-  value: [{ required: true, message: '请输入配置值', trigger: 'blur' }],
-  group: [{ required: true, message: '请选择分组', trigger: 'change' }],
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
 };
 
-const loadSystemData = async () => {
-  const id = route.params.id as string;
-  if (!id) { ElMessage.error('配置ID无效'); router.push('/system'); return; }
+const loadData = async () => {
   loading.value = true;
   try {
-    const data = await systemStore.getSystemConfig(id);
-    if (data) {
-      systemData.value = data;
-      Object.assign(formData, { key: data.key, value: data.value, group: data.group, description: data.description || '' });
-    } else { ElMessage.error('配置不存在'); router.push('/system'); }
-  } catch (error) { console.error('加载数据失败:', error); ElMessage.error('加载数据失败'); }
-  finally { loading.value = false; }
+    const response = await systemApi.getList(filters);
+    items.value = response.data.items || [];
+    total.value = response.data.total || 0;
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载数据失败');
+  } finally { loading.value = false; }
 };
 
-const handleCancel = () => router.push(`/system/${systemData.value?.id}`);
+const loadDetail = async (id: string) => {
+  loading.value = true;
+  try {
+    const data = await systemApi.getDetail(id);
+    currentItem.value = data;
+    Object.assign(formData, data);
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载详情失败');
+  } finally { loading.value = false; }
+};
+
+const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
+const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
+const handleView = (id: string) => router.push(/system/);
+const handleCreate = () => router.push(/system/create);
+const handleEdit = (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (targetId) router.push(/system//edit);
+};
+const handleCancel = () => router.push(/system);
+
 const handleSubmit = async () => {
   if (!formRef.value) return;
   try { await formRef.value.validate(); } catch { return; }
   submitting.value = true;
   try {
-    await systemStore.updateSystemConfig(systemData.value.id, formData);
-    ElMessage.success('配置更新成功');
-    router.push(`/system/${systemData.value.id}`);
-  } catch (error) { console.error('保存失败:', error); ElMessage.error('保存失败'); }
-  finally { submitting.value = false; }
+    const data = { ...formData };
+    delete data.id; delete data.createdAt; delete data.updatedAt;
+    if (pageType.value === 'Edit' && currentItem.value?.id) {
+      await systemApi.update(currentItem.value.id, data);
+      ElMessage.success('更新成功');
+    } else {
+      await systemApi.create(data);
+      ElMessage.success('创建成功');
+    }
+    router.push(/system);
+  } catch (error: any) {
+    ElMessage.error(error.message || '保存失败');
+  } finally { submitting.value = false; }
 };
 
-const viewAllSettings = () => router.push('/system');
-const resetToDefault = async () => {
+const handleDelete = async (id?: string) => {
+  const targetId = id || currentItem.value?.id || route.params.id;
+  if (!targetId) return;
   try {
-    await ElMessageBox.confirm('确定要恢复默认值吗？', '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' });
-    // 实际项目中调用重置API
-    ElMessage.success('已恢复默认值');
-  } catch { /* 用户取消 */ }
+    await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
+    await systemApi.delete(targetId);
+    ElMessage.success('删除成功');
+    if (pageType.value === 'Detail') router.push(/system);
+    else loadData();
+  } catch (error) {
+    if (error !== 'cancel') ElMessage.error('删除失败');
+  }
 };
 
-onMounted(() => loadSystemData());
+onMounted(() => {
+  const id = route.params.id as string;
+  if (pageType.value === 'Detail' || pageType.value === 'Edit') {
+    if (id) loadDetail(id);
+  } else {
+    loadData();
+  }
+});
 </script>
 
 <style scoped lang="scss">
-.system-edit-page { padding: 20px;
-  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; .header-left { .page-title { font-size: 24px; font-weight: 600; margin: 8px 0 0; color: #303133; } } .header-right { display: flex; gap: 12px; } }
+.system-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 8px 0 0;
+        color: #303133;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .search-card { margin-bottom: 20px; border-radius: 12px; }
+  .table-card { border-radius: 12px; }
+  .form-card { border-radius: 12px; }
+  .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
   .loading-container { padding: 40px 0; }
-  .form-section { margin-bottom: 24px; .section-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 16px; } }
-  .stats-info { .stat-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f7fa; &:last-child { border-bottom: none; } .stat-label { color: #909399; } .stat-value { color: #303133; font-weight: 500; } } }
+}
+
+@media (max-width: 768px) {
+  .system-page {
+    padding: 12px;
+    .page-header { flex-direction: column; gap: 12px; .header-right { width: 100%; } }
+  }
 }
 </style>

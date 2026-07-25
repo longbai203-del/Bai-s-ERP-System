@@ -1,186 +1,446 @@
-﻿<!-- 
+﻿<!--
   文件路径: frontend/src/modules/ai/pages/AIChat.vue
-  功能: AI聊天 - 智能对话助手
+  功能: AI智能对话 - 智能对话助手
+  最后更新: 2026-07-25 12:49:09
 -->
 
 <template>
-  <div class="page-container">
-    <el-card class="filter-card">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>AI 智能聊天</h3>
-        <div>
-          <el-button type="warning" @click="handleNewChat"><el-icon><Plus /></el-icon> 新对话</el-button>
-          <el-button @click="handleClear"><el-icon><Delete /></el-icon> 清空</el-button>
-        </div>
+  <div class="ai-page">
+    <div class="page-header">
+      <div class="header-left">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/ai' }">AI智能</el-breadcrumb-item>
+          <el-breadcrumb-item>AI智能对话</el-breadcrumb-item>
+        </el-breadcrumb>
+        <h1 class="page-title">
+          <el-icon class="ai-icon"><Magic /></el-icon>
+          AI智能对话
+        </h1>
+        <p class="page-desc">智能对话助手</p>
       </div>
-    </el-card>
+      <div class="header-right">
+        <el-button @click="handleClear">
+          <el-icon><Delete /></el-icon> 清空
+        </el-button>
+        <el-button type="primary" @click="handleExport">
+          <el-icon><Download /></el-icon> 导出结果
+        </el-button>
+      </div>
+    </div>
 
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="4">
-        <el-card>
-          <template #header><span>对话历史</span></template>
-          <div v-for="session in sessions" :key="session.id" class="session-item" :class="{ active: session.active }" @click="handleSelectSession(session)">
-            <span>{{ session.title }}</span>
-            <span class="session-time">{{ session.time }}</span>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="4" animated />
+    </div>
+
+    <template v-else>
+      <!-- AI输入区域 -->
+      <el-card class="input-card" shadow="hover">
+        <div class="ai-input-area">
+          <el-input
+            v-model="inputText"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入您的问题或需求..."
+            class="ai-textarea"
+          />
+          <div class="input-actions">
+            <el-upload
+              v-if="showUpload"
+              action="#"
+              :auto-upload="false"
+              :on-change="handleFileChange"
+              :limit="1"
+              class="upload-btn"
+            >
+              <el-button>
+                <el-icon><Paperclip /></el-icon> 上传文件
+              </el-button>
+            </el-upload>
+            <el-button type="primary" :loading="generating" @click="handleGenerate">
+              <el-icon><Magic /></el-icon> 生成
+            </el-button>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="20">
-        <el-card>
-          <div class="chat-container">
-            <div class="chat-messages" ref="messagesContainer">
-              <div v-for="(msg, index) in messages" :key="index" class="message" :class="msg.role">
-                <div class="message-avatar">
-                  <el-avatar :size="36" :icon="msg.role === 'user' ? 'UserFilled' : 'Cpu'" />
-                </div>
-                <div class="message-content">
-                  <div class="message-text">{{ msg.content }}</div>
-                  <div class="message-time">{{ msg.time }}</div>
-                </div>
-              </div>
-              <div v-if="loading" class="message assistant">
-                <div class="message-avatar"><el-avatar :size="36" icon="Cpu" /></div>
-                <div class="message-content">
-                  <div class="typing-indicator"><span></span><span></span><span></span></div>
-                </div>
-              </div>
-            </div>
-            <div class="chat-input">
-              <el-input
-                v-model="message"
-                placeholder="输入消息..."
-                size="large"
-                @keyup.enter="handleSend"
-                clearable
-              >
-                <template #append>
-                  <el-button type="primary" @click="handleSend" :loading="loading">
-                    <el-icon><Promotion /></el-icon> 发送
-                  </el-button>
-                </template>
-              </el-input>
-            </div>
+        </div>
+      </el-card>
+
+      <!-- AI响应区域 -->
+      <el-card class="result-card" shadow="hover" v-if="result">
+        <template #header>
+          <div class="card-header">
+            <span>
+              <el-icon><ChatDotRound /></el-icon> AI响应
+            </span>
+            <el-tag type="success" size="small">生成完成</el-tag>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </template>
+        <div class="result-content" v-html="result"></div>
+        <div class="result-actions">
+          <el-button size="small" @click="handleCopy">
+            <el-icon><CopyDocument /></el-icon> 复制
+          </el-button>
+          <el-button size="small" @click="handleRegenerate">
+            <el-icon><Refresh /></el-icon> 重新生成
+          </el-button>
+        </div>
+      </el-card>
+
+      <!-- 历史记录 -->
+      <el-card class="history-card" shadow="hover" v-if="history.length > 0">
+        <template #header>
+          <div class="card-header">
+            <span>历史记录</span>
+            <el-button type="text" size="small" @click="handleClearHistory">清空</el-button>
+          </div>
+        </template>
+        <el-timeline>
+          <el-timeline-item
+            v-for="item in history"
+            :key="item.id"
+            :timestamp="formatDate(item.createdAt)"
+            placement="top"
+          >
+            <div class="history-item">
+              <div class="history-question">{{ item.question }}</div>
+              <div class="history-answer">{{ item.answer }}</div>
+            </div>
+          </el-timeline-item>
+        </el-timeline>
+      </el-card>
+
+      <el-empty v-if="!result && history.length === 0" description="暂无数据，请开始使用AI助手" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
-import {
-  Plus,
-  Search,
-  Refresh,
-  View,
-  Edit,
-  Delete
-} from '@element-plus/icons-vue'
-// ============================================================
-// API 导入
-// ============================================================
-import {  } from '@/api/modules/ai'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Magic, Delete, Download, Paperclip, ChatDotRound, CopyDocument, Refresh } from '@element-plus/icons-vue';
+import { formatDate } from '@/utils/format';
+import { aiApi } from '@/api/ai';
 
-const message = ref('')
-const loading = ref(false)
-const messagesContainer = ref<HTMLElement>()
+const route = useRoute();
+const router = useRouter();
 
-const sessions = ref([
-  { id: 1, title: '产品咨询', time: '10:30', active: true },
-  { id: 2, title: '订单问题', time: '09:15', active: false },
-  { id: 3, title: '库存查询', time: '昨天', active: false },
-])
+// ==================== 状态 ====================
+const loading = ref(false);
+const generating = ref(false);
+const inputText = ref('');
+const result = ref('');
+const history = ref<any[]>([]);
+const uploadedFile = ref<File | null>(null);
 
-const messages = ref([
-  { role: 'assistant', content: '您好！我是AI聊天助手，可以帮您处理各种业务咨询。请问有什么需要帮助的？', time: '10:30' },
-])
+// ==================== 页面类型 ====================
+const pageType = computed(() => {
+  const path = route.path;
+  if (path.includes('/chat')) return 'Chat';
+  if (path.includes('/contract')) return 'Contract';
+  if (path.includes('/create')) return 'Create';
+  if (path.includes('/customer-service')) return 'CustomerService';
+  if (path.includes('/invoice')) return 'Invoice';
+  if (path.includes('/ocr')) return 'OCR';
+  if (path.includes('/qa')) return 'QA';
+  if (path.includes('/report')) return 'Report';
+  if (path.includes('/purchase-order')) return 'PurchaseOrder';
+  if (path.includes('/quotation')) return 'Quotation';
+  if (path.includes('/inventory')) return 'Inventory';
+  if (path.includes('/profit')) return 'Profit';
+  if (path.includes('/purchase-suggestion')) return 'PurchaseSuggestion';
+  if (path.includes('/sales-prediction')) return 'SalesPrediction';
+  return 'Index';
+});
 
-const scrollToBottom = async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+const showUpload = computed(() => {
+  return ['Invoice', 'OCR', 'Contract'].includes(pageType.value);
+});
+
+// ==================== 方法 ====================
+
+/**
+ * 生成AI响应
+ */
+const handleGenerate = async () => {
+  if (!inputText.value.trim()) {
+    ElMessage.warning('请输入内容');
+    return;
+  }
+
+  generating.value = true;
+  try {
+    const data = {
+      prompt: inputText.value,
+      type: pageType.value,
+      file: uploadedFile.value,
+    };
+    const response = await aiApi.generate(data);
+    result.value = response.data.result;
+    
+    // 保存历史
+    history.value.unshift({
+      id: Date.now(),
+      question: inputText.value,
+      answer: result.value,
+      createdAt: new Date().toISOString(),
+    });
+    
+    ElMessage.success('生成完成');
+  } catch (error: any) {
+    ElMessage.error(error.message || '生成失败，请重试');
+  } finally {
+    generating.value = false;
+  }
+};
+
+/**
+ * 文件上传
+ */
+const handleFileChange = (file: any) => {
+  uploadedFile.value = file.raw;
+  ElMessage.success(已上传: );
+};
+
+/**
+ * 复制结果
+ */
+const handleCopy = async () => {
+  try {
+    await navigator.clipboard.writeText(result.value);
+    ElMessage.success('已复制到剪贴板');
+  } catch {
+    ElMessage.error('复制失败');
+  }
+};
+
+/**
+ * 重新生成
+ */
+const handleRegenerate = () => {
+  if (history.value.length > 0) {
+    const last = history.value[0];
+    inputText.value = last.question;
+    handleGenerate();
+  }
+};
+
+/**
+ * 清空
+ */
+const handleClear = () => {
+  inputText.value = '';
+  result.value = '';
+  uploadedFile.value = null;
+};
+
+/**
+ * 清空历史
+ */
+const handleClearHistory = async () => {
+  try {
+    await ElMessageBox.confirm('确定要清空所有历史记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    history.value = [];
+    ElMessage.success('已清空历史');
+  } catch { /* 用户取消 */ }
+};
+
+/**
+ * 导出结果
+ */
+const handleExport = () => {
+  if (!result.value) {
+    ElMessage.warning('没有可导出的内容');
+    return;
+  }
+  const blob = new Blob([result.value], { type: 'text/plain' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = i_result_.txt;
+  link.click();
+  window.URL.revokeObjectURL(url);
+  ElMessage.success('导出成功');
+};
+
+/**
+ * 加载历史
+ */
+const loadHistory = async () => {
+  loading.value = true;
+  try {
+    const response = await aiApi.getHistory({ type: pageType.value, limit: 20 });
+    history.value = response.data || [];
+  } catch (error: any) {
+    // 静默失败
+  } finally {
+    loading.value = false;
+  }
+};
+
+// ==================== 生命周期 ====================
+onMounted(() => {
+  loadHistory();
+});
+</script>
+
+<style scoped lang="scss">
+.ai-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #303133;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+
+        .ai-icon {
+          color: #409EFF;
+          font-size: 28px;
+        }
+      }
+
+      .page-desc {
+        color: #909399;
+        font-size: 14px;
+        margin: 4px 0 0 36px;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  .loading-container { padding: 40px 0; }
+
+  .input-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    .ai-input-area {
+      .ai-textarea {
+        :deep(.el-textarea__inner) {
+          border-radius: 8px;
+          font-size: 15px;
+          line-height: 1.8;
+        }
+      }
+
+      .input-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+
+        .upload-btn {
+          :deep(.el-upload) {
+            display: inline-block;
+          }
+        }
+
+        .el-button {
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+
+  .result-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 16px;
+
+      .el-icon {
+        margin-right: 8px;
+        color: #409EFF;
+      }
+    }
+
+    .result-content {
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      min-height: 100px;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: #303133;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+  }
+
+  .history-card {
+    border-radius: 12px;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .history-item {
+      .history-question {
+        font-weight: 500;
+        color: #303133;
+        margin-bottom: 4px;
+      }
+      .history-answer {
+        color: #606266;
+        font-size: 14px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
   }
 }
 
-const handleSend = async () => {
-  if (!message.value.trim()) return
-  if (loading.value) return
+@media (max-width: 768px) {
+  .ai-page {
+    padding: 12px;
 
-  messages.value.push({
-    role: 'user',
-    content: message.value,
-    time: new Date().toLocaleTimeString(),
-  })
-  const userMessage = message.value
-  message.value = ''
-  loading.value = true
-  await scrollToBottom()
+    .page-header {
+      flex-direction: column;
+      gap: 12px;
 
-  setTimeout(() => {
-    const responses = [
-      '好的，我来帮您处理这个问题。根据系统信息，我建议...',
-      '明白了！让我为您分析一下这个情况...',
-      '这是一个很好的问题！根据我的理解...',
-      '收到！我正在查询相关数据，请稍候...',
-    ]
-    messages.value.push({
-      role: 'assistant',
-      content: responses[Math.floor(Math.random() * responses.length)] + '\n\n' + '您还有什么其他问题吗？',
-      time: new Date().toLocaleTimeString(),
-    })
-    loading.value = false
-    scrollToBottom()
-  }, 1200)
+      .header-right {
+        width: 100%;
+      }
+    }
+  }
 }
-
-const handleNewChat = () => {
-  sessions.value.unshift({ id: Date.now(), title: '新对话', time: '刚刚', active: true })
-  sessions.value.forEach(s => s.active = false)
-  sessions.value[0].active = true
-  messages.value = [
-    { role: 'assistant', content: '您好！这是新的对话，请问有什么可以帮您？', time: new Date().toLocaleTimeString() },
-  ]
-  ElMessage.success('已创建新对话')
-}
-
-const handleClear = () => {
-  messages.value = [
-    { role: 'assistant', content: '对话已清空，有什么可以帮您的？', time: new Date().toLocaleTimeString() },
-  ]
-  ElMessage.success('已清空对话')
-}
-
-const handleSelectSession = (session: any) => {
-  sessions.value.forEach(s => s.active = false)
-  session.active = true
-  ElMessage.info(`切换到: ${session.title}`)
-}
-</script>
-
-<style scoped>
-.page-container { padding: 20px; background: #f5f7fa; min-height: 100vh; }
-.filter-card { margin-bottom: 20px; border-radius: 12px; }
-.filter-card h3 { margin: 0; }
-.session-item { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
-.session-item:hover { background: #f5f7fa; }
-.session-item.active { background: #E3F2FD; border-left: 3px solid #409EFF; }
-.session-time { color: #909399; font-size: 12px; }
-.chat-container { display: flex; flex-direction: column; height: 500px; }
-.chat-messages { flex: 1; overflow-y: auto; padding: 16px; background: #fafafa; border-radius: 8px; }
-.message { display: flex; gap: 12px; margin-bottom: 16px; }
-.message.user { flex-direction: row-reverse; }
-.message.user .message-content { background: #409EFF; color: white; border-radius: 12px 12px 4px 12px; }
-.message.assistant .message-content { background: white; border-radius: 12px 12px 12px 4px; }
-.message-content { max-width: 80%; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.message-text { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
-.message-time { font-size: 11px; color: #909399; margin-top: 4px; }
-.message.user .message-time { color: rgba(255,255,255,0.7); }
-.typing-indicator { display: flex; gap: 4px; padding: 4px 0; }
-.typing-indicator span { width: 8px; height: 8px; border-radius: 50%; background: #909399; animation: typing 1.4s infinite; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-8px); opacity: 1; } }
-.chat-input { margin-top: 16px; }
 </style>
