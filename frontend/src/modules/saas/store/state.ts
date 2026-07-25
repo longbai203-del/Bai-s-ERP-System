@@ -1,22 +1,44 @@
-﻿import { ref, reactive } from 'vue';
+﻿/**
+ * 订单模块状态
+ * @module modules/orders/store/state
+ */
 
-export const usesaasState = () => {
-  const items = ref<any[]>([]);
-  const currentItem = ref<any | null>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const pagination = reactive({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+import { OrderState, OrderQueryParams } from './types';
 
-  return {
-    items,
-    currentItem,
-    loading,
-    error,
-    pagination
-  };
+/**
+ * 默认查询参数
+ */
+const defaultFilters: OrderQueryParams = {
+  page: 1,
+  limit: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
 };
+
+/**
+ * 初始状态
+ */
+export const state: OrderState = {
+  orders: [],
+  currentOrder: null,
+  total: 0,
+  loading: false,
+  error: null,
+  filters: { ...defaultFilters },
+};
+
+/**
+ * 重置状态
+ */
+export function resetState(): OrderState {
+  return {
+    orders: [],
+    currentOrder: null,
+    total: 0,
+    loading: false,
+    error: null,
+    filters: { ...defaultFilters },
+  };
+}
+
+export default state;

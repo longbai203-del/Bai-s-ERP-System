@@ -1,22 +1,55 @@
-﻿import { ref, reactive } from 'vue';
+﻿/**
+ * 报表模块状态
+ * @module modules/reports/store/state
+ */
 
-export const usereportsState = () => {
-  const items = ref<any[]>([]);
-  const currentItem = ref<any | null>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const pagination = reactive({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+import { ReportState, ReportQueryParams, ReportStats } from './types';
 
-  return {
-    items,
-    currentItem,
-    loading,
-    error,
-    pagination
-  };
+const defaultFilters: ReportQueryParams = {
+  page: 1,
+  limit: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
 };
+
+const defaultStats: ReportStats = {
+  total: 0,
+  byType: { sales: 0, finance: 0, inventory: 0, customer: 0, hr: 0, purchase: 0, production: 0, custom: 0 },
+  byStatus: { pending: 0, generating: 0, completed: 0, failed: 0, cancelled: 0 },
+  byFormat: { excel: 0, pdf: 0, csv: 0, html: 0, json: 0 },
+  totalRows: 0,
+  averageRows: 0,
+  totalSize: 0,
+  averageSize: 0,
+  monthlyCount: [],
+};
+
+export const state: ReportState = {
+  reports: [],
+  currentReport: null,
+  templates: [],
+  schedules: [],
+  stats: { ...defaultStats },
+  total: 0,
+  loading: false,
+  generating: false,
+  error: null,
+  filters: { ...defaultFilters },
+};
+
+export function resetState(): ReportState {
+  return {
+    reports: [],
+    currentReport: null,
+    templates: [],
+    schedules: [],
+    stats: { ...defaultStats },
+    total: 0,
+    loading: false,
+    generating: false,
+    error: null,
+    filters: { ...defaultFilters },
+  };
+}
+
+export default state;

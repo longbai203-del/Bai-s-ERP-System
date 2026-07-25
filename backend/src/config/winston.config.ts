@@ -1,712 +1,325 @@
 ﻿/**
- * @file Config/winston.config.ts
- * Winston 日志系统配置 - 生产级结构化日志
- * 完整实现：移除所有 TODO/FIXME，实现完整的日志分级、JSON结构化输出、多文件存储、日志脱敏
+ * Winston日志配置
+ * 完整的Winston日志系统配置
+ * @module winston.config
  */
 
 import winston from 'winston';
-import 'winston-daily-rotate-file';
-import path from 'path';
-import fs from 'fs';
-import { createHash } from 'crypto';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import { LogRotateManager } from './logrotate.config';
 
-// ============================================
-// 类型定义
-// ============================================
-
+/**
+ * 日志级别
+ */
 export enum LogLevel {
-  FATAL = 'fatal',
   ERROR = 'error',
   WARN = 'warn',
   INFO = 'info',
   DEBUG = 'debug',
-  TRACE = 'trace',
+  VERBOSE = 'verbose',
+  SILLY = 'silly',
 }
 
-export const LOG_LEVEL_PRIORITY = {
-  fatal: 0,
-  error: 1,
-  warn: 2,
-  info: 3,
-  debug: 4,
-  trace: 5,
+/**
+ * Winston配置接口
+ */
+export interface WinstonConfig {
+  /** 日志级别 */
+  level?: LogLevel;
+  /** 日志格式 */
+  format?: 'json' | 'simple' | 'combined';
+  /** 是否彩色输出 */
+  colorize?: boolean;
+  /** 是否显示时间戳 */
+  timestamp?: boolean;
+  /** 日志目录 */
+  logDir?: string;
+  /** 日志文件名 */
+  filename?: string;
+  /** 最大文件大小 */
+  maxSize?: string;
+  /** 最大文件数 */
+  maxFiles?: string;
+  /** 是否压缩 */
+  compress?: boolean;
+  /** 控制台输出 */
+  console?: boolean;
+  /** 文件输出 */
+  file?: boolean;
+}
+
+/**
+ * 默认Winston配置
+ */
+export const DEFAULT_WINSTON_CONFIG: WinstonConfig = {
+  level: LogLevel.INFO,
+  format: 'json',
+  colorize: true,
+  timestamp: true,
+  logDir: './logs',
+  filename: 'app-%DATE%.log',
+  maxSize: '50m',
+  maxFiles: '30d',
+  compress: true,
+  console: true,
+  file: true,
 };
 
-export interface LogContext {
-  service?: string;
-  environment?: string;
-  version?: string;
-  traceId?: string;
-  userId?: string | number;
-  sessionId?: string;
-  ip?: string;
-  userAgent?: string;
-  requestId?: string;
-  [key: string]: any;
-}
+/**
+ * Winston日志管理器
+ */
+export class WinstonLogManager {
+  private logger: winston.Logger;
+  private config: Required<WinstonConfig>;
+  private rotateManager: LogRotateManager | null = null;
 
-export interface LoggerConfig {
-  level: LogLevel;
-  service: string;
-  environment: string;
-  version: string;
-  logDir: string;
-  maxSize: string;
-  maxFiles: string;
-  compress: boolean;
-  jsonFormat: boolean;
-  colorize: boolean;
-  enableConsole: boolean;
-  enableFile: boolean;
-  enableDailyRotate: boolean;
-  enableErrorFile: boolean;
-  enableExceptionHandling: boolean;
-  enableRejectionHandling: boolean;
-  sensitiveFields: string[];
-  redactSensitiveData: boolean;
-  enablePerformanceMonitoring: boolean;
-  enableTraceLogging: boolean;
-}
+  constructor(config: WinstonConfig = {}) {
+    this.config = {
+      ...DEFAULT_WINSTON_CONFIG,
+      ...config,
+    } as Required<WinstonConfig>;
 
-// ============================================
-// 敏感数据脱敏
-// ============================================
-
-const defaultSensitiveFields = [
-  'password', 'token', 'secret', 'key', 'authorization',
-  'cookie', 'set-cookie', 'csrf', 'x-csrf-token',
-  'api-key', 'api_key', 'access_token', 'refresh_token',
-  'credit_card', 'card_number', 'cvv', 'ssn',
-  'social_security', 'bank_account', 'routing_number',
-  'private_key', 'certificate', 'passphrase',
-  'mysql_password', 'db_password', 'redis_password',
-  'jwt_secret', 'session_secret',
-];
-
-function redactSensitiveData(data: any, fields: string[]): any {
-  if (!data || typeof data !== 'object') {
-    return data;
+    this.logger = this.createLogger();
+    this.setupRotateManager();
   }
 
-  const result = Array.isArray(data) ? [...data] : { ...data };
-  const allFields = [...defaultSensitiveFields, ...fields];
+  /**
+   * 创建Winston日志器
+   */
+  private createLogger(): winston.Logger {
+    const transports: winston.transport[] = [];
 
-  for (const key of Object.keys(result)) {
-    const lowerKey = key.toLowerCase();
-    if (allFields.some(f => lowerKey.includes(f.toLowerCase()))) {
-      const value = result[key];
-      if (typeof value === 'string' && value.length > 0) {
-        result[key] = '***REDACTED***';
-      } else {
-        result[key] = '***REDACTED***';
-      }
-    } else if (typeof result[key] === 'object' && result[key] !== null) {
-      result[key] = redactSensitiveData(result[key], fields);
+    // 控制台传输
+    if (this.config.console) {
+      transports.push(new winston.transports.Console({
+        level: this.config.level,
+        format: this.getConsoleFormat(),
+      }));
     }
+
+    // 文件传输
+    if (this.config.file) {
+      transports.push(new DailyRotateFile({
+        filename: `${this.config.logDir}/${this.config.filename}`,
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: this.config.compress,
+        maxSize: this.config.maxSize,
+        maxFiles: this.config.maxFiles,
+        format: this.getFileFormat(),
+        level: this.config.level,
+      }));
+    }
+
+    return winston.createLogger({
+      level: this.config.level,
+      transports,
+      exitOnError: false,
+    });
   }
 
-  return result;
-}
+  /**
+   * 获取控制台格式
+   */
+  private getConsoleFormat(): winston.Logform.Format {
+    const formats: winston.Logform.Format[] = [];
 
-// ============================================
-// 自定义格式化
-// ============================================
+    if (this.config.timestamp) {
+      formats.push(winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }));
+    }
 
-function createCustomFormat(config: LoggerConfig) {
-  const formats: winston.Logform.Format[] = [];
-
-  // 时间戳
-  formats.push(
-    winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss.SSS',
-    })
-  );
-
-  // 错误堆栈
-  formats.push(winston.format.errors({ stack: true }));
-
-  // 敏感数据脱敏
-  if (config.redactSensitiveData) {
-    formats.push(
-      winston.format((info) => {
-        if (info.metadata) {
-          info.metadata = redactSensitiveData(info.metadata, config.sensitiveFields);
-        }
-        if (info.data) {
-          info.data = redactSensitiveData(info.data, config.sensitiveFields);
-        }
-        if (info.context) {
-          info.context = redactSensitiveData(info.context, config.sensitiveFields);
-        }
-        return info;
-      })()
-    );
-  }
-
-  // 性能监控
-  if (config.enablePerformanceMonitoring) {
-    formats.push(
-      winston.format((info) => {
-        if (info.duration) {
-          info.durationMs = info.duration;
-        }
-        if (info.memory) {
-          info.memoryUsageMB = info.memory;
-        }
-        return info;
-      })()
-    );
-  }
-
-  // JSON 格式
-  if (config.jsonFormat) {
-    formats.push(
-      winston.format.json({
-        space: config.environment === 'development' ? 2 : 0,
-        replacer: (key, value) => {
-          // 处理 BigInt
-          if (typeof value === 'bigint') {
-            return value.toString();
-          }
-          return value;
-        },
-      })
-    );
-  } else {
-    // 可读格式
-    formats.push(
-      winston.format.printf(({ timestamp, level, message, service, context, traceId, ...metadata }) => {
-        const contextStr = context ? `[${context}]` : '';
-        const traceStr = traceId ? `[${traceId}]` : '';
-        const metaStr = Object.keys(metadata).length > 0 
-          ? ` ${JSON.stringify(metadata)}` 
-          : '';
-        return `${timestamp} ${level} ${service} ${contextStr}${traceStr} ${message}${metaStr}`;
-      })
-    );
-
-    if (config.colorize) {
+    if (this.config.colorize) {
       formats.push(winston.format.colorize({ all: true }));
     }
+
+    if (this.config.format === 'json') {
+      formats.push(winston.format.json());
+    } else if (this.config.format === 'simple') {
+      formats.push(winston.format.simple());
+    } else {
+      formats.push(winston.format.combined());
+    }
+
+    return winston.format.combine(...formats);
   }
 
-  return winston.format.combine(...formats);
-}
+  /**
+   * 获取文件格式
+   */
+  private getFileFormat(): winston.Logform.Format {
+    const formats: winston.Logform.Format[] = [];
 
-// ============================================
-// 日志传输配置
-// ============================================
+    if (this.config.timestamp) {
+      formats.push(winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }));
+    }
 
-function createTransports(config: LoggerConfig): winston.transport[] {
-  const transports: winston.transport[] = [];
+    formats.push(winston.format.errors({ stack: true }));
 
-  // 控制台传输
-  if (config.enableConsole) {
-    transports.push(
-      new winston.transports.Console({
-        level: config.environment === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
-        format: createCustomFormat({
-          ...config,
-          jsonFormat: false,
-          colorize: true,
-        }),
-        handleExceptions: config.enableExceptionHandling,
-        handleRejections: config.enableRejectionHandling,
-      })
-    );
+    if (this.config.format === 'json') {
+      formats.push(winston.format.json());
+    } else {
+      formats.push(winston.format.printf(({ timestamp, level, message, ...meta }) => {
+        const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+        return `${timestamp} [${level}] ${message}${metaStr}`;
+      }));
+    }
+
+    return winston.format.combine(...formats);
   }
 
-  // 确保日志目录存在
-  if (config.enableFile || config.enableDailyRotate || config.enableErrorFile) {
-    if (!fs.existsSync(config.logDir)) {
-      fs.mkdirSync(config.logDir, { recursive: true });
+  /**
+   * 设置轮转管理器
+   */
+  private setupRotateManager(): void {
+    try {
+      this.rotateManager = new LogRotateManager({
+        filePath: `${this.config.logDir}/app.log`,
+        maxSize: parseInt(this.config.maxSize) * 1024 * 1024,
+        maxFiles: 30,
+        compress: this.config.compress,
+        format: this.config.format as any,
+        async: true,
+      });
+
+      // 监听轮转事件
+      this.rotateManager.on('rotated', (oldPath, newPath) => {
+        this.logger.info('日志轮转完成', { oldPath, newPath });
+      });
+    } catch (error) {
+      console.error('日志轮转初始化失败:', error);
     }
   }
 
-  // 文件传输 - 按天轮转
-  if (config.enableFile && config.enableDailyRotate) {
-    const rotateTransport = new winston.transports.DailyRotateFile({
-      filename: path.join(config.logDir, `${config.service}-%DATE%.log`),
-      datePattern: 'YYYY-MM-DD',
-      maxSize: config.maxSize || '100m',
-      maxFiles: config.maxFiles || '30d',
-      format: createCustomFormat({
-        ...config,
-        jsonFormat: true,
-        colorize: false,
-      }),
-      level: config.level,
-      zippedArchive: config.compress,
-      handleExceptions: config.enableExceptionHandling,
-      handleRejections: config.enableRejectionHandling,
-    });
-
-    rotateTransport.on('rotate', (oldFilename, newFilename) => {
-      console.log(`[Winston] 日志轮转: ${oldFilename} -> ${newFilename}`);
-    });
-
-    rotateTransport.on('error', (error) => {
-      console.error('[Winston] 日志轮转错误:', error);
-    });
-
-    transports.push(rotateTransport);
+  /**
+   * 记录错误日志
+   */
+  error(message: string, meta?: any): void {
+    this.logger.error(message, meta);
   }
 
-  // 普通文件传输
-  if (config.enableFile && !config.enableDailyRotate) {
-    transports.push(
-      new winston.transports.File({
-        filename: path.join(config.logDir, `${config.service}.log`),
-        format: createCustomFormat({
-          ...config,
-          jsonFormat: true,
-          colorize: false,
-        }),
-        level: config.level,
-        maxsize: 100 * 1024 * 1024,
-        maxFiles: 10,
-        handleExceptions: config.enableExceptionHandling,
-        handleRejections: config.enableRejectionHandling,
-      })
-    );
+  /**
+   * 记录警告日志
+   */
+  warn(message: string, meta?: any): void {
+    this.logger.warn(message, meta);
   }
 
-  // 错误日志单独文件
-  if (config.enableErrorFile) {
-    transports.push(
-      new winston.transports.File({
-        filename: path.join(config.logDir, `${config.service}-error.log`),
-        format: createCustomFormat({
-          ...config,
-          jsonFormat: true,
-          colorize: false,
-        }),
-        level: LogLevel.ERROR,
-        maxsize: 50 * 1024 * 1024,
-        maxFiles: 10,
-        handleExceptions: config.enableExceptionHandling,
-        handleRejections: config.enableRejectionHandling,
-      })
-    );
+  /**
+   * 记录信息日志
+   */
+  info(message: string, meta?: any): void {
+    this.logger.info(message, meta);
   }
 
-  return transports;
-}
-
-// ============================================
-// 日志上下文管理
-// ============================================
-
-class LoggerContext {
-  private static instance: LoggerContext;
-  private context: Map<string, any> = new Map();
-  private traceMap: Map<string, any> = new Map();
-
-  private constructor() {}
-
-  static getInstance(): LoggerContext {
-    if (!LoggerContext.instance) {
-      LoggerContext.instance = new LoggerContext();
-    }
-    return LoggerContext.instance;
+  /**
+   * 记录调试日志
+   */
+  debug(message: string, meta?: any): void {
+    this.logger.debug(message, meta);
   }
 
-  set(key: string, value: any): void {
-    this.context.set(key, value);
+  /**
+   * 记录详细日志
+   */
+  verbose(message: string, meta?: any): void {
+    this.logger.verbose(message, meta);
   }
 
-  get(key: string): any {
-    return this.context.get(key);
+  /**
+   * 记录HTTP请求日志
+   */
+  http(message: string, meta?: any): void {
+    this.logger.http(message, meta);
   }
 
-  getAll(): Record<string, any> {
-    return Object.fromEntries(this.context);
+  /**
+   * 记录操作日志
+   */
+  log(level: LogLevel, message: string, meta?: any): void {
+    this.logger.log(level, message, meta);
   }
 
-  clear(): void {
-    this.context.clear();
+  /**
+   * 创建子日志器
+   */
+  child(options: Record<string, any>): winston.Logger {
+    return this.logger.child(options);
   }
 
-  withContext(data: Record<string, any>): void {
-    for (const [key, value] of Object.entries(data)) {
-      this.context.set(key, value);
-    }
+  /**
+   * 获取日志器实例
+   */
+  getLogger(): winston.Logger {
+    return this.logger;
   }
 
-  child(data: Record<string, any>): Record<string, any> {
-    return { ...this.getAll(), ...data };
+  /**
+   * 获取轮转管理器
+   */
+  getRotateManager(): LogRotateManager | null {
+    return this.rotateManager;
   }
 
-  // TraceID 管理
-  setTrace(traceId: string, data: any): void {
-    this.traceMap.set(traceId, data);
-  }
-
-  getTrace(traceId: string): any {
-    return this.traceMap.get(traceId);
-  }
-
-  clearTrace(traceId: string): void {
-    this.traceMap.delete(traceId);
-  }
-
-  getAllTraces(): Map<string, any> {
-    return this.traceMap;
-  }
-}
-
-// ============================================
-// 主日志类
-// ============================================
-
-class Logger {
-  private logger: winston.Logger;
-  private config: LoggerConfig;
-  private context: LoggerContext;
-
-  constructor(config: Partial<LoggerConfig> = {}) {
-    this.context = LoggerContext.getInstance();
-
+  /**
+   * 更新配置
+   */
+  updateConfig(config: Partial<WinstonConfig>): void {
     this.config = {
-      level: (config.level || process.env.LOG_LEVEL as LogLevel || LogLevel.INFO),
-      service: config.service || process.env.APP_NAME || 'erp-system',
-      environment: config.environment || process.env.NODE_ENV || 'development',
-      version: config.version || process.env.APP_VERSION || '1.0.0',
-      logDir: config.logDir || process.env.LOG_DIR || './logs',
-      maxSize: config.maxSize || process.env.LOG_MAX_SIZE || '100m',
-      maxFiles: config.maxFiles || process.env.LOG_MAX_FILES || '30d',
-      compress: config.compress !== undefined ? config.compress : process.env.LOG_COMPRESS !== 'false',
-      jsonFormat: config.jsonFormat !== undefined ? config.jsonFormat : process.env.NODE_ENV === 'production',
-      colorize: config.colorize !== undefined ? config.colorize : process.env.NODE_ENV !== 'production',
-      enableConsole: config.enableConsole !== undefined ? config.enableConsole : true,
-      enableFile: config.enableFile !== undefined ? config.enableFile : true,
-      enableDailyRotate: config.enableDailyRotate !== undefined ? config.enableDailyRotate : true,
-      enableErrorFile: config.enableErrorFile !== undefined ? config.enableErrorFile : true,
-      enableExceptionHandling: config.enableExceptionHandling !== undefined ? config.enableExceptionHandling : true,
-      enableRejectionHandling: config.enableRejectionHandling !== undefined ? config.enableRejectionHandling : true,
-      sensitiveFields: config.sensitiveFields || [],
-      redactSensitiveData: config.redactSensitiveData !== undefined ? config.redactSensitiveData : true,
-      enablePerformanceMonitoring: config.enablePerformanceMonitoring !== undefined ? config.enablePerformanceMonitoring : true,
-      enableTraceLogging: config.enableTraceLogging !== undefined ? config.enableTraceLogging : true,
-    };
+      ...this.config,
+      ...config,
+    } as Required<WinstonConfig>;
 
+    // 重新创建日志器
     this.logger = this.createLogger();
   }
 
-  private createLogger(): winston.Logger {
-    const transports = createTransports(this.config);
-
-    const logger = winston.createLogger({
-      level: this.config.level,
-      levels: LOG_LEVEL_PRIORITY,
-      defaultMeta: {
-        service: this.config.service,
-        environment: this.config.environment,
-        version: this.config.version,
-        pid: process.pid,
-        hostname: require('os').hostname(),
-        nodeVersion: process.version,
-        timestamp: new Date().toISOString(),
-      },
-      transports,
-      exitOnError: false,
-      handleExceptions: this.config.enableExceptionHandling,
-      handleRejections: this.config.enableRejectionHandling,
-    });
-
-    return logger;
-  }
-
-  // ============================================
-  // 日志方法
-  // ============================================
-
-  private log(level: LogLevel, message: string, context: LogContext | Record<string, any> = {}): void {
-    const allContext = {
-      ...this.context.getAll(),
-      ...context,
-    };
-
-    // 添加性能监控
-    if (this.config.enablePerformanceMonitoring) {
-      const memUsage = process.memoryUsage();
-      allContext.memoryUsage = {
-        rss: Math.round(memUsage.rss / 1024 / 1024 * 100) / 100,
-        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024 * 100) / 100,
-        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024 * 100) / 100,
-        external: Math.round(memUsage.external / 1024 / 1024 * 100) / 100,
-      };
-      allContext.cpuUsage = process.cpuUsage();
-      allContext.uptime = process.uptime();
-    }
-
-    this.logger.log(level, message, allContext);
-  }
-
-  fatal(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.FATAL, message, context);
-  }
-
-  error(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.ERROR, message, context);
-  }
-
-  warn(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.WARN, message, context);
-  }
-
-  info(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.INFO, message, context);
-  }
-
-  debug(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.DEBUG, message, context);
-  }
-
-  trace(message: string, context: LogContext | Record<string, any> = {}): void {
-    this.log(LogLevel.TRACE, message, context);
-  }
-
-  // ============================================
-  // 子日志器
-  // ============================================
-
-  child(context: LogContext | Record<string, any>): Logger {
-    const childLogger = new Logger(this.config);
-    childLogger.context.withContext({
-      ...this.context.getAll(),
-      ...context,
-    });
-    return childLogger;
-  }
-
-  // ============================================
-  // 上下文管理
-  // ============================================
-
-  setContext(key: string, value: any): void {
-    this.context.set(key, value);
-  }
-
-  getContext(key: string): any {
-    return this.context.get(key);
-  }
-
-  withContext(data: Record<string, any>): Logger {
-    const newLogger = new Logger(this.config);
-    newLogger.context.withContext({
-      ...this.context.getAll(),
-      ...data,
-    });
-    return newLogger;
-  }
-
-  // ============================================
-  // 配置管理
-  // ============================================
-
-  getConfig(): LoggerConfig {
+  /**
+   * 获取配置
+   */
+  getConfig(): WinstonConfig {
     return { ...this.config };
   }
 
-  updateConfig(config: Partial<LoggerConfig>): void {
-    this.config = { ...this.config, ...config };
-    this.logger = this.createLogger();
-    this.info('日志配置已更新', { newConfig: this.config });
-  }
-
-  // ============================================
-  // 业务日志方法
-  // ============================================
-
   /**
-   * 记录 API 请求日志
+   * 关闭日志管理器
    */
-  logApiRequest(req: any, res: any, responseTime: number): void {
-    const status = res.statusCode || res.status;
-    const isError = status >= 400;
-    const level = isError ? LogLevel.ERROR : LogLevel.INFO;
-
-    const logData = {
-      type: 'api_request',
-      method: req.method,
-      url: req.url,
-      status,
-      responseTime: `${responseTime}ms`,
-      ip: req.ip || req.connection?.remoteAddress,
-      userAgent: req.headers?.['user-agent'],
-      userId: req.user?.id || 'anonymous',
-      traceId: req.traceId || this.context.get('traceId'),
-      query: req.query,
-      params: req.params,
-    };
-
-    // 过滤敏感查询参数
-    if (logData.query) {
-      logData.query = redactSensitiveData(logData.query, this.config.sensitiveFields);
+  close(): void {
+    if (this.rotateManager) {
+      this.rotateManager.close();
     }
-
-    this.log(level, `API ${req.method} ${req.url} ${status}`, logData);
-  }
-
-  /**
-   * 记录数据库操作
-   */
-  logDbOperation(operation: string, collection: string, data: any = {}): void {
-    this.debug(`数据库操作: ${operation}`, {
-      type: 'db_operation',
-      operation,
-      collection,
-      ...data,
-    });
-  }
-
-  /**
-   * 记录业务事件
-   */
-  logBusinessEvent(event: string, data: any = {}): void {
-    this.info(`业务事件: ${event}`, {
-      type: 'business_event',
-      event,
-      ...data,
-    });
-  }
-
-  /**
-   * 记录安全事件
-   */
-  logSecurityEvent(event: string, data: any = {}): void {
-    this.warn(`安全事件: ${event}`, {
-      type: 'security_event',
-      event,
-      ...data,
-    });
-  }
-
-  /**
-   * 记录性能指标
-   */
-  logPerformance(metric: string, value: number, data: any = {}): void {
-    this.debug(`性能指标: ${metric}`, {
-      type: 'performance_metric',
-      metric,
-      value,
-      ...data,
-    });
-  }
-
-  /**
-   * 记录用户操作
-   */
-  logUserAction(userId: string | number, action: string, data: any = {}): void {
-    this.info(`用户操作: ${action}`, {
-      type: 'user_action',
-      userId,
-      action,
-      ...data,
-    });
-  }
-
-  /**
-   * 记录系统启动
-   */
-  logStartup(): void {
-    this.info(`🚀 ${this.config.service} v${this.config.version} 启动成功`, {
-      type: 'system_startup',
-      environment: this.config.environment,
-      pid: process.pid,
-      nodeVersion: process.version,
-      platform: process.platform,
-      arch: process.arch,
-      memory: process.memoryUsage(),
-    });
-  }
-
-  /**
-   * 记录系统关闭
-   */
-  logShutdown(reason: string = 'SIGTERM'): void {
-    this.info(`📦 服务正在关闭`, {
-      type: 'system_shutdown',
-      reason,
-      uptime: process.uptime(),
-    });
-  }
-
-  /**
-   * 记录健康检查
-   */
-  logHealthCheck(status: 'healthy' | 'unhealthy', details?: any): void {
-    if (status === 'healthy') {
-      this.debug('✅ 健康检查通过', { type: 'health_check', status, details });
-    } else {
-      this.warn('❌ 健康检查失败', { type: 'health_check', status, details });
-    }
+    this.logger.end();
+    console.log('[WinstonLog] 日志管理器已关闭');
   }
 }
 
-// ============================================
-// 默认实例
-// ============================================
-
-export const logger = new Logger();
-
-// ============================================
-// 便捷函数
-// ============================================
-
-export function createLogger(context: string, config?: Partial<LoggerConfig>): Logger {
-  return new Logger(config).child({ context });
+/**
+ * 创建Winston日志管理器（工厂函数）
+ */
+export function createWinstonLogManager(config?: WinstonConfig): WinstonLogManager {
+  return new WinstonLogManager(config);
 }
 
-export function getLogger(): Logger {
-  return logger;
+/**
+ * 从环境变量创建配置
+ */
+export function createWinstonFromEnv(): WinstonConfig {
+  return {
+    level: (process.env.LOG_LEVEL as LogLevel) || LogLevel.INFO,
+    format: (process.env.LOG_FORMAT as 'json' | 'simple' | 'combined') || 'json',
+    colorize: process.env.LOG_COLORIZE !== 'false',
+    timestamp: process.env.LOG_TIMESTAMP !== 'false',
+    logDir: process.env.LOG_DIR || './logs',
+    filename: process.env.LOG_FILENAME || 'app-%DATE%.log',
+    maxSize: process.env.LOG_MAX_SIZE || '50m',
+    maxFiles: process.env.LOG_MAX_FILES || '30d',
+    compress: process.env.LOG_COMPRESS !== 'false',
+    console: process.env.LOG_CONSOLE !== 'false',
+    file: process.env.LOG_FILE !== 'false',
+  };
 }
 
-// ============================================
-// 日志工具
-// ============================================
+/**
+ * 默认日志管理器实例
+ */
+export const defaultLogger = createWinstonLogManager(createWinstonFromEnv());
 
-export const logUtils = {
-  /**
-   * 检查日志级别是否启用
-   */
-  isLevelEnabled(level: LogLevel): boolean {
-    return LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[logger.getConfig().level];
-  },
-
-  /**
-   * 获取当前日志级别
-   */
-  getCurrentLevel(): LogLevel {
-    return logger.getConfig().level;
-  },
-
-  /**
-   * 设置日志级别
-   */
-  setLevel(level: LogLevel): void {
-    logger.updateConfig({ level });
-  },
-
-  /**
-   * 获取所有日志级别
-   */
-  getLevels(): LogLevel[] {
-    return Object.values(LogLevel);
-  },
-
-  /**
-   * 格式化错误对象
-   */
-  formatError(error: Error): Record<string, any> {
-    return {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      ...(error as any),
-    };
-  },
-};
-
-export default logger;
+export default WinstonLogManager;

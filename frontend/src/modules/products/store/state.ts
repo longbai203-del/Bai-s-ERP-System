@@ -1,22 +1,44 @@
-﻿import { ref, reactive } from 'vue';
+﻿/**
+ * 产品模块状态
+ * @module modules/products/store/state
+ */
 
-export const useproductsState = () => {
-  const items = ref<any[]>([]);
-  const currentItem = ref<any | null>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const pagination = reactive({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+import { ProductState, ProductQueryParams } from './types';
 
-  return {
-    items,
-    currentItem,
-    loading,
-    error,
-    pagination
-  };
+/**
+ * 默认查询参数
+ */
+const defaultFilters: ProductQueryParams = {
+  page: 1,
+  limit: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
 };
+
+/**
+ * 初始状态
+ */
+export const state: ProductState = {
+  products: [],
+  currentProduct: null,
+  total: 0,
+  loading: false,
+  error: null,
+  filters: { ...defaultFilters },
+};
+
+/**
+ * 重置状态
+ */
+export function resetState(): ProductState {
+  return {
+    products: [],
+    currentProduct: null,
+    total: 0,
+    loading: false,
+    error: null,
+    filters: { ...defaultFilters },
+  };
+}
+
+export default state;

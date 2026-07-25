@@ -1,22 +1,35 @@
-﻿import { ref, reactive } from 'vue';
+﻿/**
+ * 库存模块状态
+ * @module modules/inventory/store/state
+ */
 
-export const useinventoryState = () => {
-  const items = ref<any[]>([]);
-  const currentItem = ref<any | null>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-  const pagination = reactive({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+import { InventoryState, InventoryQueryParams } from './types';
 
-  return {
-    items,
-    currentItem,
-    loading,
-    error,
-    pagination
-  };
+const defaultFilters: InventoryQueryParams = {
+  page: 1,
+  limit: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
 };
+
+export const state: InventoryState = {
+  inventories: [],
+  currentInventory: null,
+  total: 0,
+  loading: false,
+  error: null,
+  filters: { ...defaultFilters },
+};
+
+export function resetState(): InventoryState {
+  return {
+    inventories: [],
+    currentInventory: null,
+    total: 0,
+    loading: false,
+    error: null,
+    filters: { ...defaultFilters },
+  };
+}
+
+export default state;
