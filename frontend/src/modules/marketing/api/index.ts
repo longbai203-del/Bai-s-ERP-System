@@ -65,7 +65,7 @@ export const getmarketingList = (params?: marketingListParams): Promise<marketin
  * 获取 marketing 详情
  */
 export const getmarketingDetail = (id: number): Promise<marketingResponse> => {
-    return http.get(`/marketing/${id}`)
+    return http.get(/ marketing/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatemarketing = (id: number, data: marketingUpdateParams): Promis
  * 删除 marketing
  */
 export const deletemarketing = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/marketing/${id}`)
+    return http.delete(/ marketing/\)
 }
 
 /**

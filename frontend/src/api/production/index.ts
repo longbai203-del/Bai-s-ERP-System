@@ -1,30 +1,27 @@
-﻿// production API 服务
+﻿// Production API 服务
 import http from '@/api/http'
 
-export const getproductionList = (params?: any) => {
-    return http.get('/production', { params })
+export const getProductionList = (params?: any) => {
+    return http.get('/Production', { params })
 }
 
-export const getproductionDetail = (id: number) => {
-    return http.get(`/production/${id}`)
+export const getProductionDetail = (id: number) => {
+    return http.get('/Production/' + id)
 }
-
-export const getProductionList = getproductionList
-export const getProductionDetail = getproductionDetail
 
 export const createProduction = (data: any) => {
-    return http.post('/production', data)
+    return http.post('/Production', data)
 }
 
 export const updateProduction = (id: number, data: any) => {
-    return http.put(`/production/${id}`, data)
+    return http.put('/Production/' + id, data)
 }
 
 export const deleteProduction = (id: number) => {
-    return http.delete(`/production/${id}`)
+    return http.delete('/Production/' + id)
 }
 
-export const productionApi = {
+export const ProductionApi = {
     getList: getProductionList,
     getDetail: getProductionDetail,
     create: createProduction,

@@ -65,7 +65,7 @@ export const getproductionList = (params?: productionListParams): Promise<produc
  * 获取 production 详情
  */
 export const getproductionDetail = (id: number): Promise<productionResponse> => {
-    return http.get(`/production/${id}`)
+    return http.get(/ production/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateproduction = (id: number, data: productionUpdateParams): Prom
  * 删除 production
  */
 export const deleteproduction = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/production/${id}`)
+    return http.delete(/ production/\)
 }
 
 /**

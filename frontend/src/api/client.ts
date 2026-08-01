@@ -1,10 +1,5 @@
-﻿import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+﻿import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
-
-interface RequestWithUiOptions extends InternalAxiosRequestConfig {
-  showLoading?: boolean
-  showError?: boolean
-}
 
 // 加载实例
 let loadingInstance: any = null
@@ -28,10 +23,9 @@ class ApiClient {
   private setupInterceptors() {
     // 请求拦截器
     this.instance.interceptors.request.use(
-      (config: RequestWithUiOptions) => {
+      (config) => {
         const token = localStorage.getItem('token')
         if (token) {
-          config.headers = config.headers ?? {}
           config.headers.Authorization = `Bearer ${token}`
         }
         
@@ -121,24 +115,24 @@ class ApiClient {
   }
   
   // HTTP方法
-  get<T = any>(url: string, config?: RequestWithUiOptions): Promise<T> {
-    return this.instance.get(url, config) as unknown as Promise<T>
+  get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.get(url, config)
   }
   
-  post<T = any>(url: string, data?: any, config?: RequestWithUiOptions): Promise<T> {
-    return this.instance.post(url, data, config) as unknown as Promise<T>
+  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.post(url, data, config)
   }
   
-  put<T = any>(url: string, data?: any, config?: RequestWithUiOptions): Promise<T> {
-    return this.instance.put(url, data, config) as unknown as Promise<T>
+  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.put(url, data, config)
   }
   
-  delete<T = any>(url: string, config?: RequestWithUiOptions): Promise<T> {
-    return this.instance.delete(url, config) as unknown as Promise<T>
+  delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.delete(url, config)
   }
   
-  patch<T = any>(url: string, data?: any, config?: RequestWithUiOptions): Promise<T> {
-    return this.instance.patch(url, data, config) as unknown as Promise<T>
+  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.patch(url, data, config)
   }
   
   // 文件上传

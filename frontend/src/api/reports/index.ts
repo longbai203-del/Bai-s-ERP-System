@@ -1,39 +1,30 @@
-﻿// reports API 服务
+﻿// Reports API 服务
 import http from '@/api/http'
 
-export interface ReportsData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getReportsList = (params?: any) => {
-    return http.get('/reports', { params })
+    return http.get('/Reports', { params })
 }
 
 export const getReportsDetail = (id: number) => {
-    return http.get(`/reports/${id}`)
+    return http.get('/Reports/' + id)
 }
 
-export const getReportList = getReportsList
-export const getReportDetail = getReportsDetail
-
-export const createReport = (data: any) => {
-    return http.post('/reports', data)
+export const createReports = (data: any) => {
+    return http.post('/Reports', data)
 }
 
-export const updateReport = (id: number, data: any) => {
-    return http.put(`/reports/${id}`, data)
+export const updateReports = (id: number, data: any) => {
+    return http.put('/Reports/' + id, data)
 }
 
-export const deleteReport = (id: number) => {
-    return http.delete(`/reports/${id}`)
+export const deleteReports = (id: number) => {
+    return http.delete('/Reports/' + id)
 }
 
-export const reportsApi = {
-    getList: getReportList,
-    getDetail: getReportDetail,
-    create: createReport,
-    update: updateReport,
-    delete: deleteReport,
+export const ReportsApi = {
+    getList: getReportsList,
+    getDetail: getReportsDetail,
+    create: createReports,
+    update: updateReports,
+    delete: deleteReports,
 }

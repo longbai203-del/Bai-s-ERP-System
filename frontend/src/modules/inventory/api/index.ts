@@ -65,7 +65,7 @@ export const getinventoryList = (params?: inventoryListParams): Promise<inventor
  * 获取 inventory 详情
  */
 export const getinventoryDetail = (id: number): Promise<inventoryResponse> => {
-    return http.get(`/inventory/${id}`)
+    return http.get(/ inventory/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateinventory = (id: number, data: inventoryUpdateParams): Promis
  * 删除 inventory
  */
 export const deleteinventory = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/inventory/${id}`)
+    return http.delete(/ inventory/\)
 }
 
 /**

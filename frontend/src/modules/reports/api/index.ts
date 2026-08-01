@@ -65,7 +65,7 @@ export const getreportsList = (params?: reportsListParams): Promise<reportsListR
  * 获取 reports 详情
  */
 export const getreportsDetail = (id: number): Promise<reportsResponse> => {
-    return http.get(`/reports/${id}`)
+    return http.get(/ reports/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatereports = (id: number, data: reportsUpdateParams): Promise<re
  * 删除 reports
  */
 export const deletereports = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/reports/${id}`)
+    return http.delete(/ reports/\)
 }
 
 /**

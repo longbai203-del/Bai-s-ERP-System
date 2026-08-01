@@ -65,7 +65,7 @@ export const getcustomersList = (params?: customersListParams): Promise<customer
  * 获取 customers 详情
  */
 export const getcustomersDetail = (id: number): Promise<customersResponse> => {
-    return http.get(`/customers/${id}`)
+    return http.get(/ customers/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatecustomers = (id: number, data: customersUpdateParams): Promis
  * 删除 customers
  */
 export const deletecustomers = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/customers/${id}`)
+    return http.delete(/ customers/\)
 }
 
 /**

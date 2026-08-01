@@ -65,7 +65,7 @@ export const getsaasList = (params?: saasListParams): Promise<saasListResponse> 
  * 获取 saas 详情
  */
 export const getsaasDetail = (id: number): Promise<saasResponse> => {
-    return http.get(`/saas/${id}`)
+    return http.get(/ saas/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatesaas = (id: number, data: saasUpdateParams): Promise<saasResp
  * 删除 saas
  */
 export const deletesaas = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/saas/${id}`)
+    return http.delete(/ saas/\)
 }
 
 /**

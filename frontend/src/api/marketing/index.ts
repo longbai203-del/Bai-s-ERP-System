@@ -1,33 +1,27 @@
-﻿// marketing API 服务
+﻿// Marketing API 服务
 import http from '@/api/http'
 
-export interface MarketingData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getMarketingList = (params?: any) => {
-    return http.get('/marketing', { params })
+    return http.get('/Marketing', { params })
 }
 
 export const getMarketingDetail = (id: number) => {
-    return http.get(`/marketing/${id}`)
+    return http.get('/Marketing/' + id)
 }
 
 export const createMarketing = (data: any) => {
-    return http.post('/marketing', data)
+    return http.post('/Marketing', data)
 }
 
 export const updateMarketing = (id: number, data: any) => {
-    return http.put(`/marketing/${id}`, data)
+    return http.put('/Marketing/' + id, data)
 }
 
 export const deleteMarketing = (id: number) => {
-    return http.delete(`/marketing/${id}`)
+    return http.delete('/Marketing/' + id)
 }
 
-export const marketingApi = {
+export const MarketingApi = {
     getList: getMarketingList,
     getDetail: getMarketingDetail,
     create: createMarketing,

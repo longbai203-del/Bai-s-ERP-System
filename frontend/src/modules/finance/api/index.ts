@@ -65,7 +65,7 @@ export const getfinanceList = (params?: financeListParams): Promise<financeListR
  * 获取 finance 详情
  */
 export const getfinanceDetail = (id: number): Promise<financeResponse> => {
-    return http.get(`/finance/${id}`)
+    return http.get(/ finance/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatefinance = (id: number, data: financeUpdateParams): Promise<fi
  * 删除 finance
  */
 export const deletefinance = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/finance/${id}`)
+    return http.delete(/ finance/\)
 }
 
 /**

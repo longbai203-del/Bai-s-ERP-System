@@ -3,40 +3,28 @@
  * @module modules/ai/store/index
  */
 
-import { defineStore } from 'pinia'
+import { Module } from 'vuex';
+import { AIState } from './types';
+import state from './state';
+import getters from './getters';
+import mutations from './mutations';
+import actions from './actions';
 
-export const useAiStore = defineStore('ai', {
-  state: () => ({
-    list: [] as any[],
-    detail: null as any,
-    loading: false,
-    error: null as string | null,
-    total: 0,
-    filters: {}
-  }),
-  actions: {
-    async fetchList() {
-      this.loading = true
-      this.error = null
-      try {
-        return this.list
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchDetail() {
-      return this.detail
-    },
-    async create() {
-      return this.detail
-    },
-    async update() {
-      return this.detail
-    },
-    async remove() {
-      return true
-    }
-  }
-})
+/**
+ * AI模块Store
+ */
+export const aiStore: Module<AIState, any> = {
+  namespaced: true,
+  state,
+  getters,
+  mutations,
+  actions,
+};
 
-export default useAiStore
+// 导出 useAiStore 钩子
+export const useAiStore = () => {
+  const { useStore } = require('vuex');
+  return useStore();
+};
+
+export default aiStore;

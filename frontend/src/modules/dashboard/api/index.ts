@@ -65,7 +65,7 @@ export const getdashboardList = (params?: dashboardListParams): Promise<dashboar
  * 获取 dashboard 详情
  */
 export const getdashboardDetail = (id: number): Promise<dashboardResponse> => {
-    return http.get(`/dashboard/${id}`)
+    return http.get(/ dashboard/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatedashboard = (id: number, data: dashboardUpdateParams): Promis
  * 删除 dashboard
  */
 export const deletedashboard = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/dashboard/${id}`)
+    return http.delete(/ dashboard/\)
 }
 
 /**

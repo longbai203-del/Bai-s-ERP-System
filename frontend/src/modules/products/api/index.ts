@@ -65,7 +65,7 @@ export const getproductsList = (params?: productsListParams): Promise<productsLi
  * 获取 products 详情
  */
 export const getproductsDetail = (id: number): Promise<productsResponse> => {
-    return http.get(`/products/${id}`)
+    return http.get(/ products/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateproducts = (id: number, data: productsUpdateParams): Promise<
  * 删除 products
  */
 export const deleteproducts = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/products/${id}`)
+    return http.delete(/ products/\)
 }
 
 /**

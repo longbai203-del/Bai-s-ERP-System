@@ -1,39 +1,30 @@
-﻿// customers API 服务
+﻿// Customers API 服务
 import http from '@/api/http'
 
-export interface CustomersData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getCustomersList = (params?: any) => {
-    return http.get('/customers', { params })
+    return http.get('/Customers', { params })
 }
 
 export const getCustomersDetail = (id: number) => {
-    return http.get(`/customers/${id}`)
+    return http.get('/Customers/' + id)
 }
 
-export const getCustomerList = getCustomersList
-export const getCustomerDetail = getCustomersDetail
-
-export const createCustomer = (data: any) => {
-    return http.post('/customers', data)
+export const createCustomers = (data: any) => {
+    return http.post('/Customers', data)
 }
 
-export const updateCustomer = (id: number, data: any) => {
-    return http.put(`/customers/${id}`, data)
+export const updateCustomers = (id: number, data: any) => {
+    return http.put('/Customers/' + id, data)
 }
 
-export const deleteCustomer = (id: number) => {
-    return http.delete(`/customers/${id}`)
+export const deleteCustomers = (id: number) => {
+    return http.delete('/Customers/' + id)
 }
 
-export const customerApi = {
-    getList: getCustomerList,
-    getDetail: getCustomerDetail,
-    create: createCustomer,
-    update: updateCustomer,
-    delete: deleteCustomer,
+export const CustomersApi = {
+    getList: getCustomersList,
+    getDetail: getCustomersDetail,
+    create: createCustomers,
+    update: updateCustomers,
+    delete: deleteCustomers,
 }

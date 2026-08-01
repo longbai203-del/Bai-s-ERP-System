@@ -65,7 +65,7 @@ export const gethrList = (params?: hrListParams): Promise<hrListResponse> => {
  * 获取 hr 详情
  */
 export const gethrDetail = (id: number): Promise<hrResponse> => {
-    return http.get(`/hr/${id}`)
+    return http.get(/ hr/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatehr = (id: number, data: hrUpdateParams): Promise<hrResponse> 
  * 删除 hr
  */
 export const deletehr = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/hr/${id}`)
+    return http.delete(/ hr/\)
 }
 
 /**

@@ -1,33 +1,27 @@
-﻿// system API 服务
+﻿// System API 服务
 import http from '@/api/http'
 
-export interface SystemData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getSystemList = (params?: any) => {
-    return http.get('/system', { params })
+    return http.get('/System', { params })
 }
 
 export const getSystemDetail = (id: number) => {
-    return http.get(`/system/${id}`)
+    return http.get('/System/' + id)
 }
 
 export const createSystem = (data: any) => {
-    return http.post('/system', data)
+    return http.post('/System', data)
 }
 
 export const updateSystem = (id: number, data: any) => {
-    return http.put(`/system/${id}`, data)
+    return http.put('/System/' + id, data)
 }
 
 export const deleteSystem = (id: number) => {
-    return http.delete(`/system/${id}`)
+    return http.delete('/System/' + id)
 }
 
-export const systemApi = {
+export const SystemApi = {
     getList: getSystemList,
     getDetail: getSystemDetail,
     create: createSystem,

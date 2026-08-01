@@ -65,7 +65,7 @@ export const getsystemList = (params?: systemListParams): Promise<systemListResp
  * 获取 system 详情
  */
 export const getsystemDetail = (id: number): Promise<systemResponse> => {
-    return http.get(`/system/${id}`)
+    return http.get(/ system/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatesystem = (id: number, data: systemUpdateParams): Promise<syst
  * 删除 system
  */
 export const deletesystem = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/system/${id}`)
+    return http.delete(/ system/\)
 }
 
 /**

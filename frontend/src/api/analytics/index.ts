@@ -1,33 +1,27 @@
-﻿// analytics API 服务
+﻿// Analytics API 服务
 import http from '@/api/http'
 
-export interface AnalyticsData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getAnalyticsList = (params?: any) => {
-    return http.get('/analytics', { params })
+    return http.get('/Analytics', { params })
 }
 
 export const getAnalyticsDetail = (id: number) => {
-    return http.get(`/analytics/${id}`)
+    return http.get('/Analytics/' + id)
 }
 
 export const createAnalytics = (data: any) => {
-    return http.post('/analytics', data)
+    return http.post('/Analytics', data)
 }
 
 export const updateAnalytics = (id: number, data: any) => {
-    return http.put(`/analytics/${id}`, data)
+    return http.put('/Analytics/' + id, data)
 }
 
 export const deleteAnalytics = (id: number) => {
-    return http.delete(`/analytics/${id}`)
+    return http.delete('/Analytics/' + id)
 }
 
-export const analyticsApi = {
+export const AnalyticsApi = {
     getList: getAnalyticsList,
     getDetail: getAnalyticsDetail,
     create: createAnalytics,

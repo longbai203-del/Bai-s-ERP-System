@@ -65,7 +65,7 @@ export const getpurchaseList = (params?: purchaseListParams): Promise<purchaseLi
  * 获取 purchase 详情
  */
 export const getpurchaseDetail = (id: number): Promise<purchaseResponse> => {
-    return http.get(`/purchase/${id}`)
+    return http.get(/ purchase/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updatepurchase = (id: number, data: purchaseUpdateParams): Promise<
  * 删除 purchase
  */
 export const deletepurchase = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/purchase/${id}`)
+    return http.delete(/ purchase/\)
 }
 
 /**

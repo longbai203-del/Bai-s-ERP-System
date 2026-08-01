@@ -65,7 +65,7 @@ export const getprojectList = (params?: projectListParams): Promise<projectListR
  * 获取 project 详情
  */
 export const getprojectDetail = (id: number): Promise<projectResponse> => {
-    return http.get(`/project/${id}`)
+    return http.get(/ project/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateproject = (id: number, data: projectUpdateParams): Promise<pr
  * 删除 project
  */
 export const deleteproject = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/project/${id}`)
+    return http.delete(/ project/\)
 }
 
 /**

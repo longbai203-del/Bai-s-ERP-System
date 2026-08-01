@@ -65,7 +65,7 @@ export const getanalyticsList = (params?: analyticsListParams): Promise<analytic
  * 获取 analytics 详情
  */
 export const getanalyticsDetail = (id: number): Promise<analyticsResponse> => {
-    return http.get(`/analytics/${id}`)
+    return http.get(/ analytics/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateanalytics = (id: number, data: analyticsUpdateParams): Promis
  * 删除 analytics
  */
 export const deleteanalytics = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/analytics/${id}`)
+    return http.delete(/ analytics/\)
 }
 
 /**

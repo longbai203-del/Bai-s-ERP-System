@@ -55,12 +55,3 @@ export const deleteAi = (id: number): Promise<{ success: boolean; message: strin
 export const batchDeleteAi = (ids: number[]): Promise<{ success: boolean; message: string }> => {
     return http.post('/ai/batch-delete', { ids })
 }
-
-export default {
-    getAiList,
-    getAiDetail,
-    createAi,
-    updateAi,
-    deleteAi,
-    batchDeleteAi,
-}

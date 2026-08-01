@@ -1,33 +1,27 @@
-﻿// finance API 服务
+﻿// Finance API 服务
 import http from '@/api/http'
 
-export interface FinanceData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getFinanceList = (params?: any) => {
-    return http.get('/finance', { params })
+    return http.get('/Finance', { params })
 }
 
 export const getFinanceDetail = (id: number) => {
-    return http.get(`/finance/${id}`)
+    return http.get('/Finance/' + id)
 }
 
 export const createFinance = (data: any) => {
-    return http.post('/finance', data)
+    return http.post('/Finance', data)
 }
 
 export const updateFinance = (id: number, data: any) => {
-    return http.put(`/finance/${id}`, data)
+    return http.put('/Finance/' + id, data)
 }
 
 export const deleteFinance = (id: number) => {
-    return http.delete(`/finance/${id}`)
+    return http.delete('/Finance/' + id)
 }
 
-export const financeApi = {
+export const FinanceApi = {
     getList: getFinanceList,
     getDetail: getFinanceDetail,
     create: createFinance,

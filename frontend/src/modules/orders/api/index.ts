@@ -65,7 +65,7 @@ export const getordersList = (params?: ordersListParams): Promise<ordersListResp
  * 获取 orders 详情
  */
 export const getordersDetail = (id: number): Promise<ordersResponse> => {
-    return http.get(`/orders/${id}`)
+    return http.get(/ orders/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateorders = (id: number, data: ordersUpdateParams): Promise<orde
  * 删除 orders
  */
 export const deleteorders = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/orders/${id}`)
+    return http.delete(/ orders/\)
 }
 
 /**

@@ -65,7 +65,7 @@ export const getapprovalList = (params?: approvalListParams): Promise<approvalLi
  * 获取 approval 详情
  */
 export const getapprovalDetail = (id: number): Promise<approvalResponse> => {
-    return http.get(`/approval/${id}`)
+    return http.get(/ approval/\)
 }
 
 /**
@@ -86,7 +86,7 @@ export const updateapproval = (id: number, data: approvalUpdateParams): Promise<
  * 删除 approval
  */
 export const deleteapproval = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(`/approval/${id}`)
+    return http.delete(/ approval/\)
 }
 
 /**

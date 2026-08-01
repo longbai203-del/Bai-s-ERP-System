@@ -1,33 +1,27 @@
-﻿// purchase API 服务
+﻿// Purchase API 服务
 import http from '@/api/http'
 
-export interface PurchaseData {
-    id: number
-    name: string
-    // 根据业务扩展
-}
-
 export const getPurchaseList = (params?: any) => {
-    return http.get('/purchase', { params })
+    return http.get('/Purchase', { params })
 }
 
 export const getPurchaseDetail = (id: number) => {
-    return http.get(`/purchase/${id}`)
+    return http.get('/Purchase/' + id)
 }
 
 export const createPurchase = (data: any) => {
-    return http.post('/purchase', data)
+    return http.post('/Purchase', data)
 }
 
 export const updatePurchase = (id: number, data: any) => {
-    return http.put(`/purchase/${id}`, data)
+    return http.put('/Purchase/' + id, data)
 }
 
 export const deletePurchase = (id: number) => {
-    return http.delete(`/purchase/${id}`)
+    return http.delete('/Purchase/' + id)
 }
 
-export const purchaseApi = {
+export const PurchaseApi = {
     getList: getPurchaseList,
     getDetail: getPurchaseDetail,
     create: createPurchase,

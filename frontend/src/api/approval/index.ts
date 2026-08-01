@@ -1,30 +1,27 @@
-﻿// approval API 服务
+﻿// Approval API 服务
 import http from '@/api/http'
 
-export const getapprovalList = (params?: any) => {
-    return http.get('/approval', { params })
+export const getApprovalList = (params?: any) => {
+    return http.get('/Approval', { params })
 }
 
-export const getapprovalDetail = (id: number) => {
-    return http.get(`/approval/${id}`)
+export const getApprovalDetail = (id: number) => {
+    return http.get('/Approval/' + id)
 }
-
-export const getApprovalList = getapprovalList
-export const getApprovalDetail = getapprovalDetail
 
 export const createApproval = (data: any) => {
-    return http.post('/approval', data)
+    return http.post('/Approval', data)
 }
 
 export const updateApproval = (id: number, data: any) => {
-    return http.put(`/approval/${id}`, data)
+    return http.put('/Approval/' + id, data)
 }
 
 export const deleteApproval = (id: number) => {
-    return http.delete(`/approval/${id}`)
+    return http.delete('/Approval/' + id)
 }
 
-export const approvalApi = {
+export const ApprovalApi = {
     getList: getApprovalList,
     getDetail: getApprovalDetail,
     create: createApproval,

@@ -4,40 +4,12 @@
  * @module modules/finance/store/index
  */
 
-import { defineStore } from 'pinia'
 import { Module } from 'vuex';
 import { FinanceState } from './types';
 import state from './state';
 import getters from './getters';
 import mutations from './mutations';
 import actions from './actions';
-
-export const useFinanceStore = defineStore('finance', {
-  state: () => ({
-    list: [] as any[],
-    detail: null as any,
-    loading: false,
-    error: null as string | null,
-    filters: {}
-  }),
-  actions: {
-    async fetchList() {
-      return this.list
-    },
-    async fetchDetail() {
-      return this.detail
-    },
-    async create() {
-      return this.detail
-    },
-    async update() {
-      return this.detail
-    },
-    async remove() {
-      return true
-    }
-  }
-})
 
 /**
  * 财务模块Store
