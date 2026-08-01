@@ -12,7 +12,7 @@ export const getPurchaseList = (params?: any) => {
 }
 
 export const getPurchaseDetail = (id: number) => {
-    return http.get(/purchase/\)
+    return http.get(`/purchase/${id}`)
 }
 
 export const createPurchase = (data: any) => {
@@ -20,9 +20,17 @@ export const createPurchase = (data: any) => {
 }
 
 export const updatePurchase = (id: number, data: any) => {
-    return http.put(/purchase/\, data)
+    return http.put(`/purchase/${id}`, data)
 }
 
 export const deletePurchase = (id: number) => {
-    return http.delete(/purchase/\)
+    return http.delete(`/purchase/${id}`)
+}
+
+export const purchaseApi = {
+    getList: getPurchaseList,
+    getDetail: getPurchaseDetail,
+    create: createPurchase,
+    update: updatePurchase,
+    delete: deletePurchase,
 }

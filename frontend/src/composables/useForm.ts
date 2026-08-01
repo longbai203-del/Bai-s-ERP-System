@@ -30,7 +30,7 @@ export function useForm<T extends Record<string, any>>(
   
   // ===== State =====
   const formRef = ref<FormInstance>();
-  const formData = reactive<T>({ ...initialData });
+  const formData = reactive({ ...initialData } as T);
   const loading = ref(false);
   const editMode = ref(false);
   const currentId = ref<string>('');
@@ -118,7 +118,7 @@ export function useForm<T extends Record<string, any>>(
   }
   
   function reset() {
-    Object.keys(formData).forEach(key => {
+    (Object.keys(formData) as Array<keyof T>).forEach((key) => {
       formData[key] = initialData[key] as any;
     });
     editMode.value = false;

@@ -12,7 +12,7 @@ export const getAiList = (params?: any) => {
 }
 
 export const getAiDetail = (id: number) => {
-    return http.get(/ai/\)
+    return http.get(`/ai/${id}`)
 }
 
 export const createAi = (data: any) => {
@@ -20,9 +20,15 @@ export const createAi = (data: any) => {
 }
 
 export const updateAi = (id: number, data: any) => {
-    return http.put(/ai/\, data)
+    return http.put(`/ai/${id}`, data)
 }
 
 export const deleteAi = (id: number) => {
-    return http.delete(/ai/\)
+    return http.delete(`/ai/${id}`)
 }
+
+export const aiApi = {
+    generate: (data: any) => http.post('/ai/generate', data),
+    getHistory: (params?: any) => http.get('/ai/history', { params }),
+}
+

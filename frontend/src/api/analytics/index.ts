@@ -12,7 +12,7 @@ export const getAnalyticsList = (params?: any) => {
 }
 
 export const getAnalyticsDetail = (id: number) => {
-    return http.get(/analytics/\)
+    return http.get(`/analytics/${id}`)
 }
 
 export const createAnalytics = (data: any) => {
@@ -20,9 +20,17 @@ export const createAnalytics = (data: any) => {
 }
 
 export const updateAnalytics = (id: number, data: any) => {
-    return http.put(/analytics/\, data)
+    return http.put(`/analytics/${id}`, data)
 }
 
 export const deleteAnalytics = (id: number) => {
-    return http.delete(/analytics/\)
+    return http.delete(`/analytics/${id}`)
+}
+
+export const analyticsApi = {
+    getList: getAnalyticsList,
+    getDetail: getAnalyticsDetail,
+    create: createAnalytics,
+    update: updateAnalytics,
+    delete: deleteAnalytics,
 }

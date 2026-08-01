@@ -12,17 +12,31 @@ export const getOrdersList = (params?: any) => {
 }
 
 export const getOrdersDetail = (id: number) => {
-    return http.get(/orders/\)
+    return http.get(`/orders/${id}`)
 }
 
-export const createOrders = (data: any) => {
+export const createOrder = (data: any) => {
     return http.post('/orders', data)
 }
 
-export const updateOrders = (id: number, data: any) => {
-    return http.put(/orders/\, data)
+export const updateOrder = (id: number, data: any) => {
+    return http.put(`/orders/${id}`, data)
 }
 
-export const deleteOrders = (id: number) => {
-    return http.delete(/orders/\)
+export const deleteOrder = (id: number) => {
+    return http.delete(`/orders/${id}`)
+}
+
+export const orderApi = {
+    getList: getOrdersList,
+    getDetail: getOrdersDetail,
+    create: createOrder,
+    update: updateOrder,
+    delete: deleteOrder,
+    getOrders: getOrdersList,
+    getOrderDetail: getOrdersDetail,
+    createOrder,
+    updateOrder,
+    updateOrderStatus: (id: number, data: any) => http.put(`/orders/${id}/status`, data),
+    deleteOrder,
 }

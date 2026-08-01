@@ -1,24 +1,42 @@
 ﻿/**
- * 订单模块Store入口
- * @module modules/orders/store/index
+ * AI模块Store入口
+ * @module modules/ai/store/index
  */
 
-import { Module } from 'vuex';
-import { OrderState } from './types';
-import state from './state';
-import getters from './getters';
-import mutations from './mutations';
-import actions from './actions';
+import { defineStore } from 'pinia'
 
-/**
- * 订单模块Store
- */
-export const orderStore: Module<OrderState, any> = {
-  namespaced: true,
-  state,
-  getters,
-  mutations,
-  actions,
-};
+export const useAiStore = defineStore('ai', {
+  state: () => ({
+    list: [] as any[],
+    detail: null as any,
+    loading: false,
+    error: null as string | null,
+    total: 0,
+    filters: {}
+  }),
+  actions: {
+    async fetchList() {
+      this.loading = true
+      this.error = null
+      try {
+        return this.list
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchDetail() {
+      return this.detail
+    },
+    async create() {
+      return this.detail
+    },
+    async update() {
+      return this.detail
+    },
+    async remove() {
+      return true
+    }
+  }
+})
 
-export default orderStore;
+export default useAiStore

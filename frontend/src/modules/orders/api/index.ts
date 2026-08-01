@@ -65,7 +65,7 @@ export const getordersList = (params?: ordersListParams): Promise<ordersListResp
  * 获取 orders 详情
  */
 export const getordersDetail = (id: number): Promise<ordersResponse> => {
-    return http.get(/ orders/\)
+    return http.get(`/orders/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createorders = (data: ordersCreateParams): Promise<ordersResponse> 
  * 更新 orders
  */
 export const updateorders = (id: number, data: ordersUpdateParams): Promise<ordersResponse> => {
-    return http.put(/ orders/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 orders
  */
 export const deleteorders = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ orders/\)
+    return http.delete(`/orders/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeleteorders = (ids: number[]): Promise<{ success: boolean; me
  * 更新 orders 状态
  */
 export const updateordersStatus = (id: number, status: string): Promise<ordersResponse> => {
-    return http.put(/ orders/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

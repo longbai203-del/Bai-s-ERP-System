@@ -65,7 +65,7 @@ export const getposList = (params?: posListParams): Promise<posListResponse> => 
  * 获取 pos 详情
  */
 export const getposDetail = (id: number): Promise<posResponse> => {
-    return http.get(/ pos/\)
+    return http.get(`/pos/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createpos = (data: posCreateParams): Promise<posResponse> => {
  * 更新 pos
  */
 export const updatepos = (id: number, data: posUpdateParams): Promise<posResponse> => {
-    return http.put(/ pos/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 pos
  */
 export const deletepos = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ pos/\)
+    return http.delete(`/pos/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletepos = (ids: number[]): Promise<{ success: boolean; messa
  * 更新 pos 状态
  */
 export const updateposStatus = (id: number, status: string): Promise<posResponse> => {
-    return http.put(/ pos/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

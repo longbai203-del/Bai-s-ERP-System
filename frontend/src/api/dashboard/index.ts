@@ -12,7 +12,7 @@ export const getDashboardList = (params?: any) => {
 }
 
 export const getDashboardDetail = (id: number) => {
-    return http.get(/dashboard/\)
+    return http.get(`/dashboard/${id}`)
 }
 
 export const createDashboard = (data: any) => {
@@ -20,9 +20,18 @@ export const createDashboard = (data: any) => {
 }
 
 export const updateDashboard = (id: number, data: any) => {
-    return http.put(/dashboard/\, data)
+    return http.put(`/dashboard/${id}`, data)
 }
 
 export const deleteDashboard = (id: number) => {
-    return http.delete(/dashboard/\)
+    return http.delete(`/dashboard/${id}`)
+}
+
+export const dashboardApi = {
+    getList: getDashboardList,
+    getDetail: getDashboardDetail,
+    create: createDashboard,
+    update: updateDashboard,
+    delete: deleteDashboard,
+    getDashboardData: () => http.get('/dashboard'),
 }

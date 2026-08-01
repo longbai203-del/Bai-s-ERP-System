@@ -385,7 +385,7 @@ const handleRefresh = () => {
  * 查看详情
  */
 const handleView = (id: string) => {
-  router.push(/pos/);
+  router.push('/')
 };
 
 /**
@@ -401,7 +401,7 @@ const handleCreate = () => {
 const handleEdit = (id?: string) => {
   const targetId = id || currentItem.value?.id || route.params.id;
   if (targetId) {
-    router.push(/pos//edit);
+    router.push('/')
   }
 };
 

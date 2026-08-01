@@ -3,9 +3,10 @@
  * @module modules/ai/store/actions
  */
 
-import { Commit } from 'vuex';
 import { Order, CreateOrderRequest, UpdateOrderRequest, UpdateOrderStatusRequest, OrderQueryParams } from './types';
 import { orderApi } from '@/api/orders';
+
+type Commit = (type: string, payload?: any) => void;
 
 /**
  * 订单模块Actions
@@ -38,7 +39,8 @@ export const actions = {
     commit('SET_ERROR', null);
 
     try {
-      const response = await orderApi.getOrderDetail(id);
+      const numericId = Number(id)
+      const response = await orderApi.getOrderDetail(numericId);
       commit('SET_CURRENT_ORDER', response.data);
       return response.data;
     } catch (error: any) {
@@ -76,7 +78,8 @@ export const actions = {
     commit('SET_ERROR', null);
 
     try {
-      const response = await orderApi.updateOrder(id, data);
+      const numericId = Number(id)
+      const response = await orderApi.updateOrder(numericId, data);
       commit('UPDATE_ORDER', response.data);
       return response.data;
     } catch (error: any) {
@@ -98,7 +101,8 @@ export const actions = {
     commit('SET_ERROR', null);
 
     try {
-      const response = await orderApi.updateOrderStatus(id, data);
+      const numericId = Number(id)
+      const response = await orderApi.updateOrderStatus(numericId, data);
       commit('UPDATE_ORDER_STATUS', { id, status: response.data.status });
       return response.data;
     } catch (error: any) {
@@ -127,7 +131,7 @@ export const actions = {
     commit('SET_ERROR', null);
 
     try {
-      await orderApi.deleteOrder(id);
+      await orderApi.deleteOrder(Number(id));
       commit('DELETE_ORDER', id);
     } catch (error: any) {
       commit('SET_ERROR', error.message || '删除订单失败');

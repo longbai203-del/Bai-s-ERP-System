@@ -65,7 +65,7 @@ export const getsystemList = (params?: systemListParams): Promise<systemListResp
  * 获取 system 详情
  */
 export const getsystemDetail = (id: number): Promise<systemResponse> => {
-    return http.get(/ system/\)
+    return http.get(`/system/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createsystem = (data: systemCreateParams): Promise<systemResponse> 
  * 更新 system
  */
 export const updatesystem = (id: number, data: systemUpdateParams): Promise<systemResponse> => {
-    return http.put(/ system/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 system
  */
 export const deletesystem = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ system/\)
+    return http.delete(`/system/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletesystem = (ids: number[]): Promise<{ success: boolean; me
  * 更新 system 状态
  */
 export const updatesystemStatus = (id: number, status: string): Promise<systemResponse> => {
-    return http.put(/ system/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

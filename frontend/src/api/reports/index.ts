@@ -12,17 +12,28 @@ export const getReportsList = (params?: any) => {
 }
 
 export const getReportsDetail = (id: number) => {
-    return http.get(/reports/\)
+    return http.get(`/reports/${id}`)
 }
 
-export const createReports = (data: any) => {
+export const getReportList = getReportsList
+export const getReportDetail = getReportsDetail
+
+export const createReport = (data: any) => {
     return http.post('/reports', data)
 }
 
-export const updateReports = (id: number, data: any) => {
-    return http.put(/reports/\, data)
+export const updateReport = (id: number, data: any) => {
+    return http.put(`/reports/${id}`, data)
 }
 
-export const deleteReports = (id: number) => {
-    return http.delete(/reports/\)
+export const deleteReport = (id: number) => {
+    return http.delete(`/reports/${id}`)
+}
+
+export const reportsApi = {
+    getList: getReportList,
+    getDetail: getReportDetail,
+    create: createReport,
+    update: updateReport,
+    delete: deleteReport,
 }

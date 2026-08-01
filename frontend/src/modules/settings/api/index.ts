@@ -65,7 +65,7 @@ export const getsettingsList = (params?: settingsListParams): Promise<settingsLi
  * 获取 settings 详情
  */
 export const getsettingsDetail = (id: number): Promise<settingsResponse> => {
-    return http.get(/ settings/\)
+    return http.get(`/settings/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createsettings = (data: settingsCreateParams): Promise<settingsResp
  * 更新 settings
  */
 export const updatesettings = (id: number, data: settingsUpdateParams): Promise<settingsResponse> => {
-    return http.put(/ settings/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 settings
  */
 export const deletesettings = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ settings/\)
+    return http.delete(`/settings/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletesettings = (ids: number[]): Promise<{ success: boolean; 
  * 更新 settings 状态
  */
 export const updatesettingsStatus = (id: number, status: string): Promise<settingsResponse> => {
-    return http.put(/ settings/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

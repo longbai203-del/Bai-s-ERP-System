@@ -14,7 +14,7 @@
           <el-breadcrumb-item>AI采购订单</el-breadcrumb-item>
         </el-breadcrumb>
         <h1 class="page-title">
-          <el-icon class="ai-icon"><Magic /></el-icon>
+          <el-icon class="ai-icon"><MagicStick /></el-icon>
           AI采购订单
         </h1>
         <p class="page-desc">智能采购订单生成</p>
@@ -58,7 +58,7 @@
               </el-button>
             </el-upload>
             <el-button type="primary" :loading="generating" @click="handleGenerate">
-              <el-icon><Magic /></el-icon> 生成
+              <el-icon><MagicStick /></el-icon> 生成
             </el-button>
           </div>
         </div>
@@ -114,10 +114,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Magic, Delete, Download, Paperclip, ChatDotRound, CopyDocument, Refresh } from '@element-plus/icons-vue';
+import { MagicStick, Delete, Download, Paperclip, ChatDotRound, CopyDocument, Refresh } from '@element-plus/icons-vue';
 import { formatDate } from '@/utils/format';
 import { aiApi } from '@/api/ai';
 
@@ -198,7 +198,7 @@ const handleGenerate = async () => {
  */
 const handleFileChange = (file: any) => {
   uploadedFile.value = file.raw;
-  ElMessage.success(已上传: );
+  ElMessage.success(`已上传: ${file.name}`);
 };
 
 /**
@@ -260,7 +260,7 @@ const handleExport = () => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = i_result_.txt;
+  link.download = `result_${Date.now()}.txt`;
   link.click();
   window.URL.revokeObjectURL(url);
   ElMessage.success('导出成功');

@@ -12,17 +12,28 @@ export const getCustomersList = (params?: any) => {
 }
 
 export const getCustomersDetail = (id: number) => {
-    return http.get(/customers/\)
+    return http.get(`/customers/${id}`)
 }
 
-export const createCustomers = (data: any) => {
+export const getCustomerList = getCustomersList
+export const getCustomerDetail = getCustomersDetail
+
+export const createCustomer = (data: any) => {
     return http.post('/customers', data)
 }
 
-export const updateCustomers = (id: number, data: any) => {
-    return http.put(/customers/\, data)
+export const updateCustomer = (id: number, data: any) => {
+    return http.put(`/customers/${id}`, data)
 }
 
-export const deleteCustomers = (id: number) => {
-    return http.delete(/customers/\)
+export const deleteCustomer = (id: number) => {
+    return http.delete(`/customers/${id}`)
+}
+
+export const customerApi = {
+    getList: getCustomerList,
+    getDetail: getCustomerDetail,
+    create: createCustomer,
+    update: updateCustomer,
+    delete: deleteCustomer,
 }

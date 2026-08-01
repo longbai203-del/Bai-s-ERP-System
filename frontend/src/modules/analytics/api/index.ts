@@ -65,7 +65,7 @@ export const getanalyticsList = (params?: analyticsListParams): Promise<analytic
  * 获取 analytics 详情
  */
 export const getanalyticsDetail = (id: number): Promise<analyticsResponse> => {
-    return http.get(/ analytics/\)
+    return http.get(`/analytics/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createanalytics = (data: analyticsCreateParams): Promise<analyticsR
  * 更新 analytics
  */
 export const updateanalytics = (id: number, data: analyticsUpdateParams): Promise<analyticsResponse> => {
-    return http.put(/ analytics/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 analytics
  */
 export const deleteanalytics = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ analytics/\)
+    return http.delete(`/analytics/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeleteanalytics = (ids: number[]): Promise<{ success: boolean;
  * 更新 analytics 状态
  */
 export const updateanalyticsStatus = (id: number, status: string): Promise<analyticsResponse> => {
-    return http.put(/ analytics/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

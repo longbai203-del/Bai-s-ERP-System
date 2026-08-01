@@ -89,6 +89,18 @@ export function deleteProject(id) {
   })
 }
 
+export const projectApi = {
+  getList: getProjectList,
+  getDetail: getProjectDetail,
+  create: createProject,
+  update: updateProject,
+  delete: deleteProject,
+  getProjects: getProjectList,
+  getProjectDetail,
+}
+
+export const projectsApi = projectApi
+
 /**
  * 启动项目
  * @param {number|string} id - 项目ID

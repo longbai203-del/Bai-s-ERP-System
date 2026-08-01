@@ -65,7 +65,7 @@ export const getsaasList = (params?: saasListParams): Promise<saasListResponse> 
  * 获取 saas 详情
  */
 export const getsaasDetail = (id: number): Promise<saasResponse> => {
-    return http.get(/ saas/\)
+    return http.get(`/saas/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createsaas = (data: saasCreateParams): Promise<saasResponse> => {
  * 更新 saas
  */
 export const updatesaas = (id: number, data: saasUpdateParams): Promise<saasResponse> => {
-    return http.put(/ saas/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 saas
  */
 export const deletesaas = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ saas/\)
+    return http.delete(`/saas/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletesaas = (ids: number[]): Promise<{ success: boolean; mess
  * 更新 saas 状态
  */
 export const updatesaasStatus = (id: number, status: string): Promise<saasResponse> => {
-    return http.put(/ saas/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

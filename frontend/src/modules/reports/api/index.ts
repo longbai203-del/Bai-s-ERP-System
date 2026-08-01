@@ -65,7 +65,7 @@ export const getreportsList = (params?: reportsListParams): Promise<reportsListR
  * 获取 reports 详情
  */
 export const getreportsDetail = (id: number): Promise<reportsResponse> => {
-    return http.get(/ reports/\)
+    return http.get(`/reports/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createreports = (data: reportsCreateParams): Promise<reportsRespons
  * 更新 reports
  */
 export const updatereports = (id: number, data: reportsUpdateParams): Promise<reportsResponse> => {
-    return http.put(/ reports/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 reports
  */
 export const deletereports = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ reports/\)
+    return http.delete(`/reports/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletereports = (ids: number[]): Promise<{ success: boolean; m
  * 更新 reports 状态
  */
 export const updatereportsStatus = (id: number, status: string): Promise<reportsResponse> => {
-    return http.put(/ reports/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

@@ -6,17 +6,28 @@ export const getapprovalList = (params?: any) => {
 }
 
 export const getapprovalDetail = (id: number) => {
-    return http.get(/approval/\)
+    return http.get(`/approval/${id}`)
 }
 
-export const createapproval = (data: any) => {
+export const getApprovalList = getapprovalList
+export const getApprovalDetail = getapprovalDetail
+
+export const createApproval = (data: any) => {
     return http.post('/approval', data)
 }
 
-export const updateapproval = (id: number, data: any) => {
-    return http.put(/approval/\, data)
+export const updateApproval = (id: number, data: any) => {
+    return http.put(`/approval/${id}`, data)
 }
 
-export const deleteapproval = (id: number) => {
-    return http.delete(/approval/\)
+export const deleteApproval = (id: number) => {
+    return http.delete(`/approval/${id}`)
+}
+
+export const approvalApi = {
+    getList: getApprovalList,
+    getDetail: getApprovalDetail,
+    create: createApproval,
+    update: updateApproval,
+    delete: deleteApproval,
 }

@@ -65,7 +65,7 @@ export const getfinanceList = (params?: financeListParams): Promise<financeListR
  * 获取 finance 详情
  */
 export const getfinanceDetail = (id: number): Promise<financeResponse> => {
-    return http.get(/ finance/\)
+    return http.get(`/finance/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createfinance = (data: financeCreateParams): Promise<financeRespons
  * 更新 finance
  */
 export const updatefinance = (id: number, data: financeUpdateParams): Promise<financeResponse> => {
-    return http.put(/ finance/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 finance
  */
 export const deletefinance = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ finance/\)
+    return http.delete(`/finance/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletefinance = (ids: number[]): Promise<{ success: boolean; m
  * 更新 finance 状态
  */
 export const updatefinanceStatus = (id: number, status: string): Promise<financeResponse> => {
-    return http.put(/ finance/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

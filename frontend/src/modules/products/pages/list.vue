@@ -137,15 +137,15 @@ const handleRefresh = () => {
 };
 
 const handleView = (id: string) => {
-  router.push(/products/);
+  router.push('/')
 };
 
 const handleCreate = () => {
-  router.push(/products/create);
+  router.push('/')
 };
 
 const handleEdit = (id: string) => {
-  router.push(/products//edit);
+  router.push('/')
 };
 
 const handleDelete = async (id: string) => {

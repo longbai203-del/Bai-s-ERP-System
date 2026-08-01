@@ -65,7 +65,7 @@ export const getpurchaseList = (params?: purchaseListParams): Promise<purchaseLi
  * 获取 purchase 详情
  */
 export const getpurchaseDetail = (id: number): Promise<purchaseResponse> => {
-    return http.get(/ purchase/\)
+    return http.get(`/purchase/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createpurchase = (data: purchaseCreateParams): Promise<purchaseResp
  * 更新 purchase
  */
 export const updatepurchase = (id: number, data: purchaseUpdateParams): Promise<purchaseResponse> => {
-    return http.put(/ purchase/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 purchase
  */
 export const deletepurchase = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ purchase/\)
+    return http.delete(`/purchase/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletepurchase = (ids: number[]): Promise<{ success: boolean; 
  * 更新 purchase 状态
  */
 export const updatepurchaseStatus = (id: number, status: string): Promise<purchaseResponse> => {
-    return http.put(/ purchase/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

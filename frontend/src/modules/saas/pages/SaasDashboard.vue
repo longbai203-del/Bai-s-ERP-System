@@ -184,13 +184,13 @@ const loadDetail = async (id: string) => {
 
 const handleReset = () => { filters.search = ''; filters.page = 1; loadData(); };
 const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
-const handleView = (id: string) => router.push(/saas/);
-const handleCreate = () => router.push(/saas/create);
+const handleView = (id: string) => router.push('/')
+const handleCreate = () => router.push('/')
 const handleEdit = (id?: string) => {
   const targetId = id || currentItem.value?.id || route.params.id;
-  if (targetId) router.push(/saas//edit);
+  if (targetId) router.push('/')
 };
-const handleCancel = () => router.push(/saas);
+const handleCancel = () => router.push('/')
 
 const handleSubmit = async () => {
   if (!formRef.value) return;
@@ -206,7 +206,7 @@ const handleSubmit = async () => {
       await saasApi.create(data);
       ElMessage.success('创建成功');
     }
-    router.push(/saas);
+    router.push('/')
   } catch (error: any) {
     ElMessage.error(error.message || '保存失败');
   } finally { submitting.value = false; }
@@ -219,7 +219,7 @@ const handleDelete = async (id?: string) => {
     await ElMessageBox.confirm('确定要删除吗？', '警告', { confirmButtonText:'确定删除', cancelButtonText:'取消', type:'warning' });
     await saasApi.delete(targetId);
     ElMessage.success('删除成功');
-    if (pageType.value === 'Detail') router.push(/saas);
+    if (pageType.value === 'Detail') router.push('/')
     else loadData();
   } catch (error) {
     if (error !== 'cancel') ElMessage.error('删除失败');

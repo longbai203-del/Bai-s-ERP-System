@@ -65,7 +65,7 @@ export const getmarketingList = (params?: marketingListParams): Promise<marketin
  * 获取 marketing 详情
  */
 export const getmarketingDetail = (id: number): Promise<marketingResponse> => {
-    return http.get(/ marketing/\)
+    return http.get(`/marketing/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createmarketing = (data: marketingCreateParams): Promise<marketingR
  * 更新 marketing
  */
 export const updatemarketing = (id: number, data: marketingUpdateParams): Promise<marketingResponse> => {
-    return http.put(/ marketing/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 marketing
  */
 export const deletemarketing = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ marketing/\)
+    return http.delete(`/marketing/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletemarketing = (ids: number[]): Promise<{ success: boolean;
  * 更新 marketing 状态
  */
 export const updatemarketingStatus = (id: number, status: string): Promise<marketingResponse> => {
-    return http.put(/ marketing/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

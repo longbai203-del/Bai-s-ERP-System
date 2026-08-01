@@ -12,7 +12,7 @@ export const getHrList = (params?: any) => {
 }
 
 export const getHrDetail = (id: number) => {
-    return http.get(/hr/\)
+    return http.get(`/hr/${id}`)
 }
 
 export const createHr = (data: any) => {
@@ -20,9 +20,18 @@ export const createHr = (data: any) => {
 }
 
 export const updateHr = (id: number, data: any) => {
-    return http.put(/hr/\, data)
+    return http.put(`/hr/${id}`, data)
 }
 
 export const deleteHr = (id: number) => {
-    return http.delete(/hr/\)
+    return http.delete(`/hr/${id}`)
+}
+
+export const hrApi = {
+    getList: getHrList,
+    getDetail: getHrDetail,
+    create: createHr,
+    update: updateHr,
+    delete: deleteHr,
+    getEmployees: getHrList,
 }

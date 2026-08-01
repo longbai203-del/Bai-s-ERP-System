@@ -213,11 +213,11 @@ const loadDetail = async (id: string) => {
 
 const handleReset = () => { filters.search = ''; filters.status = ''; filters.page = 1; loadData(); };
 const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
-const handleView = (id: string) => router.push(/approval/);
+const handleView = (id: string) => router.push('/')
 const handleCreate = () => router.push('/approval/create');
 const handleEdit = (id?: string) => {
   const targetId = id || currentItem.value?.id || route.params.id;
-  if (targetId) router.push(/approval//edit);
+  if (targetId) router.push('/')
 };
 const handleCancel = () => router.push('/approval');
 

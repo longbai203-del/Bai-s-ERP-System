@@ -12,7 +12,7 @@ export const getSaasList = (params?: any) => {
 }
 
 export const getSaasDetail = (id: number) => {
-    return http.get(/saas/\)
+    return http.get(`/saas/${id}`)
 }
 
 export const createSaas = (data: any) => {
@@ -20,9 +20,17 @@ export const createSaas = (data: any) => {
 }
 
 export const updateSaas = (id: number, data: any) => {
-    return http.put(/saas/\, data)
+    return http.put(`/saas/${id}`, data)
 }
 
 export const deleteSaas = (id: number) => {
-    return http.delete(/saas/\)
+    return http.delete(`/saas/${id}`)
+}
+
+export const saasApi = {
+    getList: getSaasList,
+    getDetail: getSaasDetail,
+    create: createSaas,
+    update: updateSaas,
+    delete: deleteSaas,
 }

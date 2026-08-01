@@ -65,7 +65,7 @@ export const getdashboardList = (params?: dashboardListParams): Promise<dashboar
  * 获取 dashboard 详情
  */
 export const getdashboardDetail = (id: number): Promise<dashboardResponse> => {
-    return http.get(/ dashboard/\)
+    return http.get(`/dashboard/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createdashboard = (data: dashboardCreateParams): Promise<dashboardR
  * 更新 dashboard
  */
 export const updatedashboard = (id: number, data: dashboardUpdateParams): Promise<dashboardResponse> => {
-    return http.put(/ dashboard/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 dashboard
  */
 export const deletedashboard = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ dashboard/\)
+    return http.delete(`/dashboard/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletedashboard = (ids: number[]): Promise<{ success: boolean;
  * 更新 dashboard 状态
  */
 export const updatedashboardStatus = (id: number, status: string): Promise<dashboardResponse> => {
-    return http.put(/ dashboard/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

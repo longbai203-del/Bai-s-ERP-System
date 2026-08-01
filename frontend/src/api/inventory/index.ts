@@ -12,7 +12,7 @@ export const getInventoryList = (params?: any) => {
 }
 
 export const getInventoryDetail = (id: number) => {
-    return http.get(/inventory/\)
+    return http.get(`/inventory/${id}`)
 }
 
 export const createInventory = (data: any) => {
@@ -20,9 +20,18 @@ export const createInventory = (data: any) => {
 }
 
 export const updateInventory = (id: number, data: any) => {
-    return http.put(/inventory/\, data)
+    return http.put(`/inventory/${id}`, data)
 }
 
 export const deleteInventory = (id: number) => {
-    return http.delete(/inventory/\)
+    return http.delete(`/inventory/${id}`)
+}
+
+export const inventoryApi = {
+    getList: getInventoryList,
+    getDetail: getInventoryDetail,
+    create: createInventory,
+    update: updateInventory,
+    delete: deleteInventory,
+    getInventories: getInventoryList,
 }

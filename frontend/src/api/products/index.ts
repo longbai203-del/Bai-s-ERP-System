@@ -12,17 +12,29 @@ export const getProductsList = (params?: any) => {
 }
 
 export const getProductsDetail = (id: number) => {
-    return http.get(/products/\)
+    return http.get(`/products/${id}`)
 }
 
-export const createProducts = (data: any) => {
+export const createProduct = (data: any) => {
     return http.post('/products', data)
 }
 
-export const updateProducts = (id: number, data: any) => {
-    return http.put(/products/\, data)
+export const updateProduct = (id: number, data: any) => {
+    return http.put(`/products/${id}`, data)
 }
 
-export const deleteProducts = (id: number) => {
-    return http.delete(/products/\)
+export const deleteProduct = (id: number) => {
+    return http.delete(`/products/${id}`)
 }
+
+export const productApi = {
+    getList: getProductsList,
+    getDetail: getProductsDetail,
+    create: createProduct,
+    update: updateProduct,
+    delete: deleteProduct,
+    getProducts: getProductsList,
+    getProductDetail: getProductsDetail,
+}
+
+export const productsApi = productApi

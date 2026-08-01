@@ -260,11 +260,11 @@ const handleReset = () => {
 };
 
 const handleRefresh = () => { loadData(); ElMessage.success('已刷新'); };
-const handleView = (id: string) => router.push(/customers/);
+const handleView = (id: string) => router.push('/')
 const handleCreate = () => router.push('/customers/create');
 const handleEdit = (id?: string) => {
   const targetId = id || currentItem.value?.id || route.params.id;
-  if (targetId) router.push(/customers//edit);
+  if (targetId) router.push('/')
 };
 const handleCancel = () => router.push('/customers');
 

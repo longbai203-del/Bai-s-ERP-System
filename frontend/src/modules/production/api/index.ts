@@ -65,7 +65,7 @@ export const getproductionList = (params?: productionListParams): Promise<produc
  * 获取 production 详情
  */
 export const getproductionDetail = (id: number): Promise<productionResponse> => {
-    return http.get(/ production/\)
+    return http.get(`/production/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createproduction = (data: productionCreateParams): Promise<producti
  * 更新 production
  */
 export const updateproduction = (id: number, data: productionUpdateParams): Promise<productionResponse> => {
-    return http.put(/ production/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 production
  */
 export const deleteproduction = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ production/\)
+    return http.delete(`/production/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeleteproduction = (ids: number[]): Promise<{ success: boolean
  * 更新 production 状态
  */
 export const updateproductionStatus = (id: number, status: string): Promise<productionResponse> => {
-    return http.put(/ production/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

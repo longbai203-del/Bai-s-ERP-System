@@ -1,25 +1,32 @@
 ﻿// settings API 服务
 import http from '@/api/http'
 
-export const getsettingsList = (params?: any) => {
+export const getSettingsList = (params?: any) => {
     return http.get('/settings', { params })
 }
 
-export const getsettingsDetail = (id: number) => {
-    return http.get("/settings")
+export const getSettingsDetail = (id: number) => {
+    return http.get(`/settings/${id}`)
 }
 
-export const createsettings = (data: any) => {
+export const createSettings = (data: any) => {
     return http.post('/settings', data)
 }
 
-export const updatesettings = (id: number, data: any) => {
-    return http.put("/settings", data)
+export const updateSettings = (id: number, data: any) => {
+    return http.put(`/settings/${id}`, data)
 }
 
-export const deletesettings = (id: number) => {
-    return http.delete("/settings")
+export const deleteSettings = (id: number) => {
+    return http.delete(`/settings/${id}`)
 }
 
+export const settingsApi = {
+    getList: getSettingsList,
+    getDetail: getSettingsDetail,
+    create: createSettings,
+    update: updateSettings,
+    delete: deleteSettings,
+}
 
-
+export const settingApi = settingsApi

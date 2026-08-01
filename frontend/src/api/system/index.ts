@@ -12,7 +12,7 @@ export const getSystemList = (params?: any) => {
 }
 
 export const getSystemDetail = (id: number) => {
-    return http.get(/system/\)
+    return http.get(`/system/${id}`)
 }
 
 export const createSystem = (data: any) => {
@@ -20,9 +20,17 @@ export const createSystem = (data: any) => {
 }
 
 export const updateSystem = (id: number, data: any) => {
-    return http.put(/system/\, data)
+    return http.put(`/system/${id}`, data)
 }
 
 export const deleteSystem = (id: number) => {
-    return http.delete(/system/\)
+    return http.delete(`/system/${id}`)
+}
+
+export const systemApi = {
+    getList: getSystemList,
+    getDetail: getSystemDetail,
+    create: createSystem,
+    update: updateSystem,
+    delete: deleteSystem,
 }

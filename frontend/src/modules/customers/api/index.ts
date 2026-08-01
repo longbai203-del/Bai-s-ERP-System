@@ -65,7 +65,7 @@ export const getcustomersList = (params?: customersListParams): Promise<customer
  * 获取 customers 详情
  */
 export const getcustomersDetail = (id: number): Promise<customersResponse> => {
-    return http.get(/ customers/\)
+    return http.get(`/customers/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createcustomers = (data: customersCreateParams): Promise<customersR
  * 更新 customers
  */
 export const updatecustomers = (id: number, data: customersUpdateParams): Promise<customersResponse> => {
-    return http.put(/ customers/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 customers
  */
 export const deletecustomers = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ customers/\)
+    return http.delete(`/customers/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletecustomers = (ids: number[]): Promise<{ success: boolean;
  * 更新 customers 状态
  */
 export const updatecustomersStatus = (id: number, status: string): Promise<customersResponse> => {
-    return http.put(/ customers/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

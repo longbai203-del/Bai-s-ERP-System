@@ -65,7 +65,7 @@ export const gethrList = (params?: hrListParams): Promise<hrListResponse> => {
  * 获取 hr 详情
  */
 export const gethrDetail = (id: number): Promise<hrResponse> => {
-    return http.get(/ hr/\)
+    return http.get(`/hr/${id}`)
 }
 
 /**
@@ -79,14 +79,14 @@ export const createhr = (data: hrCreateParams): Promise<hrResponse> => {
  * 更新 hr
  */
 export const updatehr = (id: number, data: hrUpdateParams): Promise<hrResponse> => {
-    return http.put(/ hr/\, data)
+    return http.put('/', data)
 }
 
 /**
  * 删除 hr
  */
 export const deletehr = (id: number): Promise<{ success: boolean; message: string }> => {
-    return http.delete(/ hr/\)
+    return http.delete(`/hr/${id}`)
 }
 
 /**
@@ -100,7 +100,7 @@ export const batchDeletehr = (ids: number[]): Promise<{ success: boolean; messag
  * 更新 hr 状态
  */
 export const updatehrStatus = (id: number, status: string): Promise<hrResponse> => {
-    return http.put(/ hr/\/status, { status })
+    return http.put('//status', { status })
 }
 
 /**

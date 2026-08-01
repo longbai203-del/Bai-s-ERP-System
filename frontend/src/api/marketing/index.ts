@@ -12,7 +12,7 @@ export const getMarketingList = (params?: any) => {
 }
 
 export const getMarketingDetail = (id: number) => {
-    return http.get(/marketing/\)
+    return http.get(`/marketing/${id}`)
 }
 
 export const createMarketing = (data: any) => {
@@ -20,9 +20,17 @@ export const createMarketing = (data: any) => {
 }
 
 export const updateMarketing = (id: number, data: any) => {
-    return http.put(/marketing/\, data)
+    return http.put(`/marketing/${id}`, data)
 }
 
 export const deleteMarketing = (id: number) => {
-    return http.delete(/marketing/\)
+    return http.delete(`/marketing/${id}`)
+}
+
+export const marketingApi = {
+    getList: getMarketingList,
+    getDetail: getMarketingDetail,
+    create: createMarketing,
+    update: updateMarketing,
+    delete: deleteMarketing,
 }

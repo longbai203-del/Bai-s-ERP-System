@@ -12,7 +12,7 @@ export const getFinanceList = (params?: any) => {
 }
 
 export const getFinanceDetail = (id: number) => {
-    return http.get(/finance/\)
+    return http.get(`/finance/${id}`)
 }
 
 export const createFinance = (data: any) => {
@@ -20,9 +20,17 @@ export const createFinance = (data: any) => {
 }
 
 export const updateFinance = (id: number, data: any) => {
-    return http.put(/finance/\, data)
+    return http.put(`/finance/${id}`, data)
 }
 
 export const deleteFinance = (id: number) => {
-    return http.delete(/finance/\)
+    return http.delete(`/finance/${id}`)
+}
+
+export const financeApi = {
+    getList: getFinanceList,
+    getDetail: getFinanceDetail,
+    create: createFinance,
+    update: updateFinance,
+    delete: deleteFinance,
 }

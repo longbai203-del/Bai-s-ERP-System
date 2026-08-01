@@ -12,7 +12,7 @@ export const getPosList = (params?: any) => {
 }
 
 export const getPosDetail = (id: number) => {
-    return http.get(/pos/\)
+    return http.get(`/pos/${id}`)
 }
 
 export const createPos = (data: any) => {
@@ -20,9 +20,17 @@ export const createPos = (data: any) => {
 }
 
 export const updatePos = (id: number, data: any) => {
-    return http.put(/pos/\, data)
+    return http.put(`/pos/${id}`, data)
 }
 
 export const deletePos = (id: number) => {
-    return http.delete(/pos/\)
+    return http.delete(`/pos/${id}`)
+}
+
+export const posApi = {
+    getList: getPosList,
+    getDetail: getPosDetail,
+    create: createPos,
+    update: updatePos,
+    delete: deletePos,
 }
