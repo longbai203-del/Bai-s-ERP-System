@@ -1,30 +1,48 @@
-﻿// Orders API 服务
+﻿// orders API 服务
 import http from '@/api/http'
 
+export interface OrdersData {
+    id: number
+    name: string
+}
+
 export const getOrdersList = (params?: any) => {
-    return http.get('/Orders', { params })
+    return http.get('/orders', { params })
 }
 
 export const getOrdersDetail = (id: number) => {
-    return http.get('/Orders/' + id)
+    return http.get('/orders/' + id)
 }
 
-export const createOrders = (data: any) => {
-    return http.post('/Orders', data)
+export const createOrder = (data: any) => {
+    return http.post('/orders', data)
 }
 
-export const updateOrders = (id: number, data: any) => {
-    return http.put('/Orders/' + id, data)
+export const updateOrder = (id: number, data: any) => {
+    return http.put('/orders/' + id, data)
 }
 
-export const deleteOrders = (id: number) => {
-    return http.delete('/Orders/' + id)
+export const deleteOrder = (id: number) => {
+    return http.delete('/orders/' + id)
 }
 
-export const OrdersApi = {
-    getList: getOrdersList,
-    getDetail: getOrdersDetail,
-    create: createOrders,
-    update: updateOrders,
-    delete: deleteOrders,
+// 导出 orderApi
+export const orderApi = {
+    getOrders: getOrdersList,
+    getOrderById: getOrdersDetail,
+    createOrder: createOrder,
+    updateOrder: updateOrder,
+    updateOrderStatus: (id: number, status: string) => {
+        return http.patch('/orders/' + id + '/status', { status })
+    },
+    deleteOrder: deleteOrder,
+}
+
+export default {
+    getOrdersList,
+    getOrdersDetail,
+    createOrder,
+    updateOrder,
+    deleteOrder,
+    orderApi,
 }
